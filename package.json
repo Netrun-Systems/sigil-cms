@@ -1,0 +1,24 @@
+{
+  "name": "netrun-cms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lean, multi-tenant headless CMS framework with integrated design system",
+  "author": "Netrun Systems <dev@netrunsystems.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

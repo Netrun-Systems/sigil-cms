@@ -1,0 +1,38 @@
+/* NetrunCMS Design System - Main entry point */
+
+/* Import the full design system from KOG */
+@import './netrun-design-system.css';
+
+/* Additional CMS-specific utilities */
+.netrun-cms-page-builder {
+  min-height: 100vh;
+  background: var(--netrun-bg-primary);
+}
+
+.netrun-cms-block {
+  position: relative;
+  border-radius: var(--netrun-radius-md);
+  transition: box-shadow var(--netrun-duration-200) var(--netrun-ease-out);
+}
+
+.netrun-cms-block:hover {
+  box-shadow: var(--netrun-shadow-md);
+}
+
+.netrun-cms-block-selected {
+  outline: 2px solid var(--netrun-primary);
+  outline-offset: 2px;
+}
+
+.netrun-cms-drop-zone {
+  border: 2px dashed var(--netrun-border-secondary);
+  border-radius: var(--netrun-radius-md);
+  padding: var(--netrun-space-4);
+  text-align: center;
+  transition: all var(--netrun-duration-200) var(--netrun-ease-out);
+}
+
+.netrun-cms-drop-zone-active {
+  border-color: var(--netrun-primary);
+  background: var(--netrun-primary-alpha-10);
+}

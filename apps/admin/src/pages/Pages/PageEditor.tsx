@@ -1,0 +1,628 @@
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+  FileText,
+  Save,
+  Trash2,
+  Eye,
+  ArrowLeft,
+  Settings,
+  Plus,
+  GripVertical,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  X,
+  Type,
+  Image,
+  Video,
+  LayoutGrid,
+  MessageSquare,
+  Star,
+  HelpCircle,
+  Code,
+  Mail,
+  BarChart,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Separator,
+  Badge,
+  cn,
+} from '@netrun-cms/ui';
+import { useState } from 'react';
+import type { BlockType } from '@netrun-cms/core';
+
+interface ContentBlock {
+  id: string;
+  type: BlockType;
+  content: Record<string, unknown>;
+  isVisible: boolean;
+}
+
+interface PageFormData {
+  title: string;
+  slug: string;
+  status: 'draft' | 'published' | 'scheduled' | 'archived';
+  template: string;
+  parentId: string | null;
+  metaTitle: string;
+  metaDescription: string;
+  ogImageUrl: string;
+}
+
+const blockTypes = [
+  { type: 'hero', label: 'Hero', icon: LayoutGrid, description: 'Large header with CTA' },
+  { type: 'text', label: 'Text', icon: Type, description: 'Rich text content' },
+  { type: 'image', label: 'Image', icon: Image, description: 'Single image with caption' },
+  { type: 'gallery', label: 'Gallery', icon: Image, description: 'Image gallery or carousel' },
+  { type: 'video', label: 'Video', icon: Video, description: 'Embedded video' },
+  { type: 'cta', label: 'Call to Action', icon: MessageSquare, description: 'Action button section' },
+  { type: 'feature_grid', label: 'Features', icon: LayoutGrid, description: 'Feature grid layout' },
+  { type: 'testimonial', label: 'Testimonial', icon: Star, description: 'Customer quotes' },
+  { type: 'faq', label: 'FAQ', icon: HelpCircle, description: 'Questions and answers' },
+  { type: 'code_block', label: 'Code', icon: Code, description: 'Code snippet' },
+  { type: 'contact_form', label: 'Contact Form', icon: Mail, description: 'Contact form' },
+  { type: 'stats_bar', label: 'Stats', icon: BarChart, description: 'Statistics display' },
+] as const;
+
+const defaultFormData: PageFormData = {
+  title: '',
+  slug: '',
+  status: 'draft',
+  template: 'default',
+  parentId: null,
+  metaTitle: '',
+  metaDescription: '',
+  ogImageUrl: '',
+};
+
+function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, onMoveDown }: {
+  block: ContentBlock;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleVisibility: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}) {
+  const blockType = blockTypes.find((b) => b.type === block.type);
+  const Icon = blockType?.icon || Type;
+
+  return (
+    <div
+      className={cn(
+        'group relative rounded-lg border bg-card transition-all hover:border-primary',
+        !block.isVisible && 'opacity-50'
+      )}
+    >
+      <div className="flex items-center gap-3 p-4">
+        <div className="cursor-grab">
+          <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-lg',
+            'bg-primary/10 text-primary'
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className="font-medium">{blockType?.label || block.type}</p>
+          <p className="text-sm text-muted-foreground">
+            {blockType?.description || 'Content block'}
+          </p>
+        </div>
+        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onMoveUp}
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onMoveDown}
+          >
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onToggleVisibility}
+          >
+            {block.isVisible ? (
+              <Eye className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onEdit}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddBlockButton({ onAdd }: { onAdd: (type: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <Button
+        variant="outline"
+        className="w-full border-dashed"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Add Block
+      </Button>
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-lg border bg-popover p-4 shadow-lg">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="font-medium">Choose Block Type</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {blockTypes.map((blockType) => (
+              <button
+                key={blockType.type}
+                onClick={() => {
+                  onAdd(blockType.type);
+                  setIsOpen(false);
+                }}
+                className="flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-colors hover:bg-accent"
+              >
+                <blockType.icon className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium">{blockType.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function PageEditor() {
+  const { siteId, pageId } = useParams();
+  const navigate = useNavigate();
+  const isEditing = Boolean(pageId);
+
+  // Mock data for existing page
+  const existingPage: PageFormData | null = isEditing
+    ? {
+        title: 'About Us',
+        slug: 'about',
+        status: 'published',
+        template: 'default',
+        parentId: null,
+        metaTitle: 'About Us - Netrun Systems',
+        metaDescription: 'Learn about Netrun Systems and our mission to provide enterprise cloud infrastructure.',
+        ogImageUrl: '',
+      }
+    : null;
+
+  const [formData, setFormData] = useState<PageFormData>(existingPage || defaultFormData);
+  const [blocks, setBlocks] = useState<ContentBlock[]>(
+    isEditing
+      ? [
+          {
+            id: '1',
+            type: 'hero',
+            content: { headline: 'About Us', subheadline: 'Our Story' },
+            isVisible: true,
+          },
+          {
+            id: '2',
+            type: 'text',
+            content: { body: 'Welcome to Netrun Systems...' },
+            isVisible: true,
+          },
+          {
+            id: '3',
+            type: 'feature_grid',
+            content: { features: [] },
+            isVisible: true,
+          },
+          {
+            id: '4',
+            type: 'cta',
+            content: { headline: 'Get Started', buttonText: 'Contact Us' },
+            isVisible: true,
+          },
+        ]
+      : []
+  );
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('content');
+
+  const handleChange = (field: keyof PageFormData, value: string | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      // Auto-generate slug from title if creating new page
+      ...(field === 'title' && !isEditing
+        ? {
+            slug: (value as string)
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, ''),
+          }
+        : {}),
+    }));
+  };
+
+  const handleAddBlock = (type: string) => {
+    const newBlock: ContentBlock = {
+      id: Date.now().toString(),
+      type: type as BlockType,
+      content: {},
+      isVisible: true,
+    };
+    setBlocks((prev) => [...prev, newBlock]);
+  };
+
+  const handleDeleteBlock = (id: string) => {
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
+  };
+
+  const handleToggleBlockVisibility = (id: string) => {
+    setBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, isVisible: !b.isVisible } : b))
+    );
+  };
+
+  const handleMoveBlock = (id: string, direction: 'up' | 'down') => {
+    setBlocks((prev) => {
+      const index = prev.findIndex((b) => b.id === id);
+      if (
+        (direction === 'up' && index === 0) ||
+        (direction === 'down' && index === prev.length - 1)
+      ) {
+        return prev;
+      }
+      const newBlocks = [...prev];
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      [newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]];
+      return newBlocks;
+    });
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsSaving(false);
+    if (!isEditing) {
+      navigate(`/sites/${siteId}/pages`);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (confirm('Are you sure you want to delete this page?')) {
+      navigate(`/sites/${siteId}/pages`);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={`/sites/${siteId}/pages`}>
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {isEditing ? formData.title : 'Create New Page'}
+            </h1>
+            <p className="text-muted-foreground">
+              {isEditing ? 'Edit page content and settings' : 'Add a new page to your site'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {isEditing && (
+            <>
+              <Button variant="outline">
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </>
+          )}
+          <Button onClick={handleSave} disabled={isSaving}>
+            <Save className="mr-2 h-4 w-4" />
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Editor Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Content Editor - Main Area */}
+        <div className="lg:col-span-2 space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="content">Content Blocks</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+            </TabsList>
+
+            {/* Content Blocks Tab */}
+            <TabsContent value="content" className="space-y-4 mt-4">
+              {blocks.length > 0 ? (
+                <div className="space-y-3">
+                  {blocks.map((block) => (
+                    <BlockPreview
+                      key={block.id}
+                      block={block}
+                      onEdit={() => {}}
+                      onDelete={() => handleDeleteBlock(block.id)}
+                      onToggleVisibility={() => handleToggleBlockVisibility(block.id)}
+                      onMoveUp={() => handleMoveBlock(block.id, 'up')}
+                      onMoveDown={() => handleMoveBlock(block.id, 'down')}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                      <LayoutGrid className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold">No content blocks yet</h3>
+                    <p className="mt-2 text-center text-sm text-muted-foreground">
+                      Start building your page by adding content blocks
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+              <AddBlockButton onAdd={handleAddBlock} />
+            </TabsContent>
+
+            {/* SEO Tab */}
+            <TabsContent value="seo" className="space-y-4 mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>SEO Settings</CardTitle>
+                  <CardDescription>
+                    Search engine optimization for this page
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="metaTitle">Meta Title</Label>
+                    <Input
+                      id="metaTitle"
+                      value={formData.metaTitle}
+                      onChange={(e) => handleChange('metaTitle', e.target.value)}
+                      placeholder={formData.title || 'Page Title'}
+                      maxLength={60}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {formData.metaTitle.length}/60 characters
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="metaDescription">Meta Description</Label>
+                    <Textarea
+                      id="metaDescription"
+                      value={formData.metaDescription}
+                      onChange={(e) => handleChange('metaDescription', e.target.value)}
+                      placeholder="A compelling description for search results"
+                      rows={3}
+                      maxLength={160}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {formData.metaDescription.length}/160 characters
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ogImageUrl">Social Image URL</Label>
+                    <Input
+                      id="ogImageUrl"
+                      value={formData.ogImageUrl}
+                      onChange={(e) => handleChange('ogImageUrl', e.target.value)}
+                      placeholder="/images/og-image.jpg"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Image shown when shared on social media (1200x630px recommended)
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="rounded-lg border bg-muted/50 p-4">
+                    <p className="mb-2 text-sm font-medium">Search Preview</p>
+                    <div className="space-y-1">
+                      <p className="text-lg text-blue-600 hover:underline">
+                        {formData.metaTitle || formData.title || 'Page Title'}
+                      </p>
+                      <p className="text-sm text-green-700">
+                        netrunsystems.com/{formData.slug || 'page-slug'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formData.metaDescription || 'Meta description will appear here...'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Sidebar - Page Settings */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleChange('title', e.target.value)}
+                  placeholder="Page Title"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug</Label>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">/</span>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => handleChange('slug', e.target.value)}
+                    placeholder="page-slug"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    handleChange('status', value as PageFormData['status'])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="template">Template</Label>
+                <Select
+                  value={formData.template}
+                  onValueChange={(value) => handleChange('template', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="landing">Landing Page</SelectItem>
+                    <SelectItem value="blog">Blog</SelectItem>
+                    <SelectItem value="product">Product</SelectItem>
+                    <SelectItem value="contact">Contact</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="parent">Parent Page</Label>
+                <Select
+                  value={formData.parentId || 'none'}
+                  onValueChange={(value) =>
+                    handleChange('parentId', value === 'none' ? null : value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="No parent" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No parent (root level)</SelectItem>
+                    <SelectItem value="services">Services</SelectItem>
+                    <SelectItem value="about">About</SelectItem>
+                    <SelectItem value="blog">Blog</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Block Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Content Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Total Blocks</span>
+                  <Badge variant="secondary">{blocks.length}</Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Visible Blocks</span>
+                  <Badge variant="secondary">
+                    {blocks.filter((b) => b.isVisible).length}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Hidden Blocks</span>
+                  <Badge variant="secondary">
+                    {blocks.filter((b) => !b.isVisible).length}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
