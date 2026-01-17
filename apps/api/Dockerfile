@@ -26,28 +26,20 @@ RUN pnpm --filter @netrun-cms/core build
 RUN pnpm --filter @netrun-cms/db build
 RUN pnpm --filter @netrun-cms/api build
 
+# Deploy API with production deps using pnpm deploy
+RUN pnpm --filter @netrun-cms/api deploy --prod /prod
+
 # Production image
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
-
-# Copy built artifacts
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/@netrun-cms/core/dist ./packages/@netrun-cms/core/dist
-COPY --from=builder /app/packages/@netrun-cms/core/package.json ./packages/@netrun-cms/core/
-COPY --from=builder /app/packages/@netrun-cms/db/dist ./packages/@netrun-cms/db/dist
-COPY --from=builder /app/packages/@netrun-cms/db/package.json ./packages/@netrun-cms/db/
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/apps/api/package.json ./apps/api/
+# Copy deployed artifacts
+COPY --from=builder /prod ./
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
-
-WORKDIR /app/apps/api
 
 CMD ["node", "dist/index.js"]
