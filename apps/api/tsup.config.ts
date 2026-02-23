@@ -5,7 +5,7 @@ export default defineConfig({
   format: ['cjs'],
   target: 'node18',
   clean: true,
-  noExternal: ['@netrun-cms/db', '@netrun-cms/core'],
+  noExternal: ['@netrun-cms/db', '@netrun-cms/core', '@netrun-cms/theme'],
   treeshake: true,
   splitting: false,
 });

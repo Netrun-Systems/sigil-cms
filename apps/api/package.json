@@ -16,6 +16,7 @@
   "dependencies": {
     "@netrun-cms/core": "workspace:*",
     "@netrun-cms/db": "workspace:*",
+    "@netrun-cms/theme": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.39.0",

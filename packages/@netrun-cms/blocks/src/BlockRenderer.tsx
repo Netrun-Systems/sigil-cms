@@ -35,6 +35,12 @@ import { CTABlock } from './blocks/CTABlock';
 import { PricingBlock } from './blocks/PricingBlock';
 import { ContactFormBlock } from './blocks/ContactFormBlock';
 import { TestimonialsBlock } from './blocks/TestimonialsBlock';
+import { EmbedPlayerBlock } from './blocks/EmbedPlayerBlock';
+import { ReleaseListBlock } from './blocks/ReleaseListBlock';
+import { EventListBlock } from './blocks/EventListBlock';
+import { SocialLinksBlock } from './blocks/SocialLinksBlock';
+import { LinkTreeBlock } from './blocks/LinkTreeBlock';
+import { ArtistBioBlock } from './blocks/ArtistBioBlock';
 
 export interface BlockRendererProps {
   /** The content block to render */
@@ -116,6 +122,48 @@ const blockComponents: Record<string, React.ComponentType<{
     onContentChange?: (content: BlockContent) => void;
   }>,
   contact_form: ContactFormBlock as React.ComponentType<{
+    content: BlockContent;
+    settings?: BlockSettings;
+    mode?: BlockMode;
+    className?: string;
+    onContentChange?: (content: BlockContent) => void;
+  }>,
+  embed_player: EmbedPlayerBlock as React.ComponentType<{
+    content: BlockContent;
+    settings?: BlockSettings;
+    mode?: BlockMode;
+    className?: string;
+    onContentChange?: (content: BlockContent) => void;
+  }>,
+  release_list: ReleaseListBlock as React.ComponentType<{
+    content: BlockContent;
+    settings?: BlockSettings;
+    mode?: BlockMode;
+    className?: string;
+    onContentChange?: (content: BlockContent) => void;
+  }>,
+  event_list: EventListBlock as React.ComponentType<{
+    content: BlockContent;
+    settings?: BlockSettings;
+    mode?: BlockMode;
+    className?: string;
+    onContentChange?: (content: BlockContent) => void;
+  }>,
+  social_links: SocialLinksBlock as React.ComponentType<{
+    content: BlockContent;
+    settings?: BlockSettings;
+    mode?: BlockMode;
+    className?: string;
+    onContentChange?: (content: BlockContent) => void;
+  }>,
+  link_tree: LinkTreeBlock as React.ComponentType<{
+    content: BlockContent;
+    settings?: BlockSettings;
+    mode?: BlockMode;
+    className?: string;
+    onContentChange?: (content: BlockContent) => void;
+  }>,
+  artist_bio: ArtistBioBlock as React.ComponentType<{
     content: BlockContent;
     settings?: BlockSettings;
     mode?: BlockMode;

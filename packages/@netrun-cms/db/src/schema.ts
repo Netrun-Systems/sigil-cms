@@ -16,6 +16,7 @@ import {
   integer,
   uuid,
   jsonb,
+  date,
   index,
   unique,
   check,
@@ -55,6 +56,7 @@ export const sites = pgTable('cms_sites', {
   domain: varchar('domain', { length: 255 }),
   defaultLanguage: varchar('default_language', { length: 5 }).notNull().default('en'),
   status: varchar('status', { length: 20 }).notNull().default('draft'),
+  template: varchar('template', { length: 50 }),
   settings: jsonb('settings').$type<{
     favicon?: string;
     logo?: string;
@@ -72,6 +74,9 @@ export const sites = pgTable('cms_sites', {
   domainIdx: index('idx_cms_sites_domain').on(table.domain),
   statusCheck: check('cms_sites_status_check',
     sql`${table.status} IN ('draft', 'published', 'archived')`
+  ),
+  templateCheck: check('cms_sites_template_check',
+    sql`${table.template} IS NULL OR ${table.template} IN ('default', 'artist')`
   ),
 }));
 
@@ -97,7 +102,7 @@ export const themes = pgTable('cms_themes', {
   siteIdIdx: index('idx_cms_themes_site_id').on(table.siteId),
   activeIdx: index('idx_cms_themes_active').on(table.siteId, table.isActive),
   baseThemeCheck: check('cms_themes_base_theme_check',
-    sql`${table.baseTheme} IN ('netrun-dark', 'netrun-light', 'kog', 'intirkon', 'minimal', 'custom')`
+    sql`${table.baseTheme} IN ('netrun-dark', 'netrun-light', 'kog', 'intirkon', 'minimal', 'frost', 'custom')`
   ),
 }));
 
@@ -137,7 +142,7 @@ export const pages = pgTable('cms_pages', {
     sql`${table.status} IN ('draft', 'published', 'scheduled', 'archived')`
   ),
   templateCheck: check('cms_pages_template_check',
-    sql`${table.template} IN ('default', 'landing', 'blog', 'product', 'contact')`
+    sql`${table.template} IN ('default', 'landing', 'blog', 'product', 'contact', 'artist')`
   ),
   slugFormatCheck: check('cms_pages_slug_format_check',
     sql`${table.slug} ~* '^[a-z0-9-]+$'`
@@ -178,7 +183,8 @@ export const contentBlocks = pgTable('cms_content_blocks', {
     sql`${table.blockType} IN (
       'hero', 'text', 'rich_text', 'image', 'gallery', 'video', 'cta',
       'feature_grid', 'pricing_table', 'testimonial', 'faq', 'contact_form',
-      'code_block', 'bento_grid', 'stats_bar', 'timeline', 'newsletter', 'custom'
+      'code_block', 'bento_grid', 'stats_bar', 'timeline', 'newsletter', 'custom',
+      'embed_player', 'release_list', 'event_list', 'social_links', 'link_tree', 'artist_bio'
     )`
   ),
 }));
@@ -264,6 +270,79 @@ export const users = pgTable('cms_users', {
 }));
 
 // ============================================================================
+// ARTIST TABLES - For artist/band template sites
+// ============================================================================
+
+export const releases = pgTable('cms_releases', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 255 }).notNull(),
+  type: varchar('type', { length: 20 }).notNull().default('single'),
+  releaseDate: date('release_date').notNull(),
+  coverUrl: text('cover_url'),
+  streamLinks: jsonb('stream_links').$type<Record<string, string>>().default({}),
+  embedUrl: text('embed_url'),
+  embedPlatform: varchar('embed_platform', { length: 20 }),
+  description: text('description'),
+  isPublished: boolean('is_published').notNull().default(false),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  siteIdIdx: index('idx_cms_releases_site_id').on(table.siteId),
+  releaseDateIdx: index('idx_cms_releases_date').on(table.releaseDate),
+  publishedIdx: index('idx_cms_releases_published').on(table.siteId, table.isPublished),
+  typeCheck: check('cms_releases_type_check',
+    sql`${table.type} IN ('single', 'album', 'ep', 'mixtape')`
+  ),
+  platformCheck: check('cms_releases_platform_check',
+    sql`${table.embedPlatform} IS NULL OR ${table.embedPlatform} IN (
+      'spotify', 'youtube', 'apple_music', 'soundcloud', 'bandcamp'
+    )`
+  ),
+}));
+
+export const events = pgTable('cms_events', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 255 }).notNull(),
+  venue: varchar('venue', { length: 255 }).notNull(),
+  city: varchar('city', { length: 255 }).notNull(),
+  eventDate: timestamp('event_date').notNull(),
+  eventType: varchar('event_type', { length: 20 }).notNull().default('show'),
+  ticketUrl: text('ticket_url'),
+  description: text('description'),
+  imageUrl: text('image_url'),
+  isPublished: boolean('is_published').notNull().default(false),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  siteIdIdx: index('idx_cms_events_site_id').on(table.siteId),
+  eventDateIdx: index('idx_cms_events_date').on(table.eventDate),
+  publishedIdx: index('idx_cms_events_published').on(table.siteId, table.isPublished),
+  typeCheck: check('cms_events_type_check',
+    sql`${table.eventType} IN ('show', 'festival', 'livestream')`
+  ),
+}));
+
+export const artistProfiles = pgTable('cms_artist_profiles', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }).unique(),
+  artistName: varchar('artist_name', { length: 255 }).notNull(),
+  bio: text('bio').notNull().default(''),
+  photoUrl: text('photo_url'),
+  genres: jsonb('genres').$type<string[]>().default([]),
+  socialLinks: jsonb('social_links').$type<Record<string, string>>().default({}),
+  bookingEmail: varchar('booking_email', { length: 255 }),
+  managementEmail: varchar('management_email', { length: 255 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  siteIdIdx: index('idx_cms_artist_profiles_site_id').on(table.siteId),
+}));
+
+// ============================================================================
 // RELATIONS
 // ============================================================================
 
@@ -281,6 +360,12 @@ export const sitesRelations = relations(sites, ({ one, many }) => ({
   pages: many(pages),
   media: many(media),
   blockTemplates: many(blockTemplates),
+  releases: many(releases),
+  events: many(events),
+  artistProfile: one(artistProfiles, {
+    fields: [sites.id],
+    references: [artistProfiles.siteId],
+  }),
 }));
 
 export const themesRelations = relations(themes, ({ one }) => ({
@@ -328,6 +413,27 @@ export const usersRelations = relations(users, ({ one }) => ({
   tenant: one(tenants, {
     fields: [users.tenantId],
     references: [tenants.id],
+  }),
+}));
+
+export const releasesRelations = relations(releases, ({ one }) => ({
+  site: one(sites, {
+    fields: [releases.siteId],
+    references: [sites.id],
+  }),
+}));
+
+export const eventsRelations = relations(events, ({ one }) => ({
+  site: one(sites, {
+    fields: [events.siteId],
+    references: [sites.id],
+  }),
+}));
+
+export const artistProfilesRelations = relations(artistProfiles, ({ one }) => ({
+  site: one(sites, {
+    fields: [artistProfiles.siteId],
+    references: [sites.id],
   }),
 }));
 
@@ -427,6 +533,49 @@ export type InsertMedia = z.infer<typeof insertMediaSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
+// Release schemas
+export const insertReleaseSchema = createInsertSchema(releases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  title: z.string().min(1).max(255),
+  type: z.enum(['single', 'album', 'ep', 'mixtape']).default('single'),
+});
+export const selectReleaseSchema = createSelectSchema(releases);
+
+// Event schemas
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  title: z.string().min(1).max(255),
+  venue: z.string().min(1).max(255),
+  city: z.string().min(1).max(255),
+  eventType: z.enum(['show', 'festival', 'livestream']).default('show'),
+});
+export const selectEventSchema = createSelectSchema(events);
+
+// Artist profile schemas
+export const insertArtistProfileSchema = createInsertSchema(artistProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  artistName: z.string().min(1).max(255),
+});
+export const selectArtistProfileSchema = createSelectSchema(artistProfiles);
+
+export type Release = typeof releases.$inferSelect;
+export type InsertRelease = z.infer<typeof insertReleaseSchema>;
+
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+export type ArtistProfile = typeof artistProfiles.$inferSelect;
+export type InsertArtistProfile = z.infer<typeof insertArtistProfileSchema>;
+
 // Extended types
 export type PageWithBlocks = Page & {
   blocks: ContentBlock[];
@@ -434,4 +583,10 @@ export type PageWithBlocks = Page & {
 
 export type SiteWithTheme = Site & {
   activeTheme?: Theme;
+};
+
+export type SiteWithArtist = Site & {
+  artistProfile?: ArtistProfile;
+  releases?: Release[];
+  events?: Event[];
 };

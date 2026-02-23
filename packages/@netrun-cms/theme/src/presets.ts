@@ -327,6 +327,105 @@ export const minimalPreset: ThemePreset = {
 };
 
 /**
+ * Frost Theme - Artist/band template theme
+ * Primary: #7050A0 (Purple from Tavion Frost logo)
+ * Background: Deep purple-black (#0C0A14)
+ */
+export const frostPreset: ThemePreset = {
+  id: 'frost',
+  name: 'Frost',
+  description: 'Dark purple artist theme inspired by the Tavion Frost brand',
+  darkTokens: {
+    colors: {
+      primary: '#7050A0',
+      primaryDark: '#5E4290',
+      primaryLight: '#8262B0',
+      secondary: '#B8A0D8',
+      background: '#0C0A14',
+      backgroundSecondary: '#14101E',
+      surface: '#1E1830',
+      text: '#F0EEF5',
+      textSecondary: '#A898B8',
+      success: '#4ADE80',
+      warning: '#FBBF24',
+      error: '#FF6B6B',
+      info: '#7050A0',
+    },
+    typography: {
+      fontFamily: '"Inter", "Helvetica Neue", sans-serif',
+      fontFamilyHeading: '"Space Grotesk", "Inter", sans-serif',
+      fontSizeBase: '1rem',
+      fontSizeLg: '1.25rem',
+      fontSizeSm: '0.875rem',
+      lineHeightBase: 1.6,
+      fontWeightNormal: 400,
+      fontWeightBold: 700,
+    },
+    spacing: {
+      xs: '0.25rem',
+      sm: '0.5rem',
+      md: '1rem',
+      lg: '2rem',
+      xl: '4rem',
+      '2xl': '6rem',
+    },
+    effects: {
+      borderRadius: '8px',
+      borderRadiusLg: '16px',
+      shadowSm: '0 2px 4px rgba(0, 0, 0, 0.3)',
+      shadowMd: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      shadowLg: '0 8px 32px rgba(0, 0, 0, 0.5)',
+      glassBlur: '12px',
+      glassBg: 'rgba(12, 10, 20, 0.85)',
+    },
+  },
+  lightTokens: {
+    colors: {
+      primary: '#7050A0',
+      primaryDark: '#5E4290',
+      primaryLight: '#8262B0',
+      secondary: '#B8A0D8',
+      background: '#FAF8FE',
+      backgroundSecondary: '#FFFFFF',
+      surface: '#F4F0FA',
+      text: '#1A1428',
+      textSecondary: '#4A4060',
+      success: '#4ADE80',
+      warning: '#FBBF24',
+      error: '#FF6B6B',
+      info: '#7050A0',
+    },
+    typography: {
+      fontFamily: '"Inter", "Helvetica Neue", sans-serif',
+      fontFamilyHeading: '"Space Grotesk", "Inter", sans-serif',
+      fontSizeBase: '1rem',
+      fontSizeLg: '1.25rem',
+      fontSizeSm: '0.875rem',
+      lineHeightBase: 1.6,
+      fontWeightNormal: 400,
+      fontWeightBold: 700,
+    },
+    spacing: {
+      xs: '0.25rem',
+      sm: '0.5rem',
+      md: '1rem',
+      lg: '2rem',
+      xl: '4rem',
+      '2xl': '6rem',
+    },
+    effects: {
+      borderRadius: '8px',
+      borderRadiusLg: '16px',
+      shadowSm: '0 1px 2px rgba(60, 40, 80, 0.08)',
+      shadowMd: '0 4px 8px rgba(60, 40, 80, 0.12)',
+      shadowLg: '0 8px 24px rgba(60, 40, 80, 0.16)',
+      glassBlur: '12px',
+      glassBg: 'rgba(250, 248, 254, 0.85)',
+    },
+  },
+};
+
+/**
  * All available theme presets
  */
 export const themePresets: ThemePreset[] = [
@@ -334,6 +433,7 @@ export const themePresets: ThemePreset[] = [
   kogPreset,
   intirkonPreset,
   minimalPreset,
+  frostPreset,
 ];
 
 /**

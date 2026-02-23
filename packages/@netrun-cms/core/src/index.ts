@@ -30,6 +30,7 @@ export const PAGE_TEMPLATE = {
   BLOG: 'blog',
   PRODUCT: 'product',
   CONTACT: 'contact',
+  ARTIST: 'artist',
 } as const;
 
 export const BLOCK_TYPE = {
@@ -51,6 +52,38 @@ export const BLOCK_TYPE = {
   TIMELINE: 'timeline',
   NEWSLETTER: 'newsletter',
   CUSTOM: 'custom',
+  // Artist/band template block types
+  EMBED_PLAYER: 'embed_player',
+  RELEASE_LIST: 'release_list',
+  EVENT_LIST: 'event_list',
+  SOCIAL_LINKS: 'social_links',
+  LINK_TREE: 'link_tree',
+  ARTIST_BIO: 'artist_bio',
+} as const;
+
+export const EMBED_PLATFORM = {
+  SPOTIFY: 'spotify',
+  YOUTUBE: 'youtube',
+  APPLE_MUSIC: 'apple_music',
+  SOUNDCLOUD: 'soundcloud',
+  BANDCAMP: 'bandcamp',
+  TWITCH: 'twitch',
+  TIKTOK: 'tiktok',
+  INSTAGRAM: 'instagram',
+  TWITTER: 'twitter',
+} as const;
+
+export const RELEASE_TYPE = {
+  SINGLE: 'single',
+  ALBUM: 'album',
+  EP: 'ep',
+  MIXTAPE: 'mixtape',
+} as const;
+
+export const EVENT_TYPE = {
+  SHOW: 'show',
+  FESTIVAL: 'festival',
+  LIVESTREAM: 'livestream',
 } as const;
 
 export const MEDIA_TYPE = {
@@ -69,6 +102,9 @@ export type PageStatus = typeof PAGE_STATUS[keyof typeof PAGE_STATUS];
 export type PageTemplate = typeof PAGE_TEMPLATE[keyof typeof PAGE_TEMPLATE];
 export type BlockType = typeof BLOCK_TYPE[keyof typeof BLOCK_TYPE];
 export type MediaType = typeof MEDIA_TYPE[keyof typeof MEDIA_TYPE];
+export type EmbedPlatform = typeof EMBED_PLATFORM[keyof typeof EMBED_PLATFORM];
+export type ReleaseType = typeof RELEASE_TYPE[keyof typeof RELEASE_TYPE];
+export type EventType = typeof EVENT_TYPE[keyof typeof EVENT_TYPE];
 
 // ============================================================================
 // BASE INTERFACES
@@ -243,7 +279,13 @@ export type BlockContent =
   | ContactFormBlockContent
   | StatsBarBlockContent
   | TimelineBlockContent
-  | CustomBlockContent;
+  | CustomBlockContent
+  | EmbedPlayerBlockContent
+  | ReleaseListBlockContent
+  | EventListBlockContent
+  | SocialLinksBlockContent
+  | LinkTreeBlockContent
+  | ArtistBioBlockContent;
 
 export interface HeroBlockContent {
   headline: string;
@@ -385,6 +427,128 @@ export interface CustomBlockContent {
   data?: Record<string, unknown>;
 }
 
+// ============================================================================
+// ARTIST/BAND BLOCK CONTENT TYPES
+// ============================================================================
+
+export interface EmbedPlayerBlockContent {
+  platform: EmbedPlatform;
+  url: string;
+  compact?: boolean;
+  title?: string;
+}
+
+export interface ReleaseListBlockContent {
+  maxItems?: number;
+  layout?: 'grid' | 'list';
+  showStreamLinks?: boolean;
+}
+
+export interface EventListBlockContent {
+  maxItems?: number;
+  showPastEvents?: boolean;
+  layout?: 'list' | 'calendar';
+}
+
+export interface SocialLinksBlockContent {
+  links: SocialLinkItem[];
+  layout?: 'row' | 'grid';
+  showLabels?: boolean;
+}
+
+export interface SocialLinkItem {
+  platform: string;
+  url: string;
+  label?: string;
+  icon?: string;
+}
+
+export interface LinkTreeBlockContent {
+  links: LinkTreeItem[];
+  showAvatar?: boolean;
+  avatarUrl?: string;
+  heading?: string;
+  subheading?: string;
+}
+
+export interface LinkTreeItem {
+  title: string;
+  url: string;
+  icon?: string;
+  featured?: boolean;
+}
+
+export interface ArtistBioBlockContent {
+  showPhoto?: boolean;
+  showGenres?: boolean;
+  showSocialLinks?: boolean;
+  photoPosition?: 'left' | 'right' | 'top';
+}
+
+// ============================================================================
+// ARTIST DATA TYPES (for structured tables)
+// ============================================================================
+
+export interface StreamLinks {
+  spotify?: string;
+  appleMusic?: string;
+  youtube?: string;
+  soundcloud?: string;
+  bandcamp?: string;
+  tidal?: string;
+  amazonMusic?: string;
+  deezer?: string;
+  [key: string]: string | undefined;
+}
+
+export interface Release {
+  id: string;
+  siteId: string;
+  title: string;
+  type: ReleaseType;
+  releaseDate: string;
+  coverUrl?: string;
+  streamLinks: StreamLinks;
+  embedUrl?: string;
+  embedPlatform?: EmbedPlatform;
+  description?: string;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ArtistEvent {
+  id: string;
+  siteId: string;
+  title: string;
+  venue: string;
+  city: string;
+  eventDate: string;
+  eventType: EventType;
+  ticketUrl?: string;
+  description?: string;
+  imageUrl?: string;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ArtistProfile {
+  id: string;
+  siteId: string;
+  artistName: string;
+  bio: string;
+  photoUrl?: string;
+  genres: string[];
+  socialLinks: Record<string, string>;
+  bookingEmail?: string;
+  managementEmail?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface BlockSettings {
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   margin?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
@@ -465,7 +629,7 @@ export const createPageSchema = z.object({
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
   ogImageUrl: z.string().url().optional(),
-  template: z.enum(['default', 'landing', 'blog', 'product', 'contact']).default('default'),
+  template: z.enum(['default', 'landing', 'blog', 'product', 'contact', 'artist']).default('default'),
   sortOrder: z.number().int().default(0),
 });
 
@@ -483,7 +647,8 @@ export const createBlockSchema = z.object({
   blockType: z.enum([
     'hero', 'text', 'rich_text', 'image', 'gallery', 'video', 'cta',
     'feature_grid', 'pricing_table', 'testimonial', 'faq', 'contact_form',
-    'code_block', 'bento_grid', 'stats_bar', 'timeline', 'newsletter', 'custom'
+    'code_block', 'bento_grid', 'stats_bar', 'timeline', 'newsletter', 'custom',
+    'embed_player', 'release_list', 'event_list', 'social_links', 'link_tree', 'artist_bio'
   ]),
   content: z.record(z.unknown()),
   settings: blockSettingsSchema.optional(),

@@ -10,11 +10,16 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./presets": {
+      "import": "./dist/presets.mjs",
+      "require": "./dist/presets.js",
+      "types": "./dist/presets.d.ts"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --external react",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --external react --watch",
+    "build": "tsup src/index.ts src/presets.ts --format cjs,esm --dts --external react",
+    "dev": "tsup src/index.ts src/presets.ts --format cjs,esm --dts --external react --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },

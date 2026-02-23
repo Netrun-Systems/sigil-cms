@@ -38,6 +38,25 @@ export type { ContactFormBlockProps } from './blocks/ContactFormBlock';
 export { TestimonialsBlock } from './blocks/TestimonialsBlock';
 export type { TestimonialsBlockProps } from './blocks/TestimonialsBlock';
 
+// Artist/band template blocks
+export { EmbedPlayerBlock } from './blocks/EmbedPlayerBlock';
+export type { EmbedPlayerBlockProps } from './blocks/EmbedPlayerBlock';
+
+export { ReleaseListBlock } from './blocks/ReleaseListBlock';
+export type { ReleaseListBlockProps } from './blocks/ReleaseListBlock';
+
+export { EventListBlock } from './blocks/EventListBlock';
+export type { EventListBlockProps } from './blocks/EventListBlock';
+
+export { SocialLinksBlock } from './blocks/SocialLinksBlock';
+export type { SocialLinksBlockProps } from './blocks/SocialLinksBlock';
+
+export { LinkTreeBlock } from './blocks/LinkTreeBlock';
+export type { LinkTreeBlockProps } from './blocks/LinkTreeBlock';
+
+export { ArtistBioBlock } from './blocks/ArtistBioBlock';
+export type { ArtistBioBlockProps } from './blocks/ArtistBioBlock';
+
 // ============================================================================
 // RENDERER AND EDITOR
 // ============================================================================
@@ -90,6 +109,18 @@ export type {
   Testimonial,
   ContactFormBlockContent,
   FormField,
+  EmbedPlayerBlockContent,
+  ReleaseListBlockContent,
+  EventListBlockContent,
+  SocialLinksBlockContent,
+  SocialLinkItem,
+  LinkTreeBlockContent,
+  LinkTreeItem,
+  ArtistBioBlockContent,
+  Release,
+  ArtistEvent,
+  ArtistProfile,
+  EmbedPlatform,
 } from '@netrun-cms/core';
 
-export { BLOCK_TYPE } from '@netrun-cms/core';
+export { BLOCK_TYPE, EMBED_PLATFORM } from '@netrun-cms/core';

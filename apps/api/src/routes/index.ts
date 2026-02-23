@@ -10,6 +10,11 @@ import pagesRouter from './pages.js';
 import blocksRouter from './blocks.js';
 import mediaRouter from './media.js';
 import themesRouter from './themes.js';
+import releasesRouter from './releases.js';
+import eventsRouter from './events.js';
+import artistProfilesRouter from './artist-profiles.js';
+import publicRouter from './public.js';
+import seedRouter from './seed.js';
 import { validateUuidParam } from '../middleware/index.js';
 
 const router = Router();
@@ -25,6 +30,12 @@ router.get('/health', (_req, res) => {
     },
   });
 });
+
+// Public API routes (no auth required)
+router.use('/public', publicRouter);
+
+// Seed API routes (own auth: X-Seed-Key for bootstrap, JWT for artist-site)
+router.use('/seed', seedRouter);
 
 // Sites routes (top-level)
 router.use('/sites', sitesRouter);
@@ -46,5 +57,14 @@ router.use('/sites/:siteId/media', validateUuidParam('siteId'), mediaRouter);
 
 // Themes: /api/v1/sites/:siteId/themes
 router.use('/sites/:siteId/themes', validateUuidParam('siteId'), themesRouter);
+
+// Artist routes: /api/v1/sites/:siteId/releases
+router.use('/sites/:siteId/releases', validateUuidParam('siteId'), releasesRouter);
+
+// Artist routes: /api/v1/sites/:siteId/events
+router.use('/sites/:siteId/events', validateUuidParam('siteId'), eventsRouter);
+
+// Artist routes: /api/v1/sites/:siteId/artist-profile
+router.use('/sites/:siteId/artist-profile', validateUuidParam('siteId'), artistProfilesRouter);
 
 export default router;

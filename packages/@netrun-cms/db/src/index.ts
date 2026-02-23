@@ -16,3 +16,6 @@ export { createDbClient, setTenantContext, clearTenantContext, type DbClient } f
 
 // Migration utilities
 export { runMigrations } from './migrate';
+
+// Seed utilities
+export { seedArtistTemplate } from './seeds/artist-template';
