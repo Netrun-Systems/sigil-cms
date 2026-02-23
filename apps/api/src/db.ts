@@ -23,7 +23,7 @@ export function getDb(): DbClient {
 
     db = createDbClient({
       connectionString,
-      ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+      ssl: connectionString.includes('azure.com') || process.env.NODE_ENV === 'production' ? 'require' : false,
       max: parseInt(process.env.DB_POOL_SIZE || '10'),
       idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '20'),
     });
