@@ -8,6 +8,9 @@ import {
   Settings,
   ChevronDown,
   Plus,
+  Disc3,
+  CalendarDays,
+  User,
 } from 'lucide-react';
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
@@ -183,6 +186,55 @@ export function Sidebar() {
               >
                 <Palette className="h-5 w-5" />
                 <span>Theme</span>
+              </NavLink>
+            </div>
+
+            {/* Artist content (for artist-template sites) */}
+            <div className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              Artist Content
+            </div>
+            <div className="space-y-1">
+              <NavLink
+                to={`/sites/${siteId}/releases`}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  )
+                }
+              >
+                <Disc3 className="h-5 w-5" />
+                <span>Releases</span>
+              </NavLink>
+              <NavLink
+                to={`/sites/${siteId}/events`}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  )
+                }
+              >
+                <CalendarDays className="h-5 w-5" />
+                <span>Events</span>
+              </NavLink>
+              <NavLink
+                to={`/sites/${siteId}/profile`}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  )
+                }
+              >
+                <User className="h-5 w-5" />
+                <span>Artist Profile</span>
               </NavLink>
             </div>
           </div>

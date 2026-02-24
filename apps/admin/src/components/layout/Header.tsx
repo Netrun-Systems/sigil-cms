@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
   Search,
@@ -13,6 +13,7 @@ import {
 import { Button, cn } from '@netrun-cms/ui';
 import { useTheme } from '@netrun-cms/theme';
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../lib/auth';
 
 interface BreadcrumbItem {
   label: string;
@@ -51,10 +52,18 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
 export function Header() {
   const { mode, toggleMode, isDark } = useTheme();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleSignOut = () => {
+    setUserMenuOpen(false);
+    logout();
+    navigate('/login');
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -160,7 +169,10 @@ export function Header() {
                 Help & Support
               </button>
               <div className="my-1 h-px bg-border" />
-              <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
+              >
                 <LogOut className="h-4 w-4" />
                 Sign Out
               </button>

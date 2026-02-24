@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { NavLink, useParams } from 'react-router-dom';
-import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, ChevronDown, } from 'lucide-react';
+import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, ChevronDown, Disc3, CalendarDays, User, } from 'lucide-react';
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
 const mainNavItems = [
@@ -42,6 +42,12 @@ export function Sidebar() {
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                             : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Image, { className: "h-5 w-5" }), _jsx("span", { children: "Media" })] }), _jsxs(NavLink, { to: `/sites/${siteId}/themes`, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Palette, { className: "h-5 w-5" }), _jsx("span", { children: "Theme" })] })] })] }))] }), _jsx("div", { className: "border-t border-sidebar-border p-4", children: _jsxs(NavLink, { to: "/settings", className: "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", children: [_jsx(Settings, { className: "h-5 w-5" }), _jsx("span", { children: "Settings" })] }) })] }));
+                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Palette, { className: "h-5 w-5" }), _jsx("span", { children: "Theme" })] })] }), _jsx("div", { className: "mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50", children: "Artist Content" }), _jsxs("div", { className: "space-y-1", children: [_jsxs(NavLink, { to: `/sites/${siteId}/releases`, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
+                                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Disc3, { className: "h-5 w-5" }), _jsx("span", { children: "Releases" })] }), _jsxs(NavLink, { to: `/sites/${siteId}/events`, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
+                                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(CalendarDays, { className: "h-5 w-5" }), _jsx("span", { children: "Events" })] }), _jsxs(NavLink, { to: `/sites/${siteId}/profile`, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
+                                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(User, { className: "h-5 w-5" }), _jsx("span", { children: "Artist Profile" })] })] })] }))] }), _jsx("div", { className: "border-t border-sidebar-border p-4", children: _jsxs(NavLink, { to: "/settings", className: "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", children: [_jsx(Settings, { className: "h-5 w-5" }), _jsx("span", { children: "Settings" })] }) })] }));
 }
 //# sourceMappingURL=Sidebar.js.map

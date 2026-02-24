@@ -68,3 +68,9 @@ export * from './components/use-toast';
 export * from './components/error-boundary';
 export * from './components/loading-fallback';
 export * from './components/validation-error';
+
+// Form utilities (ported from frost admin)
+export * from './components/tag-input';
+export * from './components/key-value-editor';
+export * from './components/image-preview';
+export * from './components/color-input';

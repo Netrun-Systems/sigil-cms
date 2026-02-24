@@ -4,11 +4,12 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@netrun-cms/theme';
 import { netrunDarkPreset } from '@netrun-cms/theme';
+import { AuthProvider } from './lib/auth';
 import App from './App';
 import './index.css';
 ReactDOM.createRoot(document.getElementById('root')).render(_jsx(React.StrictMode, { children: _jsx(BrowserRouter, { children: _jsx(ThemeProvider, { initialTheme: {
                 mode: 'dark',
                 darkTokens: netrunDarkPreset.darkTokens,
                 lightTokens: netrunDarkPreset.lightTokens,
-            }, children: _jsx(App, {}) }) }) }));
+            }, children: _jsx(AuthProvider, { children: _jsx(App, {}) }) }) }) }));
 //# sourceMappingURL=main.js.map
