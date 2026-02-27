@@ -15,6 +15,7 @@ import eventsRouter from './events.js';
 import artistProfilesRouter from './artist-profiles.js';
 import publicRouter from './public.js';
 import seedRouter from './seed.js';
+import advisorRouter from './advisor.js';
 import { validateUuidParam } from '../middleware/index.js';
 
 const router = Router();
@@ -36,6 +37,9 @@ router.use('/public', publicRouter);
 
 // Seed API routes (own auth: X-Seed-Key for bootstrap, JWT for artist-site)
 router.use('/seed', seedRouter);
+
+// AI Advisor routes (JWT-protected, not site-scoped)
+router.use('/advisor', advisorRouter);
 
 // Sites routes (top-level)
 router.use('/sites', sitesRouter);

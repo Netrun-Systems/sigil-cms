@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { NavLink, useParams } from 'react-router-dom';
-import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, ChevronDown, Disc3, CalendarDays, User, } from 'lucide-react';
+import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, ChevronDown, Disc3, CalendarDays, User, MessageSquare, } from 'lucide-react';
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
 const mainNavItems = [
@@ -23,6 +23,11 @@ const mainNavItems = [
         label: 'Themes',
         icon: Palette,
         href: '/themes',
+    },
+    {
+        label: 'AI Advisor',
+        icon: MessageSquare,
+        href: '/advisor',
     },
 ];
 function NavItemComponent({ item }) {

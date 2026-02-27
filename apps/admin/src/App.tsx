@@ -14,6 +14,7 @@ import { ReleaseEditor } from './pages/Releases/ReleaseEditor';
 import { EventsList } from './pages/Events/EventsList';
 import { EventEditor } from './pages/Events/EventEditor';
 import { ProfilePage } from './pages/Profile/ProfilePage';
+import { AdvisorPage } from './pages/AdvisorPage';
 
 function App() {
   return (
@@ -59,6 +60,9 @@ function App() {
         <Route path="sites/:siteId/events/new" element={<EventEditor />} />
         <Route path="sites/:siteId/events/:id" element={<EventEditor />} />
         <Route path="sites/:siteId/profile" element={<ProfilePage />} />
+
+        {/* AI Advisor (global, not site-scoped) */}
+        <Route path="advisor" element={<AdvisorPage />} />
       </Route>
     </Routes>
   );

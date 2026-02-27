@@ -11,6 +11,7 @@ import {
   Disc3,
   CalendarDays,
   User,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
@@ -43,6 +44,11 @@ const mainNavItems: NavItem[] = [
     label: 'Themes',
     icon: Palette,
     href: '/themes',
+  },
+  {
+    label: 'AI Advisor',
+    icon: MessageSquare,
+    href: '/advisor',
   },
 ];
 

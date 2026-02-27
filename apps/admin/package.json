@@ -12,13 +12,14 @@
   },
   "dependencies": {
     "@netrun-cms/core": "workspace:*",
-    "@netrun-cms/ui": "workspace:*",
     "@netrun-cms/theme": "workspace:*",
+    "@netrun-cms/ui": "workspace:*",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.0",
     "react-router-dom": "^6.28.0",
-    "lucide-react": "^0.460.0",
-    "clsx": "^2.1.0",
     "tailwind-merge": "^2.5.0"
   },
   "devDependencies": {
