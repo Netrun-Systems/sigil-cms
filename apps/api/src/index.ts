@@ -6,14 +6,26 @@
 
 import 'dotenv/config';
 import 'express-async-errors';
-import express, { type Request, type Response, type NextFunction } from 'express';
+import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
+import { sql } from 'drizzle-orm';
+import { createLogger, requestLogger } from '@netrun/logger';
+import { createHelmetConfig, createApiRateLimiter } from '@netrun/security-middleware';
+import { correlationIdMiddleware, notFoundHandler, errorHandler } from '@netrun/error-handling';
+import { createHealthRoutes } from '@netrun/health';
+import { getDb } from './db.js';
 import apiRoutes from './routes/index.js';
-import type { ApiResponse } from './types/index.js';
 
-// Create Express app
+// ============================================================================
+// LOGGER
+// ============================================================================
+
+const logger = createLogger({ service: 'netrun-cms-api' });
+
+// ============================================================================
+// APP SETUP
+// ============================================================================
+
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -22,17 +34,13 @@ const HOST = process.env.HOST || '0.0.0.0';
 // MIDDLEWARE
 // ============================================================================
 
-// Security headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'https:'],
-    },
-  },
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
+// Correlation ID (must be first so all subsequent middleware/handlers get it)
+app.use(correlationIdMiddleware);
+
+// Security headers via @netrun/security-middleware (replaces inline helmet config)
+app.use(createHelmetConfig({
+  connectSrc: [],
+  imgSrc: ['data:', 'https:'],
 }));
 
 // CORS configuration
@@ -40,11 +48,16 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-Id', 'X-Seed-Key'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-Id', 'X-Seed-Key', 'X-Correlation-Id'],
 }));
 
-// Request logging
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+// Structured request logging (replaces morgan)
+app.use(requestLogger(logger, {
+  skip: (req) => req.path === '/health' || req.path === '/ready',
+}));
+
+// Rate limiting on all API traffic
+app.use('/api', createApiRateLimiter());
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -56,10 +69,31 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // ============================================================================
+// HEALTH ROUTES  (@netrun/health)
+// ============================================================================
+
+app.use(createHealthRoutes({
+  service: 'netrun-cms-api',
+  version: process.env.npm_package_version || '1.0.0',
+  dbCheck: async () => {
+    const start = Date.now();
+    const db = getDb();
+    await db.execute(sql`SELECT 1`);
+    return Date.now() - start;
+  },
+  endpoints: {
+    sites: 'operational',
+    pages: 'operational',
+    media: 'operational',
+    advisor: 'operational',
+  },
+}));
+
+// ============================================================================
 // ROUTES
 // ============================================================================
 
-// API v1 routes
+// API v1 routes (inline health removed — handled above by @netrun/health)
 app.use('/api/v1', apiRoutes);
 
 // Root endpoint
@@ -74,94 +108,36 @@ app.get('/', (_req, res) => {
   });
 });
 
-// 404 handler
-app.use((_req, res) => {
-  const response: ApiResponse<null> = {
-    success: false,
-    error: {
-      code: 'NOT_FOUND',
-      message: 'The requested resource was not found',
-    },
-  };
-  res.status(404).json(response);
-});
-
 // ============================================================================
-// ERROR HANDLING
+// ERROR HANDLING  (@netrun/error-handling)
 // ============================================================================
 
-// Global error handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('Unhandled error:', err);
+// 404 handler — must come after all routes
+app.use(notFoundHandler);
 
-  // Handle specific error types
-  if (err.name === 'SyntaxError' && 'body' in err) {
-    const response: ApiResponse<null> = {
-      success: false,
-      error: {
-        code: 'INVALID_JSON',
-        message: 'Request body contains invalid JSON',
-      },
-    };
-    res.status(400).json(response);
-    return;
-  }
-
-  if (err.name === 'PayloadTooLargeError') {
-    const response: ApiResponse<null> = {
-      success: false,
-      error: {
-        code: 'PAYLOAD_TOO_LARGE',
-        message: 'Request body exceeds the maximum allowed size',
-      },
-    };
-    res.status(413).json(response);
-    return;
-  }
-
-  // Generic error response
-  const response: ApiResponse<null> = {
-    success: false,
-    error: {
-      code: 'INTERNAL_ERROR',
-      message: process.env.NODE_ENV === 'production'
-        ? 'An internal server error occurred'
-        : err.message,
-      ...(process.env.NODE_ENV !== 'production' && { details: err.stack }),
-    },
-  };
-
-  res.status(500).json(response);
-});
+// Global error handler — must be last (4-arg signature)
+app.use(errorHandler({
+  includeStackTrace: process.env.NODE_ENV !== 'production',
+  logger: (level, message, meta) => logger[level as 'error' | 'warn' | 'info']?.(meta ?? {}, message),
+}));
 
 // ============================================================================
 // SERVER STARTUP
 // ============================================================================
 
-// Graceful shutdown handler
 function gracefulShutdown(signal: string) {
-  console.log(`\n${signal} received, shutting down gracefully...`);
+  logger.info({ signal }, 'Graceful shutdown initiated');
   process.exit(0);
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Start server
 app.listen(PORT, HOST, () => {
-  console.log(`
-  ╔══════════════════════════════════════════════════════════╗
-  ║                                                          ║
-  ║   NetrunCMS API Server                                   ║
-  ║   ────────────────────────────────────────               ║
-  ║                                                          ║
-  ║   Server:      http://${HOST}:${PORT}                       ║
-  ║   API Base:    http://${HOST}:${PORT}/api/v1                ║
-  ║   Health:      http://${HOST}:${PORT}/api/v1/health         ║
-  ║   Environment: ${process.env.NODE_ENV || 'development'}                           ║
-  ║                                                          ║
-  ╚══════════════════════════════════════════════════════════╝
-  `);
+  logger.info(
+    { host: HOST, port: PORT, env: process.env.NODE_ENV || 'development' },
+    'NetrunCMS API server started'
+  );
 });
 
 export default app;

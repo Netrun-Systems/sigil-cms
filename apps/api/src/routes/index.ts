@@ -21,18 +21,6 @@ import { validateUuidParam } from '../middleware/index.js';
 
 const router = Router();
 
-// Health check endpoint
-router.get('/health', (_req, res) => {
-  res.json({
-    success: true,
-    data: {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '1.0.0',
-    },
-  });
-});
-
 // Public API routes (no auth required)
 router.use('/public', publicRouter);
 
