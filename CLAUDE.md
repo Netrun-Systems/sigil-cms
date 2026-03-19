@@ -112,10 +112,28 @@ PostgreSQL tables with RLS support:
 
 ## Next Steps
 
-1. Create `@netrun-cms/blocks` package with block components
-2. Set up `apps/api` with Express routes
-3. Build `apps/admin` visual editor
+1. ~~Create `@netrun-cms/blocks` package with block components~~ ✓ Done
+2. ~~Set up `apps/api` with Express routes~~ ✓ Done
+3. ~~Build `apps/admin` visual editor~~ ✓ Done (10 pages)
 4. Adapt Design Playground from KOG for theme customization
+
+## Frost Backports (March 2026)
+
+Backported from Frost (reference implementation):
+
+| Feature | Files | Status |
+|---------|-------|--------|
+| pgvector RAG | `apps/api/src/lib/rag.ts`, `lib/embeddings.ts` | Done |
+| PostgreSQL sessions | `apps/api/src/lib/sessions.ts` | Done |
+| Lazy Gemini client | `apps/api/src/lib/gemini.ts` | Done |
+| Photo management | `apps/api/src/lib/photos.ts`, `routes/photos.ts` | Done |
+| Photo Curator admin | `apps/admin/src/pages/Photos/PhotoCuratorPage.tsx` | Done |
+| Deprecated ChromaDB | `apps/api/src/lib/chroma.ts` (stub) | Done |
+| Deprecated Redis sessions | `apps/api/src/lib/redis.ts` (stub) | Done |
+
+The advisor now uses pgvector (charlotte_db Cloud SQL) for RAG instead of ChromaDB,
+and PostgreSQL for session persistence instead of Redis. Photo management uses
+Azure Blob Storage + PostgreSQL metadata (same pattern as Frost).
 
 ---
 

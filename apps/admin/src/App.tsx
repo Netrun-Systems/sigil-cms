@@ -15,6 +15,7 @@ import { EventsList } from './pages/Events/EventsList';
 import { EventEditor } from './pages/Events/EventEditor';
 import { ProfilePage } from './pages/Profile/ProfilePage';
 import { AdvisorPage } from './pages/AdvisorPage';
+import { PhotoCuratorPage } from './pages/Photos/PhotoCuratorPage';
 
 function App() {
   return (
@@ -60,6 +61,9 @@ function App() {
         <Route path="sites/:siteId/events/new" element={<EventEditor />} />
         <Route path="sites/:siteId/events/:id" element={<EventEditor />} />
         <Route path="sites/:siteId/profile" element={<ProfilePage />} />
+
+        {/* Photos (site-scoped, Azure Blob + AI curation) */}
+        <Route path="sites/:siteId/photos" element={<PhotoCuratorPage />} />
 
         {/* AI Advisor (global, not site-scoped) */}
         <Route path="advisor" element={<AdvisorPage />} />

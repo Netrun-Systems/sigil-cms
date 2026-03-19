@@ -1,32 +1,32 @@
 /**
  * Advisor API Routes
  *
- * Gemini-powered AI advisor with dual document grounding:
- *   1. Gemini Files API — full-file reference for structured docs
- *   2. ChromaDB RAG — semantic chunk retrieval for contextual grounding
+ * Gemini-powered AI advisor with pgvector RAG grounding.
+ * Backported from frost — uses persistent collection-level document storage
+ * (not session-scoped ChromaDB) for higher quality retrieval.
  *
- * Sessions persisted in Redis (DB 4) on Charlotte VM.
+ * Sessions persisted in PostgreSQL (ncms_advisor_sessions table).
  * Protected by JWT authentication.
  */
 
 import { Router } from 'express';
 import type { Response } from 'express';
 import multer from 'multer';
-import { createPartFromUri } from '@google/genai';
 import { authenticate } from '../middleware/auth.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 import {
   getGeminiClient,
   GEMINI_MODEL,
   ADVISOR_SYSTEM_PROMPT,
-  type DocumentInfo,
 } from '../lib/gemini.js';
-import { getSession, saveSession } from '../lib/redis.js';
+import { getSession, saveSession } from '../lib/sessions.js';
 import {
   ingestDocument,
   queryDocuments,
-  removeDocumentChunks,
-} from '../lib/chroma.js';
+  formatContextForPrompt,
+  removeDocument,
+  listRagDocuments,
+} from '../lib/rag.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -34,10 +34,17 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 // All advisor routes require authentication
 router.use(authenticate);
 
+// Text file types that can be ingested into pgvector
+const TEXT_TYPES = [
+  'text/', 'application/json', 'application/xml',
+  'application/csv', 'application/markdown',
+  'application/x-yaml',
+];
+
 // ── POST /chat — SSE streaming chat ─────────────
 
 router.post('/chat', async (req: AuthenticatedRequest, res: Response) => {
-  const { message, sessionId = 'default', documentIds } = req.body;
+  const { message, sessionId = 'default' } = req.body;
 
   if (!message || typeof message !== 'string') {
     res.status(400).json({
@@ -56,38 +63,19 @@ router.post('/chat', async (req: AuthenticatedRequest, res: Response) => {
   });
 
   try {
-    const ai = getGeminiClient();
+    const ai = await getGeminiClient();
     const session = await getSession(sessionId);
 
-    // Build content parts: text message + Gemini file references
-    const contentParts: Array<{ text: string } | ReturnType<typeof createPartFromUri>> = [];
+    // Query pgvector for relevant knowledge chunks
+    const chunks = await queryDocuments(message, 5, 0.3).catch(() => []);
+    const context = formatContextForPrompt(chunks, 1500);
 
-    // Query ChromaDB for relevant document chunks (RAG grounding)
-    if (session.documents.length > 0) {
-      const chunks = await queryDocuments(sessionId, message, 5);
-      if (chunks.length > 0) {
-        const context = chunks
-          .map((c) => `[From "${c.fileName}"]:\n${c.text}`)
-          .join('\n\n---\n\n');
-        contentParts.push({
-          text: `Relevant context from uploaded documents:\n\n${context}\n\n---\n\nUser message: ${message}`,
-        });
-      } else {
-        contentParts.push({ text: message });
-      }
+    // Build user message with RAG context
+    let userContent: string;
+    if (context) {
+      userContent = `Relevant context from the knowledge base:\n\n${context}\n\n---\n\nUser message: ${message}`;
     } else {
-      contentParts.push({ text: message });
-    }
-
-    // Also attach Gemini file references for full-document access
-    const docsToAttach = documentIds?.length
-      ? session.documents.filter((d: DocumentInfo) => documentIds.includes(d.name))
-      : session.documents;
-
-    for (const doc of docsToAttach) {
-      if (doc.uri && doc.mimeType) {
-        contentParts.push(createPartFromUri(doc.uri, doc.mimeType));
-      }
+      userContent = message;
     }
 
     const chat = ai.chats.create({
@@ -96,7 +84,7 @@ router.post('/chat', async (req: AuthenticatedRequest, res: Response) => {
       history: session.history,
     });
 
-    const stream = await chat.sendMessageStream({ message: contentParts });
+    const stream = await chat.sendMessageStream({ message: userContent });
 
     let fullResponse = '';
     for await (const chunk of stream) {
@@ -107,7 +95,13 @@ router.post('/chat', async (req: AuthenticatedRequest, res: Response) => {
       }
     }
 
-    // Persist updated history to Redis
+    // Send source attribution if RAG was used
+    if (chunks.length > 0) {
+      const sources = [...new Set(chunks.map((c) => c.source))];
+      res.write(`data: ${JSON.stringify({ sources })}\n\n`);
+    }
+
+    // Persist updated history to PostgreSQL
     session.history.push(
       { role: 'user', parts: [{ text: message }] },
       { role: 'model', parts: [{ text: fullResponse }] },
@@ -125,11 +119,10 @@ router.post('/chat', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
-// ── POST /documents — upload file to Gemini + ingest into ChromaDB ──
+// ── POST /documents — upload & ingest into pgvector ──
 
 router.post('/documents', upload.single('file'), async (req: AuthenticatedRequest, res: Response) => {
   const file = req.file;
-  const sessionId = (req.body?.sessionId as string) || 'default';
 
   if (!file) {
     res.status(400).json({
@@ -139,58 +132,33 @@ router.post('/documents', upload.single('file'), async (req: AuthenticatedReques
     return;
   }
 
-  try {
-    const ai = getGeminiClient();
-
-    const blob = new Blob([file.buffer], { type: file.mimetype });
-    const uploaded = await ai.files.upload({
-      file: blob,
-      config: { displayName: file.originalname, mimeType: file.mimetype },
+  const isTextFile = TEXT_TYPES.some((t) => file.mimetype.startsWith(t));
+  if (!isTextFile) {
+    res.status(422).json({
+      success: false,
+      error: {
+        code: 'UNSUPPORTED_TYPE',
+        message: `Unsupported file type: ${file.mimetype}. Upload text, markdown, JSON, CSV, or code files.`,
+      },
     });
+    return;
+  }
 
-    let fileInfo = uploaded;
-    let attempts = 0;
-    while (fileInfo.state === 'PROCESSING' && attempts < 30) {
-      await new Promise((r) => setTimeout(r, 1000));
-      fileInfo = await ai.files.get({ name: fileInfo.name as string });
-      attempts++;
-    }
+  try {
+    const textContent = file.buffer.toString('utf-8');
+    const fileId = `upload:${Date.now()}:${file.originalname}`;
+    const chunkCount = await ingestDocument(fileId, file.originalname, textContent, file.mimetype);
 
-    if (fileInfo.state === 'FAILED') {
-      res.status(422).json({
-        success: false,
-        error: { code: 'PROCESSING_FAILED', message: 'File processing failed' },
-      });
-      return;
-    }
-
-    const doc: DocumentInfo = {
-      name: fileInfo.name as string,
-      displayName: file.originalname,
-      mimeType: fileInfo.mimeType as string,
-      uri: fileInfo.uri as string,
-      state: fileInfo.state as string,
-      sizeBytes: fileInfo.sizeBytes?.toString(),
-    };
-
-    // Ingest text content into ChromaDB for RAG
-    const textTypes = [
-      'text/', 'application/json', 'application/xml',
-      'application/csv', 'application/markdown',
-    ];
-    const isTextFile = textTypes.some((t) => file.mimetype.startsWith(t));
-
-    if (isTextFile) {
-      const textContent = file.buffer.toString('utf-8');
-      await ingestDocument(sessionId, doc.name, file.originalname, textContent);
-    }
-
-    // Persist document reference in Redis session
-    const session = await getSession(sessionId);
-    session.documents.push(doc);
-    await saveSession(sessionId, session);
-
-    res.json({ success: true, data: doc });
+    res.json({
+      success: true,
+      data: {
+        fileId,
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        chunkCount,
+        sizeBytes: file.size,
+      },
+    });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Upload failed';
     console.error('[advisor/documents] Upload error:', errorMessage);
@@ -201,32 +169,28 @@ router.post('/documents', upload.single('file'), async (req: AuthenticatedReques
   }
 });
 
-// ── GET /documents — list uploaded docs ─────────
+// ── GET /documents — list knowledge base documents ──
 
-router.get('/documents', async (req: AuthenticatedRequest, res: Response) => {
-  const sessionId = (req.query.sessionId as string) || 'default';
-  const session = await getSession(sessionId);
-  res.json({ success: true, data: session.documents });
+router.get('/documents', async (_req: AuthenticatedRequest, res: Response) => {
+  try {
+    const docs = await listRagDocuments();
+    res.json({ success: true, data: docs });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'List failed';
+    res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: errorMessage },
+    });
+  }
 });
 
-// ── DELETE /documents/:fileId — remove a doc ────
+// ── DELETE /documents/:fileId — remove from knowledge base ──
 
 router.delete('/documents/:fileId', async (req: AuthenticatedRequest, res: Response) => {
-  const { fileId } = req.params;
-  const sessionId = (req.query.sessionId as string) || 'default';
+  const fileId = decodeURIComponent(req.params.fileId as string);
 
   try {
-    const ai = getGeminiClient();
-
-    await ai.files.delete({ name: fileId }).catch(() => {});
-    await removeDocumentChunks(fileId).catch((err) => {
-      console.warn('[advisor/documents] ChromaDB cleanup warning:', err.message);
-    });
-
-    const session = await getSession(sessionId);
-    session.documents = session.documents.filter((d: DocumentInfo) => d.name !== fileId);
-    await saveSession(sessionId, session);
-
+    await removeDocument(fileId);
     res.json({ success: true });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Delete failed';
@@ -252,7 +216,7 @@ router.post('/tts', async (req: AuthenticatedRequest, res: Response) => {
   }
 
   try {
-    const ai = getGeminiClient();
+    const ai = await getGeminiClient();
 
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,

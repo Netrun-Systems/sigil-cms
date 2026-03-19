@@ -16,6 +16,7 @@ import artistProfilesRouter from './artist-profiles.js';
 import publicRouter from './public.js';
 import seedRouter from './seed.js';
 import advisorRouter from './advisor.js';
+import photosRouter from './photos.js';
 import { validateUuidParam } from '../middleware/index.js';
 
 const router = Router();
@@ -70,5 +71,8 @@ router.use('/sites/:siteId/events', validateUuidParam('siteId'), eventsRouter);
 
 // Artist routes: /api/v1/sites/:siteId/artist-profile
 router.use('/sites/:siteId/artist-profile', validateUuidParam('siteId'), artistProfilesRouter);
+
+// Photos: /api/v1/sites/:siteId/photos (Azure Blob Storage + AI curation)
+router.use('/sites/:siteId/photos', validateUuidParam('siteId'), photosRouter);
 
 export default router;

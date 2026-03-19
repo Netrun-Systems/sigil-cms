@@ -4,6 +4,7 @@ import {
   Globe,
   FileText,
   Image,
+  Camera,
   Palette,
   Settings,
   ChevronDown,
@@ -241,6 +242,20 @@ export function Sidebar() {
               >
                 <User className="h-5 w-5" />
                 <span>Artist Profile</span>
+              </NavLink>
+              <NavLink
+                to={`/sites/${siteId}/photos`}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  )
+                }
+              >
+                <Camera className="h-5 w-5" />
+                <span>Photo Curator</span>
               </NavLink>
             </div>
           </div>
