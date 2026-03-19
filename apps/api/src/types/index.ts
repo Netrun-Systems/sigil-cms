@@ -22,6 +22,7 @@ export interface AuthUser {
 export interface AuthenticatedRequest extends Request {
   user?: AuthUser;
   tenantId?: string;
+  params: { [key: string]: string };
 }
 
 /**

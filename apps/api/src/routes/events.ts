@@ -5,10 +5,11 @@
  */
 
 import { Router } from 'express';
+import type { Router as RouterType } from 'express';
 import { EventsController } from '../controllers/EventsController.js';
 import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
 
-const router = Router({ mergeParams: true });
+const router: RouterType = Router({ mergeParams: true });
 
 router.use(authenticate);
 router.use(tenantContext);

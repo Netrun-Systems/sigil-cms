@@ -51,13 +51,15 @@ export class ArtistProfilesController {
 
     let profile: ArtistProfile;
     if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [profile] = await db.update(artistProfiles)
-        .set({ ...parseResult.data, updatedAt: new Date() })
+        .set({ ...(parseResult.data as any), updatedAt: new Date() })
         .where(eq(artistProfiles.id, existing.id))
         .returning();
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [profile] = await db.insert(artistProfiles)
-        .values(parseResult.data)
+        .values(parseResult.data as any)
         .returning();
     }
 

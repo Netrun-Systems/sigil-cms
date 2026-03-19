@@ -203,9 +203,10 @@ export class MediaController {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [mediaItem] = await db
       .insert(media)
-      .values(parseResult.data)
+      .values(parseResult.data as any)
       .returning();
 
     const response: ApiResponse<Media> = {

@@ -10,7 +10,8 @@ import { eq, and, desc, asc, gte } from 'drizzle-orm';
 import { sites, pages, contentBlocks, releases, events, artistProfiles, themes } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 
-const router = Router();
+import type { Router as RouterType } from "express";
+const router: RouterType = Router();
 
 /**
  * GET /api/v1/public/sites/:siteSlug/releases
@@ -18,7 +19,7 @@ const router = Router();
  */
 router.get('/sites/:siteSlug/releases', async (req: Request, res: Response) => {
   const db = getDb();
-  const { siteSlug } = req.params;
+  const siteSlug = req.params.siteSlug as string;
   const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
 
   const [site] = await db.select({ id: sites.id }).from(sites)
@@ -40,7 +41,7 @@ router.get('/sites/:siteSlug/releases', async (req: Request, res: Response) => {
  */
 router.get('/sites/:siteSlug/events', async (req: Request, res: Response) => {
   const db = getDb();
-  const { siteSlug } = req.params;
+  const siteSlug = req.params.siteSlug as string;
   const upcoming = req.query.upcoming === 'true';
   const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
 
@@ -67,7 +68,7 @@ router.get('/sites/:siteSlug/events', async (req: Request, res: Response) => {
  */
 router.get('/sites/:siteSlug/artist-profile', async (req: Request, res: Response) => {
   const db = getDb();
-  const { siteSlug } = req.params;
+  const siteSlug = req.params.siteSlug as string;
 
   const [site] = await db.select({ id: sites.id }).from(sites)
     .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
@@ -86,7 +87,8 @@ router.get('/sites/:siteSlug/artist-profile', async (req: Request, res: Response
  */
 router.get('/sites/:siteSlug/pages/:pageSlug', async (req: Request, res: Response) => {
   const db = getDb();
-  const { siteSlug, pageSlug } = req.params;
+  const siteSlug = req.params.siteSlug as string;
+  const pageSlug = req.params.pageSlug as string;
 
   const [site] = await db.select({ id: sites.id }).from(sites)
     .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
@@ -110,7 +112,7 @@ router.get('/sites/:siteSlug/pages/:pageSlug', async (req: Request, res: Respons
  */
 router.get('/sites/:siteSlug/theme', async (req: Request, res: Response) => {
   const db = getDb();
-  const { siteSlug } = req.params;
+  const siteSlug = req.params.siteSlug as string;
 
   const [site] = await db.select({ id: sites.id }).from(sites)
     .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);

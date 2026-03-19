@@ -28,7 +28,8 @@ import {
   listRagDocuments,
 } from '../lib/rag.js';
 
-const router = Router();
+import type { Router as RouterType } from "express";
+const router: RouterType = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 // All advisor routes require authentication

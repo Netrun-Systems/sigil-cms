@@ -6,7 +6,7 @@
 
 import 'dotenv/config';
 import 'express-async-errors';
-import express from 'express';
+import express, { type Express } from 'express';
 import cors from 'cors';
 import { sql } from 'drizzle-orm';
 import { createLogger, requestLogger } from '@netrun/logger';
@@ -26,7 +26,7 @@ const logger = createLogger({ service: 'netrun-cms-api' });
 // APP SETUP
 // ============================================================================
 
-const app = express();
+const app: Express = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 

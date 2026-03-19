@@ -133,6 +133,6 @@ export function requireRole(...roles: AuthUser['role'][]) {
  * Generate JWT token for testing purposes
  * In production, this should be handled by your auth service
  */
-export function generateToken(user: AuthUser, expiresIn = '24h'): string {
+export function generateToken(user: AuthUser, expiresIn: number | `${number}${'s' | 'm' | 'h' | 'd' | 'w' | 'y'}` = '24h'): string {
   return jwt.sign(user, JWT_SECRET, { expiresIn });
 }

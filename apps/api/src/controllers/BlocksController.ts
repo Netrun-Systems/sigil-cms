@@ -252,9 +252,10 @@ export class BlocksController {
       parseResult.data.sortOrder = (maxSort?.maxOrder || 0) + 1;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [block] = await db
       .insert(contentBlocks)
-      .values(parseResult.data)
+      .values(parseResult.data as any)
       .returning();
 
     const response: ApiResponse<ContentBlock> = {

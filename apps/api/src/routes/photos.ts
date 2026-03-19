@@ -11,7 +11,7 @@
  * DELETE /api/v1/sites/:siteId/photos/:id       → delete photo from blob + DB
  */
 
-import { Router, type Request, type Response } from 'express';
+import { Router, type Request, type Response, type Router as RouterType } from 'express';
 import multer from 'multer';
 import { authenticate } from '../middleware/auth.js';
 import type { AuthenticatedRequest } from '../types/index.js';
@@ -30,7 +30,7 @@ import {
 } from '../lib/photos.js';
 import { getGeminiClient, GEMINI_MODEL } from '../lib/gemini.js';
 
-const router = Router({ mergeParams: true });
+const router: RouterType = Router({ mergeParams: true });
 
 const upload = multer({
   storage: multer.memoryStorage(),

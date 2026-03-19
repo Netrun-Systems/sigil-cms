@@ -123,10 +123,11 @@ export class SitesController {
     }
 
     // Check for slug uniqueness within tenant
+    const insertData = parseResult.data as { slug: string; [key: string]: unknown };
     const [existing] = await db
       .select({ id: sites.id })
       .from(sites)
-      .where(and(eq(sites.tenantId, tenantId), eq(sites.slug, parseResult.data.slug)))
+      .where(and(eq(sites.tenantId, tenantId), eq(sites.slug, insertData.slug)))
       .limit(1);
 
     if (existing) {
@@ -134,16 +135,17 @@ export class SitesController {
         success: false,
         error: {
           code: 'DUPLICATE_SLUG',
-          message: `A site with slug "${parseResult.data.slug}" already exists`,
+          message: `A site with slug "${insertData.slug}" already exists`,
         },
       };
       res.status(409).json(response);
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [site] = await db
       .insert(sites)
-      .values(parseResult.data)
+      .values(parseResult.data as any)
       .returning();
 
     const response: ApiResponse<Site> = {

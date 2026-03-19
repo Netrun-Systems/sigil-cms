@@ -248,9 +248,10 @@ export class ThemesController {
         .where(and(eq(themes.siteId, siteId), eq(themes.isActive, true)));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [theme] = await db
       .insert(themes)
-      .values(parseResult.data)
+      .values(parseResult.data as any)
       .returning();
 
     const response: ApiResponse<Theme> = {

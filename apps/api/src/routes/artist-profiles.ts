@@ -5,10 +5,11 @@
  */
 
 import { Router } from 'express';
+import type { Router as RouterType } from 'express';
 import { ArtistProfilesController } from '../controllers/ArtistProfilesController.js';
 import { authenticate, requireRole, tenantContext } from '../middleware/index.js';
 
-const router = Router({ mergeParams: true });
+const router: RouterType = Router({ mergeParams: true });
 
 router.use(authenticate);
 router.use(tenantContext);

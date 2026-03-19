@@ -214,6 +214,9 @@ export class PagesController {
       return;
     }
 
+    // Cast to typed insert data to work around drizzle-zod unknown inference
+    const insertData = parseResult.data as { slug: string; language?: string; parentId?: string; [key: string]: unknown };
+
     // Check for slug uniqueness within site and language
     const [existing] = await db
       .select({ id: pages.id })
@@ -221,8 +224,8 @@ export class PagesController {
       .where(
         and(
           eq(pages.siteId, siteId),
-          eq(pages.slug, parseResult.data.slug),
-          eq(pages.language, parseResult.data.language || site.defaultLanguage)
+          eq(pages.slug, insertData.slug),
+          eq(pages.language, insertData.language || site.defaultLanguage)
         )
       )
       .limit(1);
@@ -232,7 +235,7 @@ export class PagesController {
         success: false,
         error: {
           code: 'DUPLICATE_SLUG',
-          message: `A page with slug "${parseResult.data.slug}" already exists for this language`,
+          message: `A page with slug "${insertData.slug}" already exists for this language`,
         },
       };
       res.status(409).json(response);
@@ -240,23 +243,24 @@ export class PagesController {
     }
 
     // Compute full path
-    let fullPath = '/' + parseResult.data.slug;
-    if (parseResult.data.parentId) {
+    let fullPath = '/' + insertData.slug;
+    if (insertData.parentId) {
       const [parent] = await db
         .select({ fullPath: pages.fullPath })
         .from(pages)
-        .where(eq(pages.id, parseResult.data.parentId))
+        .where(eq(pages.id, insertData.parentId))
         .limit(1);
 
       if (parent?.fullPath) {
-        fullPath = parent.fullPath + '/' + parseResult.data.slug;
+        fullPath = parent.fullPath + '/' + insertData.slug;
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [page] = await db
       .insert(pages)
       .values({
-        ...parseResult.data,
+        ...(insertData as any),
         fullPath,
       })
       .returning();

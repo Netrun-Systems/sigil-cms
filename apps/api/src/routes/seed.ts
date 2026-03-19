@@ -24,7 +24,8 @@ import { getDb } from '../db.js';
 import { authenticate, requireRole, generateToken } from '../middleware/index.js';
 import type { AuthenticatedRequest } from '../types/index.js';
 
-const router = Router();
+import type { Router as RouterType } from "express";
+const router: RouterType = Router();
 
 // ============================================================================
 // POST /bootstrap - Create tenant + return admin JWT
@@ -207,9 +208,9 @@ router.post(
     await seedArtistTemplate(db, site.id);
 
     // 3. Insert artist profile
-    let profile = null;
+    let profile: { id: string } | null = null;
     if (profileData?.artistName) {
-      [profile] = await db
+      const [inserted] = await db
         .insert(artistProfiles)
         .values({
           siteId: site.id,
@@ -222,6 +223,7 @@ router.post(
           managementEmail: profileData.managementEmail || null,
         })
         .returning();
+      profile = inserted;
     }
 
     // 4. Insert releases
@@ -250,20 +252,22 @@ router.post(
     }
 
     // 5. Create theme from preset
-    let themeRecord = null;
+    let themeRecord: { id: string; isActive: boolean } | null = null;
     if (themeId) {
       const preset = getPresetById(themeId as string);
       if (preset) {
-        [themeRecord] = await db
+        const [insertedTheme] = await db
           .insert(themes)
           .values({
             siteId: site.id,
             name: preset.name,
             isActive: true,
             baseTheme: themeId as string,
-            tokens: preset.darkTokens,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tokens: preset.darkTokens as any,
           })
           .returning();
+        themeRecord = insertedTheme;
       }
     }
 

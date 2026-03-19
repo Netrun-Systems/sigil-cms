@@ -72,7 +72,8 @@ export function validateBody<T>(schema: ZodSchema<T>) {
 export function validateQuery<T>(schema: ZodSchema<T>) {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
-      req.query = schema.parse(req.query) as Record<string, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      req.query = schema.parse(req.query) as any;
       next();
     } catch (error) {
       const zodError = error as ZodError;
@@ -117,7 +118,7 @@ export function isValidUuid(value: string): boolean {
  */
 export function validateUuidParam(paramName: string) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const value = req.params[paramName];
+    const value = req.params[paramName] as string;
 
     if (!value) {
       const response: ApiResponse<null> = {

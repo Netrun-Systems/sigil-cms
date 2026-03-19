@@ -79,7 +79,8 @@ export class ReleasesController {
       return;
     }
 
-    const [release] = await db.insert(releases).values(parseResult.data).returning();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [release] = await db.insert(releases).values(parseResult.data as any).returning();
     res.status(201).json({ success: true, data: release } as ApiResponse<Release>);
   }
 

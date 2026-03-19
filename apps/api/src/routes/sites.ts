@@ -8,7 +8,8 @@ import { Router } from 'express';
 import { SitesController } from '../controllers/SitesController.js';
 import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
 
-const router = Router();
+import type { Router as RouterType } from "express";
+const router: RouterType = Router();
 
 // All routes require authentication and tenant context
 router.use(authenticate);

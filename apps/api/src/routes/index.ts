@@ -19,7 +19,8 @@ import advisorRouter from './advisor.js';
 import photosRouter from './photos.js';
 import { validateUuidParam } from '../middleware/index.js';
 
-const router = Router();
+import type { Router as RouterType } from "express";
+const router: RouterType = Router();
 
 // Public API routes (no auth required)
 router.use('/public', publicRouter);
