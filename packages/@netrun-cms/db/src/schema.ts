@@ -362,6 +362,8 @@ export const sitesRelations = relations(sites, ({ one, many }) => ({
   blockTemplates: many(blockTemplates),
   releases: many(releases),
   events: many(events),
+  subscribers: many(subscribers),
+  contactSubmissions: many(contactSubmissions),
   artistProfile: one(artistProfiles, {
     fields: [sites.id],
     references: [artistProfiles.siteId],
@@ -575,6 +577,107 @@ export type InsertEvent = z.infer<typeof insertEventSchema>;
 
 export type ArtistProfile = typeof artistProfiles.$inferSelect;
 export type InsertArtistProfile = z.infer<typeof insertArtistProfileSchema>;
+
+// ============================================================================
+// SUBSCRIBERS TABLE - Per-site mailing list
+// ============================================================================
+export const subscribers = pgTable('cms_subscribers', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+  email: varchar('email', { length: 320 }).notNull(),
+  name: varchar('name', { length: 200 }),
+  unsubscribeToken: uuid('unsubscribe_token').notNull().default(sql`gen_random_uuid()`),
+  status: varchar('status', { length: 20 }).notNull().default('active'),
+  subscribedAt: timestamp('subscribed_at').notNull().defaultNow(),
+  unsubscribedAt: timestamp('unsubscribed_at'),
+}, (table) => ({
+  siteEmailUnique: unique('cms_subscribers_site_email_unique').on(table.siteId, table.email),
+  siteIdIdx: index('idx_cms_subscribers_site_id').on(table.siteId),
+  statusIdx: index('idx_cms_subscribers_status').on(table.siteId, table.status),
+  tokenIdx: index('idx_cms_subscribers_token').on(table.unsubscribeToken),
+  statusCheck: check('cms_subscribers_status_check',
+    sql`${table.status} IN ('active', 'unsubscribed')`
+  ),
+}));
+
+// ============================================================================
+// CONTACT SUBMISSIONS TABLE - Per-site contact form entries
+// ============================================================================
+export const contactSubmissions = pgTable('cms_contact_submissions', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 200 }).notNull(),
+  email: varchar('email', { length: 320 }).notNull(),
+  subject: varchar('subject', { length: 500 }),
+  message: text('message').notNull(),
+  type: varchar('type', { length: 20 }).notNull().default('general'),
+  status: varchar('status', { length: 20 }).notNull().default('new'),
+  notes: text('notes'),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  siteIdIdx: index('idx_cms_contact_submissions_site_id').on(table.siteId),
+  statusIdx: index('idx_cms_contact_submissions_status').on(table.siteId, table.status),
+  typeIdx: index('idx_cms_contact_submissions_type').on(table.siteId, table.type),
+  createdAtIdx: index('idx_cms_contact_submissions_created_at').on(table.createdAt),
+  statusCheck: check('cms_contact_submissions_status_check',
+    sql`${table.status} IN ('new', 'responded', 'booked', 'declined', 'archived')`
+  ),
+  typeCheck: check('cms_contact_submissions_type_check',
+    sql`${table.type} IN ('general', 'booking', 'press', 'collaboration')`
+  ),
+}));
+
+// ============================================================================
+// RELATIONS (Subscribers + Contact)
+// ============================================================================
+
+export const subscribersRelations = relations(subscribers, ({ one }) => ({
+  site: one(sites, {
+    fields: [subscribers.siteId],
+    references: [sites.id],
+  }),
+}));
+
+export const contactSubmissionsRelations = relations(contactSubmissions, ({ one }) => ({
+  site: one(sites, {
+    fields: [contactSubmissions.siteId],
+    references: [sites.id],
+  }),
+}));
+
+// ============================================================================
+// ZOD SCHEMAS (Subscribers + Contact)
+// ============================================================================
+
+export const insertSubscriberSchema = createInsertSchema(subscribers).omit({
+  id: true,
+  unsubscribeToken: true,
+  subscribedAt: true,
+  unsubscribedAt: true,
+}).extend({
+  email: z.string().email().max(320),
+  name: z.string().max(200).optional(),
+});
+export const selectSubscriberSchema = createSelectSchema(subscribers);
+
+export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1).max(200),
+  email: z.string().email().max(320),
+  message: z.string().min(1),
+});
+export const selectContactSubmissionSchema = createSelectSchema(contactSubmissions);
+
+export type Subscriber = typeof subscribers.$inferSelect;
+export type InsertSubscriber = z.infer<typeof insertSubscriberSchema>;
+
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
 
 // Extended types
 export type PageWithBlocks = Page & {

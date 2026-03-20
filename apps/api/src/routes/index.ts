@@ -17,6 +17,8 @@ import publicRouter from './public.js';
 import seedRouter from './seed.js';
 import advisorRouter from './advisor.js';
 import photosRouter from './photos.js';
+import subscribersRouter from './subscribers.js';
+import contactsRouter from './contacts.js';
 import { validateUuidParam } from '../middleware/index.js';
 
 import type { Router as RouterType } from "express";
@@ -63,5 +65,11 @@ router.use('/sites/:siteId/artist-profile', validateUuidParam('siteId'), artistP
 
 // Photos: /api/v1/sites/:siteId/photos (Azure Blob Storage + AI curation)
 router.use('/sites/:siteId/photos', validateUuidParam('siteId'), photosRouter);
+
+// Subscribers: /api/v1/sites/:siteId/subscribers (mailing list)
+router.use('/sites/:siteId/subscribers', validateUuidParam('siteId'), subscribersRouter);
+
+// Contact submissions: /api/v1/sites/:siteId/contacts (contact form + booking inquiries)
+router.use('/sites/:siteId/contacts', validateUuidParam('siteId'), contactsRouter);
 
 export default router;

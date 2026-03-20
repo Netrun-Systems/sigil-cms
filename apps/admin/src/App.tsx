@@ -21,6 +21,8 @@ const EventEditor = lazy(() => import('./pages/Events/EventEditor').then(m => ({
 const ProfilePage = lazy(() => import('./pages/Profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const AdvisorPage = lazy(() => import('./pages/AdvisorPage').then(m => ({ default: m.AdvisorPage })));
 const PhotoCuratorPage = lazy(() => import('./pages/Photos/PhotoCuratorPage').then(m => ({ default: m.PhotoCuratorPage })));
+const SubscribersList = lazy(() => import('./pages/Subscribers/SubscribersList').then(m => ({ default: m.SubscribersList })));
+const ContactsList = lazy(() => import('./pages/Contacts/ContactsList').then(m => ({ default: m.ContactsList })));
 
 function PageLoader() {
   return (
@@ -77,6 +79,12 @@ function App() {
 
         {/* Photos (site-scoped, Azure Blob + AI curation) */}
         <Route path="sites/:siteId/photos" element={<Suspense fallback={<PageLoader />}><PhotoCuratorPage /></Suspense>} />
+
+        {/* Subscribers (site-scoped mailing list) */}
+        <Route path="sites/:siteId/subscribers" element={<Suspense fallback={<PageLoader />}><SubscribersList /></Suspense>} />
+
+        {/* Contact submissions (site-scoped inquiries/bookings) */}
+        <Route path="sites/:siteId/contacts" element={<Suspense fallback={<PageLoader />}><ContactsList /></Suspense>} />
 
         {/* AI Advisor (global, not site-scoped) */}
         <Route path="advisor" element={<Suspense fallback={<PageLoader />}><AdvisorPage /></Suspense>} />
