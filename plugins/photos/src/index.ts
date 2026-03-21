@@ -1,56 +1,80 @@
 /**
- * Photos Plugin — Azure Blob Storage upload + AI-powered curation via Gemini.
+ * Photos Plugin — Multi-provider object storage + AI-powered curation.
  *
- * Provides site-scoped photo management: bulk upload, AI curation scoring,
- * selection toggling, and cleanup of stale records.
+ * Supports Google Cloud Storage (default), Azure Blob Storage, and AWS S3.
+ * Provider auto-detected from env vars:
+ *   - GCS: GCS_BUCKET or GOOGLE_APPLICATION_CREDENTIALS
+ *   - Azure: AZURE_STORAGE_CONNECTION_STRING
+ *   - S3: AWS_ACCESS_KEY_ID or S3_ENDPOINT
  *
- * Requires AZURE_STORAGE_CONNECTION_STRING for blob storage.
- * Optionally uses GEMINI_API_KEY for AI curation.
+ * Optionally uses GEMINI_API_KEY for AI photo curation.
  */
 
 import type { CmsPlugin } from '@netrun-cms/plugin-runtime';
+import { getStorageProvider } from '@netrun-cms/plugin-runtime';
 import { createRoutes } from './routes.js';
-import { ensurePhotosTable, ensureBlobContainer } from './lib/photos.js';
+import { ensurePhotosTable, ensureBlobContainer, getStorageProviderName } from './lib/photos.js';
+
+function hasStorageCredentials(): boolean {
+  return !!(
+    process.env.GCS_BUCKET ||
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+    process.env.GCS_PROJECT_ID ||
+    process.env.AZURE_STORAGE_CONNECTION_STRING ||
+    process.env.AWS_ACCESS_KEY_ID ||
+    process.env.S3_ENDPOINT ||
+    process.env.STORAGE_PROVIDER
+  );
+}
 
 const photosPlugin: CmsPlugin = {
   id: 'photos',
   name: 'Photo Manager',
-  version: '1.0.0',
-  requiredEnv: ['AZURE_STORAGE_CONNECTION_STRING'],
+  version: '2.0.0',
+  // No requiredEnv — we check for any storage provider credential
+  // and skip gracefully if none are configured
 
   async register(ctx) {
-    // Auto-create cms_photos table if it does not exist
+    // Check for any storage credentials
+    if (!hasStorageCredentials()) {
+      ctx.logger.warn(
+        {},
+        'Photos plugin skipped — no storage credentials found. ' +
+        'Set GCS_BUCKET (Google), AZURE_STORAGE_CONNECTION_STRING (Azure), ' +
+        'or AWS_ACCESS_KEY_ID (S3) to enable.',
+      );
+      return;
+    }
+
+    // Auto-create cms_photos table
     await ensurePhotosTable();
 
-    // Ensure the blob container exists
+    // Ensure the storage bucket exists
     await ensureBlobContainer();
 
     // Mount site-scoped authenticated routes
     const router = createRoutes(ctx.db, ctx.logger);
     ctx.addRoutes('photos', router);
 
-    // Register admin navigation — Media section
+    // Register admin navigation
     ctx.addAdminNav({
       title: 'Media',
       siteScoped: true,
       items: [
-        {
-          label: 'Photo Curator',
-          icon: 'Camera',
-          href: 'photos',
-        },
+        { label: 'Photo Curator', icon: 'Camera', href: 'photos' },
       ],
     });
 
-    // Register admin route for the photos page
+    // Register admin route
     ctx.addAdminRoutes([
-      {
-        path: 'sites/:siteId/photos',
-        component: '@netrun-cms/plugin-photos/admin/PhotoCurator',
-      },
+      { path: 'sites/:siteId/photos', component: '@netrun-cms/plugin-photos/admin/PhotoCurator' },
     ]);
 
-    ctx.logger.info({}, 'Photos plugin registered');
+    const providerName = getStorageProviderName();
+    ctx.logger.info(
+      { provider: providerName },
+      `Photos plugin registered (storage: ${providerName})`,
+    );
   },
 };
 

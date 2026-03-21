@@ -1,15 +1,21 @@
 /**
- * Photo storage — Azure Blob Storage + PostgreSQL metadata.
+ * Photo storage — Multi-provider object storage + PostgreSQL metadata.
  *
- * Backported from frost. Photos stored in Azure Blob Storage,
- * metadata in cms_photos table.
+ * Supports Google Cloud Storage (default), Azure Blob Storage, and AWS S3.
+ * Provider is auto-detected from environment variables via the storage
+ * abstraction in @netrun-cms/plugin-runtime.
  *
- * Uses lazy imports for @azure/storage-blob to prevent cold start crashes.
+ * Metadata stored in cms_photos PostgreSQL table.
  */
 
-import crypto from 'crypto';
-import path from 'path';
 import pg from 'pg';
+import {
+  uploadFile,
+  deleteFile,
+  downloadFile,
+  ensureStorage,
+  getStorageProvider,
+} from '@netrun-cms/plugin-runtime';
 
 const { Pool } = pg;
 
@@ -31,28 +37,6 @@ function getPool(): pg.Pool {
     });
   }
   return pool;
-}
-
-// ── Blob Storage (lazy import to prevent cold start failures) ──
-
-const CONTAINER_NAME = process.env.PHOTOS_CONTAINER || 'cms-photos';
-
-let _containerClient: unknown = null;
-
-async function getContainerClient() {
-  if (!_containerClient) {
-    const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
-    if (!connStr) throw new Error('AZURE_STORAGE_CONNECTION_STRING is required');
-    const { BlobServiceClient } = await import('@azure/storage-blob');
-    const blobService = BlobServiceClient.fromConnectionString(connStr);
-    _containerClient = blobService.getContainerClient(CONTAINER_NAME);
-  }
-  return _containerClient as import('@azure/storage-blob').ContainerClient;
-}
-
-export async function ensureBlobContainer(): Promise<void> {
-  const client = await getContainerClient();
-  await client.createIfNotExists({ access: 'blob' });
 }
 
 // ── Types ────────────────────────────────────────
@@ -85,53 +69,34 @@ export interface CurationResponse {
   summary: string;
 }
 
-// ── Blob Operations ─────────────────────────────
+// ── Storage Operations (provider-agnostic) ──────
+
+export async function ensureBlobContainer(): Promise<void> {
+  await ensureStorage();
+}
 
 export async function uploadPhotoBlob(
   buffer: Buffer,
   originalName: string,
   mimeType: string,
 ): Promise<{ id: string; storedName: string; blobUrl: string }> {
-  const id = crypto.randomUUID();
-  const ext = path.extname(originalName) || mimeExtension(mimeType);
-  const storedName = `${id}${ext}`;
-
-  const client = await getContainerClient();
-  const blockBlob = client.getBlockBlobClient(storedName);
-
-  await blockBlob.upload(buffer, buffer.length, {
-    blobHTTPHeaders: { blobContentType: mimeType },
-  });
-
-  // Confirmed Delivery: verify blob exists (per confirmed-delivery protocol)
-  await blockBlob.getProperties();
-
-  return { id, storedName, blobUrl: blockBlob.url };
+  const result = await uploadFile(buffer, originalName, mimeType);
+  return { id: result.id, storedName: result.storedName, blobUrl: result.url };
 }
 
 export async function deletePhotoBlob(storedName: string): Promise<void> {
-  const client = await getContainerClient();
-  const blockBlob = client.getBlockBlobClient(storedName);
-  await blockBlob.deleteIfExists();
+  await deleteFile(storedName);
 }
 
 export async function getPhotoBlobBuffer(storedName: string): Promise<Buffer> {
-  const client = await getContainerClient();
-  const blockBlob = client.getBlockBlobClient(storedName);
-  return blockBlob.downloadToBuffer();
+  return downloadFile(storedName);
 }
 
-function mimeExtension(mime: string): string {
-  const map: Record<string, string> = {
-    'image/jpeg': '.jpg',
-    'image/png': '.png',
-    'image/webp': '.webp',
-    'image/gif': '.gif',
-    'image/heic': '.heic',
-    'image/heif': '.heif',
-    'image/avif': '.avif',
-  };
-  return map[mime] || '.jpg';
+/**
+ * Get the active storage provider name (for logging/display).
+ */
+export function getStorageProviderName(): string {
+  return getStorageProvider().name;
 }
 
 // ── PostgreSQL Metadata Operations ───────────────

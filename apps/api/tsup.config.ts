@@ -6,7 +6,7 @@ export default defineConfig({
   target: 'node18',
   clean: true,
   noExternal: ['@netrun-cms/db', '@netrun-cms/core', '@netrun-cms/theme', '@netrun-cms/plugin-runtime'],
-  external: ['@azure/communication-email', '@azure/storage-blob'],
+  external: ['@azure/communication-email', '@azure/storage-blob', '@google-cloud/storage', '@aws-sdk/client-s3'],
   treeshake: true,
   splitting: false,
 });

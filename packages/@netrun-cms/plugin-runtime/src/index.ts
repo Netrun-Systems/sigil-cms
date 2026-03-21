@@ -14,6 +14,21 @@ export {
   resetRegistry,
 } from './registry.js';
 
+export {
+  getStorageProvider,
+  resetStorageProvider,
+  uploadFile,
+  deleteFile,
+  downloadFile,
+  ensureStorage,
+} from './storage.js';
+
+export type {
+  StorageProvider,
+  StorageConfig,
+  UploadResult,
+} from './storage.js';
+
 export type {
   CmsPlugin,
   PluginContext,

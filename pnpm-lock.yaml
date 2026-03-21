@@ -810,9 +810,6 @@ importers:
 
   plugins/photos:
     dependencies:
-      '@azure/storage-blob':
-        specifier: ^12.26.0
-        version: 12.31.0
       '@google/genai':
         specifier: ^0.7.0
         version: 0.7.0

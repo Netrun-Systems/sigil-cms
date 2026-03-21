@@ -1,7 +1,7 @@
 {
   "name": "@netrun-cms/plugin-photos",
-  "version": "1.0.0",
-  "description": "Photos plugin for NetrunCMS — Azure Blob Storage upload + AI curation via Gemini",
+  "version": "2.0.0",
+  "description": "Photo management for Sigil CMS — GCS, Azure Blob, or S3 storage + AI curation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsup src/index.ts --format cjs,esm --dts --external @azure/storage-blob --external @google-cloud/storage --external @aws-sdk/client-s3",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
@@ -21,7 +21,6 @@
   "dependencies": {
     "@netrun-cms/plugin-runtime": "workspace:*",
     "@netrun-cms/db": "workspace:*",
-    "@azure/storage-blob": "^12.26.0",
     "@google/genai": "^0.7.0",
     "multer": "^1.4.5-lts.1"
   },
