@@ -1,0 +1,39 @@
+{
+  "name": "@netrun-cms/plugin-booking",
+  "version": "1.0.0",
+  "description": "Appointment booking plugin for NetrunCMS — availability rules, Google Calendar integration, email confirmations",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --external @azure/communication-email",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --external @azure/communication-email --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@netrun-cms/plugin-runtime": "workspace:*",
+    "@netrun-cms/db": "workspace:*",
+    "googleapis": "^144.0.0",
+    "drizzle-zod": "^0.7.0",
+    "zod": "^3.23.0",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/uuid": "^10.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "peerDependencies": {
+    "express": "^4.21.0",
+    "drizzle-orm": "^0.39.0"
+  }
+}

@@ -7,11 +7,11 @@
  *
  * @module @netrun-cms/blocks
  * @author Netrun Systems
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 // ============================================================================
-// BLOCK COMPONENTS
+// BLOCK COMPONENTS (core)
 // ============================================================================
 
 export { HeroBlock } from './blocks/HeroBlock';
@@ -38,7 +38,10 @@ export type { ContactFormBlockProps } from './blocks/ContactFormBlock';
 export { TestimonialsBlock } from './blocks/TestimonialsBlock';
 export type { TestimonialsBlockProps } from './blocks/TestimonialsBlock';
 
-// Artist/band template blocks
+// ============================================================================
+// BLOCK COMPONENTS (artist — available for plugin-artist to re-register)
+// ============================================================================
+
 export { EmbedPlayerBlock } from './blocks/EmbedPlayerBlock';
 export type { EmbedPlayerBlockProps } from './blocks/EmbedPlayerBlock';
 
@@ -58,11 +61,20 @@ export { ArtistBioBlock } from './blocks/ArtistBioBlock';
 export type { ArtistBioBlockProps } from './blocks/ArtistBioBlock';
 
 // ============================================================================
-// RENDERER AND EDITOR
+// RENDERER, EDITOR, AND REGISTRY
 // ============================================================================
 
-export { BlockRenderer, BlockListRenderer } from './BlockRenderer';
-export type { BlockRendererProps, BlockListRendererProps } from './BlockRenderer';
+export {
+  BlockRenderer,
+  BlockListRenderer,
+  registerBlockComponent,
+  getRegisteredBlockTypes,
+} from './BlockRenderer';
+export type {
+  BlockRendererProps,
+  BlockListRendererProps,
+  BlockComponentProps,
+} from './BlockRenderer';
 
 export { BlockEditor } from './BlockEditor';
 export type { BlockEditorProps } from './BlockEditor';

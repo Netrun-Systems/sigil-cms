@@ -4,20 +4,14 @@ import {
   Globe,
   FileText,
   Image,
-  Camera,
   Palette,
   Settings,
   ChevronDown,
-  Plus,
-  Disc3,
-  CalendarDays,
-  User,
-  MessageSquare,
-  Mail,
-  Inbox,
 } from 'lucide-react';
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
+import { usePluginManifest } from '../../hooks/usePluginManifest';
+import { getIcon } from '../../lib/iconRegistry';
 
 interface NavItem {
   label: string;
@@ -47,11 +41,6 @@ const mainNavItems: NavItem[] = [
     label: 'Themes',
     icon: Palette,
     href: '/themes',
-  },
-  {
-    label: 'AI Advisor',
-    icon: MessageSquare,
-    href: '/advisor',
   },
 ];
 
@@ -125,6 +114,40 @@ function NavItemComponent({ item }: { item: NavItem }) {
 
 export function Sidebar() {
   const { siteId } = useParams();
+  const { manifest } = usePluginManifest();
+
+  // Collect global (non-site-scoped) plugin nav items for the main nav
+  const globalPluginNav: NavItem[] = [];
+  // Collect site-scoped plugin nav sections
+  const sitePluginSections: Array<{ title: string; items: NavItem[] }> = [];
+
+  if (manifest) {
+    for (const plugin of manifest.plugins) {
+      if (!plugin.enabled) continue;
+      for (const section of plugin.nav) {
+        if (section.siteScoped) {
+          sitePluginSections.push({
+            title: section.title,
+            items: section.items.map((item) => ({
+              label: item.label,
+              icon: getIcon(item.icon),
+              href: siteId ? `/sites/${siteId}/${item.href}` : `/${item.href}`,
+            })),
+          });
+        } else {
+          for (const item of section.items) {
+            globalPluginNav.push({
+              label: item.label,
+              icon: getIcon(item.icon),
+              href: item.href.startsWith('/') ? item.href : `/${item.href}`,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  const allMainNavItems = [...mainNavItems, ...globalPluginNav];
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar">
@@ -142,7 +165,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-1">
-          {mainNavItems.map((item) => (
+          {allMainNavItems.map((item) => (
             <NavItemComponent key={item.href} item={item} />
           ))}
         </div>
@@ -198,103 +221,33 @@ export function Sidebar() {
               </NavLink>
             </div>
 
-            {/* Artist content (for artist-template sites) */}
-            <div className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-              Artist Content
-            </div>
-            <div className="space-y-1">
-              <NavLink
-                to={`/sites/${siteId}/releases`}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )
-                }
-              >
-                <Disc3 className="h-5 w-5" />
-                <span>Releases</span>
-              </NavLink>
-              <NavLink
-                to={`/sites/${siteId}/events`}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )
-                }
-              >
-                <CalendarDays className="h-5 w-5" />
-                <span>Events</span>
-              </NavLink>
-              <NavLink
-                to={`/sites/${siteId}/profile`}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )
-                }
-              >
-                <User className="h-5 w-5" />
-                <span>Artist Profile</span>
-              </NavLink>
-              <NavLink
-                to={`/sites/${siteId}/photos`}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )
-                }
-              >
-                <Camera className="h-5 w-5" />
-                <span>Photo Curator</span>
-              </NavLink>
-            </div>
-
-            {/* Engagement */}
-            <div className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-              Engagement
-            </div>
-            <div className="space-y-1">
-              <NavLink
-                to={`/sites/${siteId}/subscribers`}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )
-                }
-              >
-                <Mail className="h-5 w-5" />
-                <span>Mailing List</span>
-              </NavLink>
-              <NavLink
-                to={`/sites/${siteId}/contacts`}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )
-                }
-              >
-                <Inbox className="h-5 w-5" />
-                <span>Contacts</span>
-              </NavLink>
-            </div>
+            {/* Plugin nav sections (site-scoped) */}
+            {sitePluginSections.map((section) => (
+              <div key={section.title}>
+                <div className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+                  {section.title}
+                </div>
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      to={item.href}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                        )
+                      }
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </nav>

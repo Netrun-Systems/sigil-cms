@@ -1,7 +1,8 @@
 /**
  * NetrunCMS API Server
  *
- * Express.js backend with CRUD routes for all CMS entities
+ * Express.js backend with CRUD routes for all CMS entities.
+ * Supports a plugin system for optional features.
  */
 
 import 'dotenv/config';
@@ -15,6 +16,8 @@ import { correlationIdMiddleware, notFoundHandler, errorHandler } from '@netrun/
 import { createHealthRoutes } from '@netrun/health';
 import { getDb } from './db.js';
 import apiRoutes from './routes/index.js';
+import { loadPlugins } from '@netrun-cms/plugin-runtime';
+import { loadEnabledPlugins } from './plugins.config.js';
 
 // ============================================================================
 // LOGGER
@@ -85,15 +88,53 @@ app.use(createHealthRoutes({
     sites: 'operational',
     pages: 'operational',
     media: 'operational',
-    advisor: 'operational',
   },
 }));
+
+// ============================================================================
+// PLUGIN SYSTEM
+// ============================================================================
+
+async function initPlugins() {
+  try {
+    const plugins = await loadEnabledPlugins();
+
+    if (plugins.length > 0) {
+      const registry = await loadPlugins(plugins, {
+        app,
+        db: getDb() as Parameters<typeof loadPlugins>[1]['db'],
+        logger: logger as Parameters<typeof loadPlugins>[1]['logger'],
+      });
+
+      // Plugin manifest endpoint — used by admin SPA
+      app.get('/api/v1/plugins/manifest', (_req, res) => {
+        res.json({ success: true, data: registry.getManifest() });
+      });
+
+      logger.info({ count: plugins.length }, 'Plugin system initialized');
+    } else {
+      // No plugins — still provide empty manifest
+      app.get('/api/v1/plugins/manifest', (_req, res) => {
+        res.json({ success: true, data: { plugins: [] } });
+      });
+    }
+  } catch (err) {
+    logger.error(
+      { error: err instanceof Error ? err.message : String(err) },
+      'Plugin system failed to initialize',
+    );
+    // Still provide empty manifest so admin doesn't break
+    app.get('/api/v1/plugins/manifest', (_req, res) => {
+      res.json({ success: true, data: { plugins: [] } });
+    });
+  }
+}
 
 // ============================================================================
 // ROUTES
 // ============================================================================
 
-// API v1 routes (inline health removed — handled above by @netrun/health)
+// API v1 core routes
 app.use('/api/v1', apiRoutes);
 
 // Root endpoint
@@ -133,11 +174,14 @@ function gracefulShutdown(signal: string) {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-app.listen(PORT, HOST, () => {
-  logger.info(
-    { host: HOST, port: PORT, env: process.env.NODE_ENV || 'development' },
-    'NetrunCMS API server started'
-  );
+// Initialize plugins then start listening
+initPlugins().then(() => {
+  app.listen(PORT, HOST, () => {
+    logger.info(
+      { host: HOST, port: PORT, env: process.env.NODE_ENV || 'development' },
+      'NetrunCMS API server started',
+    );
+  });
 });
 
 export default app;

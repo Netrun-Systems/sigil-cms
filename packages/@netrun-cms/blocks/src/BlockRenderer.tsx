@@ -1,8 +1,8 @@
 /**
  * BlockRenderer - Component that renders any block by type
  *
- * Dynamically renders the appropriate block component based on
- * the block type. Supports both view and edit modes.
+ * Uses an open Map-based registry so plugins can register
+ * additional block components at runtime.
  *
  * @module @netrun-cms/blocks
  * @author Netrun Systems
@@ -11,22 +11,12 @@
 import React from 'react';
 import type {
   ContentBlock,
-  BlockType,
   BlockContent,
   BlockSettings,
-  BLOCK_TYPE,
-  HeroBlockContent,
-  TextBlockContent,
-  FeatureGridBlockContent,
-  GalleryBlockContent,
-  CTABlockContent,
-  PricingBlockContent,
-  ContactFormBlockContent,
-  TestimonialBlockContent,
 } from '@netrun-cms/core';
 import { cn, type BlockMode } from './utils';
 
-// Import block components
+// Import core block components
 import { HeroBlock } from './blocks/HeroBlock';
 import { TextBlock } from './blocks/TextBlock';
 import { FeatureGridBlock } from './blocks/FeatureGridBlock';
@@ -35,12 +25,58 @@ import { CTABlock } from './blocks/CTABlock';
 import { PricingBlock } from './blocks/PricingBlock';
 import { ContactFormBlock } from './blocks/ContactFormBlock';
 import { TestimonialsBlock } from './blocks/TestimonialsBlock';
-import { EmbedPlayerBlock } from './blocks/EmbedPlayerBlock';
-import { ReleaseListBlock } from './blocks/ReleaseListBlock';
-import { EventListBlock } from './blocks/EventListBlock';
-import { SocialLinksBlock } from './blocks/SocialLinksBlock';
-import { LinkTreeBlock } from './blocks/LinkTreeBlock';
-import { ArtistBioBlock } from './blocks/ArtistBioBlock';
+
+// ============================================================================
+// BLOCK COMPONENT TYPE
+// ============================================================================
+
+export type BlockComponentProps = {
+  content: BlockContent;
+  settings?: BlockSettings;
+  mode?: BlockMode;
+  className?: string;
+  onContentChange?: (content: BlockContent) => void;
+};
+
+// ============================================================================
+// OPEN BLOCK REGISTRY
+// ============================================================================
+
+/** Mutable registry — core blocks registered at import, plugins add more */
+const blockRegistry = new Map<string, React.ComponentType<BlockComponentProps>>();
+
+// Register core blocks
+blockRegistry.set('hero', HeroBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('text', TextBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('rich_text', TextBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('feature_grid', FeatureGridBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('gallery', GalleryBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('cta', CTABlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('pricing_table', PricingBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('testimonial', TestimonialsBlock as React.ComponentType<BlockComponentProps>);
+blockRegistry.set('contact_form', ContactFormBlock as React.ComponentType<BlockComponentProps>);
+
+/**
+ * Register a block component for a given type.
+ * Called by plugins to add their block types to the renderer.
+ */
+export function registerBlockComponent(
+  type: string,
+  component: React.ComponentType<BlockComponentProps>,
+): void {
+  blockRegistry.set(type, component);
+}
+
+/**
+ * Get all registered block type keys.
+ */
+export function getRegisteredBlockTypes(): string[] {
+  return Array.from(blockRegistry.keys());
+}
+
+// ============================================================================
+// BLOCK RENDERER
+// ============================================================================
 
 export interface BlockRendererProps {
   /** The content block to render */
@@ -54,123 +90,6 @@ export interface BlockRendererProps {
   /** Additional CSS classes */
   className?: string;
 }
-
-/**
- * Map of block types to their respective components
- */
-const blockComponents: Record<string, React.ComponentType<{
-  content: BlockContent;
-  settings?: BlockSettings;
-  mode?: BlockMode;
-  className?: string;
-  onContentChange?: (content: BlockContent) => void;
-}>> = {
-  hero: HeroBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  text: TextBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  rich_text: TextBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  feature_grid: FeatureGridBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  gallery: GalleryBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  cta: CTABlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  pricing_table: PricingBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  testimonial: TestimonialsBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  contact_form: ContactFormBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  embed_player: EmbedPlayerBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  release_list: ReleaseListBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  event_list: EventListBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  social_links: SocialLinksBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  link_tree: LinkTreeBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-  artist_bio: ArtistBioBlock as React.ComponentType<{
-    content: BlockContent;
-    settings?: BlockSettings;
-    mode?: BlockMode;
-    className?: string;
-    onContentChange?: (content: BlockContent) => void;
-  }>,
-};
 
 /**
  * Fallback component for unsupported block types
@@ -216,8 +135,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     return null;
   }
 
-  // Get the component for this block type
-  const BlockComponent = blockComponents[blockType];
+  // Get the component for this block type from the registry
+  const BlockComponent = blockRegistry.get(blockType);
 
   // Handle content changes
   const handleContentChange = (newContent: BlockContent) => {

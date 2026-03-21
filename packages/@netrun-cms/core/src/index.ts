@@ -188,11 +188,17 @@ export interface ColorTokens {
   primaryDark?: string;
   primaryLight?: string;
   secondary?: string;
+  accent?: string;
   background: string;
   backgroundSecondary?: string;
   surface?: string;
+  surfaceHover?: string;
+  border?: string;
   text: string;
   textSecondary?: string;
+  textMuted?: string;
+  link?: string;
+  linkHover?: string;
   success?: string;
   warning?: string;
   error?: string;
@@ -202,12 +208,22 @@ export interface ColorTokens {
 export interface TypographyTokens {
   fontFamily: string;
   fontFamilyHeading?: string;
+  fontFamilyMono?: string;
   fontSizeBase?: string;
   fontSizeLg?: string;
   fontSizeSm?: string;
+  fontSizeXs?: string;
+  fontSizeH1?: string;
+  fontSizeH2?: string;
+  fontSizeH3?: string;
   lineHeightBase?: number;
+  lineHeightHeading?: number;
   fontWeightNormal?: number;
+  fontWeightMedium?: number;
   fontWeightBold?: number;
+  letterSpacing?: string;
+  letterSpacingHeading?: string;
+  textTransformHeading?: string;
 }
 
 export interface SpacingTokens {
@@ -217,16 +233,27 @@ export interface SpacingTokens {
   lg?: string;
   xl?: string;
   '2xl'?: string;
+  '3xl'?: string;
+  sectionPadding?: string;
+  containerMaxWidth?: string;
 }
 
 export interface EffectTokens {
   borderRadius?: string;
+  borderRadiusSm?: string;
   borderRadiusLg?: string;
+  borderRadiusFull?: string;
+  buttonRadius?: string;
+  inputRadius?: string;
+  cardRadius?: string;
   shadowSm?: string;
   shadowMd?: string;
   shadowLg?: string;
+  shadowColor?: string;
   glassBlur?: string;
   glassBg?: string;
+  transitionSpeed?: string;
+  hoverScale?: string;
 }
 
 // ============================================================================

@@ -75,9 +75,7 @@ export const sites = pgTable('cms_sites', {
   statusCheck: check('cms_sites_status_check',
     sql`${table.status} IN ('draft', 'published', 'archived')`
   ),
-  templateCheck: check('cms_sites_template_check',
-    sql`${table.template} IS NULL OR ${table.template} IN ('default', 'artist')`
-  ),
+  // templateCheck removed — templates are now plugin-defined
 }));
 
 // ============================================================================
@@ -179,14 +177,7 @@ export const contentBlocks = pgTable('cms_content_blocks', {
   pageIdIdx: index('idx_cms_content_blocks_page_id').on(table.pageId),
   blockTypeIdx: index('idx_cms_content_blocks_type').on(table.blockType),
   sortOrderIdx: index('idx_cms_content_blocks_sort').on(table.pageId, table.sortOrder),
-  blockTypeCheck: check('cms_content_blocks_type_check',
-    sql`${table.blockType} IN (
-      'hero', 'text', 'rich_text', 'image', 'gallery', 'video', 'cta',
-      'feature_grid', 'pricing_table', 'testimonial', 'faq', 'contact_form',
-      'code_block', 'bento_grid', 'stats_bar', 'timeline', 'newsletter', 'custom',
-      'embed_player', 'release_list', 'event_list', 'social_links', 'link_tree', 'artist_bio'
-    )`
-  ),
+  // blockTypeCheck removed — validation moved to plugin registry
 }));
 
 // ============================================================================
@@ -360,14 +351,8 @@ export const sitesRelations = relations(sites, ({ one, many }) => ({
   pages: many(pages),
   media: many(media),
   blockTemplates: many(blockTemplates),
-  releases: many(releases),
-  events: many(events),
-  subscribers: many(subscribers),
-  contactSubmissions: many(contactSubmissions),
-  artistProfile: one(artistProfiles, {
-    fields: [sites.id],
-    references: [artistProfiles.siteId],
-  }),
+  // Plugin table relations (releases, events, artistProfiles, subscribers,
+  // contactSubmissions) are defined in their respective plugin schemas.
 }));
 
 export const themesRelations = relations(themes, ({ one }) => ({

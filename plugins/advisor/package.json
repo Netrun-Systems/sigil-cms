@@ -1,0 +1,40 @@
+{
+  "name": "@netrun-cms/plugin-advisor",
+  "version": "1.0.0",
+  "description": "AI Advisor plugin for NetrunCMS — Gemini chat, pgvector RAG, TTS",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@netrun-cms/plugin-runtime": "workspace:*",
+    "@netrun-cms/db": "workspace:*",
+    "@google/genai": "^1.0.0",
+    "multer": "^1.4.5-lts.1",
+    "pgvector": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/pg": "^8.11.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "peerDependencies": {
+    "express": "^4.21.0",
+    "drizzle-orm": "^0.39.0",
+    "pg": "^8.0.0"
+  }
+}
