@@ -1,0 +1,64 @@
+{
+  "name": "@sigil-cms/next",
+  "version": "0.1.0",
+  "description": "Next.js integration for Sigil CMS — server components, metadata, static generation, and block rendering for the App Router",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./blocks": {
+      "types": "./dist/blocks/index.d.ts",
+      "import": "./dist/blocks/index.mjs",
+      "require": "./dist/blocks/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@sigil-cms/client": ">=0.1.0",
+    "next": "^14.0.0 || ^15.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@sigil-cms/client": "workspace:*",
+    "@types/node": "^25.5.0",
+    "@types/react": "^18.3.0",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "sigil",
+    "cms",
+    "headless-cms",
+    "nextjs",
+    "react",
+    "server-components",
+    "app-router"
+  ],
+  "author": "Netrun Systems <dev@netrunsystems.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Netrun-Systems/netrun-cms",
+    "directory": "packages/next"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "sideEffects": false
+}

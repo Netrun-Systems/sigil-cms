@@ -1,0 +1,154 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","core-concepts","d"]
+5:["slug","pages","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","pages","d"],{"children":["__PAGE__?{\"category\":\"core-concepts\",\"slug\":\"pages\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","pages","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T116a,<h2>Page Model</h2>
+<p>Pages are the primary content unit in Sigil. Each page belongs to a site and can contain multiple content blocks.</p>
+<h3>Key Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td>string</td>
+<td>Page title</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>string</td>
+<td>URL-friendly identifier</td>
+</tr>
+<tr>
+<td><code>parentId</code></td>
+<td>UUID</td>
+<td>Parent page for hierarchy</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td><code>draft</code>, <code>published</code>, <code>scheduled</code>, <code>archived</code></td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>string</td>
+<td>Language code (e.g., <code>en</code>, <code>es</code>)</td>
+</tr>
+<tr>
+<td><code>metaTitle</code></td>
+<td>string</td>
+<td>SEO title</td>
+</tr>
+<tr>
+<td><code>metaDescription</code></td>
+<td>string</td>
+<td>SEO description</td>
+</tr>
+<tr>
+<td><code>ogImageUrl</code></td>
+<td>string</td>
+<td>Open Graph image</td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td>string</td>
+<td>Page template identifier</td>
+</tr>
+<tr>
+<td><code>sortOrder</code></td>
+<td>integer</td>
+<td>Position in navigation</td>
+</tr>
+<tr>
+<td><code>publishAt</code></td>
+<td>timestamp</td>
+<td>Scheduled publish time</td>
+</tr>
+<tr>
+<td><code>unpublishAt</code></td>
+<td>timestamp</td>
+<td>Scheduled unpublish time</td>
+</tr>
+</tbody>
+</table>
+<h2>Page CRUD</h2>
+<p>All page routes are scoped to a site: <code>/api/v1/sites/:siteId/pages</code>.</p>
+<h3>List pages</h3>
+<pre><code>GET /api/v1/sites/:siteId/pages
+</code></pre>
+<p>Query params:</p>
+<ul>
+<li><code>page</code> (default: 1)</li>
+<li><code>limit</code> (default: 20, max: 100)</li>
+<li><code>status</code> -- filter by <code>draft</code>, <code>published</code>, <code>scheduled</code>, <code>archived</code></li>
+<li><code>language</code> -- filter by language code</li>
+<li><code>parentId</code> -- filter by parent (use <code>null</code> for root pages)</li>
+</ul>
+<h3>Create a page</h3>
+<pre><code>POST /api/v1/sites/:siteId/pages
+</code></pre>
+<pre><code class="language-json">{
+  "title": "About Us",
+  "slug": "about",
+  "status": "draft",
+  "language": "en",
+  "metaTitle": "About Our Company",
+  "metaDescription": "Learn about our team and mission."
+}
+</code></pre>
+<p>Requires role: <code>admin</code>, <code>editor</code>, or <code>author</code>.</p>
+<h3>Update / Delete</h3>
+<pre><code>PUT    /api/v1/sites/:siteId/pages/:id
+DELETE /api/v1/sites/:siteId/pages/:id
+</code></pre>
+<p>Delete removes the page and all its content blocks. Requires <code>admin</code> or <code>editor</code>.</p>
+<h2>Content Scheduling</h2>
+<p>Schedule pages to publish or unpublish at specific times:</p>
+<pre><code>PATCH /api/v1/sites/:siteId/pages/:id/schedule
+</code></pre>
+<pre><code class="language-json">{
+  "publishAt": "2026-04-01T09:00:00Z",
+  "unpublishAt": "2026-04-30T23:59:59Z"
+}
+</code></pre>
+<ul>
+<li><code>publishAt</code> in the future sets status to <code>scheduled</code></li>
+<li><code>publishAt</code> in the past publishes immediately</li>
+<li><code>null</code> clears the schedule</li>
+</ul>
+<p>Requires role: <code>admin</code> or <code>editor</code>.</p>
+<h2>Translations</h2>
+<p>Sigil supports multi-language content through page translations. Each translation shares the same slug but has a different language code.</p>
+<pre><code>GET  /api/v1/sites/:siteId/pages/:id/translations
+POST /api/v1/sites/:siteId/pages/:id/translate
+</code></pre>
+<p>The translate endpoint clones the page and all its content blocks with the new language code:</p>
+<pre><code class="language-json">{ "language": "es" }
+</code></pre>
+<h2>Revisions</h2>
+<p>Every page maintains a revision history:</p>
+<pre><code>GET  /api/v1/sites/:siteId/pages/:pageId/revisions
+GET  /api/v1/sites/:siteId/pages/:pageId/revisions/:revisionId
+POST /api/v1/sites/:siteId/pages/:pageId/revisions/:revisionId/revert
+</code></pre>
+<p>Revisions are listed newest first. Reverting restores the page content to a specific revision snapshot.</p>
+<h2>Public Access</h2>
+<p>Consumer sites fetch published pages without authentication:</p>
+<pre><code>GET /api/v1/public/sites/:siteSlug/pages/:pageSlug
+</code></pre>
+<p>Query params:</p>
+<ul>
+<li><code>lang</code> -- fetch a specific language translation (falls back to site default)</li>
+</ul>
+<p>Returns the page data with all visible content blocks, ordered by <code>sortOrder</code>.</p>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link active","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Pages"}],["$","p",null,{"children":"Hierarchical pages with content blocks, scheduling, translations, and revisions."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/core-concepts/sites/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Sites & Multi-Tenancy"}]]}],["$","$L8",null,{"href":"/docs/core-concepts/blocks/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Content Blocks"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Pages - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Hierarchical pages with content blocks, scheduling, translations, and revisions."}]]
+1:null

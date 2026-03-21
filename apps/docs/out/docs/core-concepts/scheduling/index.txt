@@ -1,0 +1,87 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","core-concepts","d"]
+5:["slug","scheduling","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","scheduling","d"],{"children":["__PAGE__?{\"category\":\"core-concepts\",\"slug\":\"scheduling\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","scheduling","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T96e,<h2>Overview</h2>
+<p>Sigil supports time-based content scheduling through <code>publishAt</code> and <code>unpublishAt</code> timestamps on pages. This allows marketing teams to prepare content in advance and have it go live automatically.</p>
+<h2>Scheduling API</h2>
+<pre><code>PATCH /api/v1/sites/:siteId/pages/:id/schedule
+</code></pre>
+<h3>Schedule a future publish</h3>
+<pre><code class="language-json">{
+  "publishAt": "2026-04-01T09:00:00Z"
+}
+</code></pre>
+<p>This sets the page status to <code>scheduled</code>. When the scheduled time arrives, the page transitions to <code>published</code>.</p>
+<h3>Schedule publish and unpublish</h3>
+<pre><code class="language-json">{
+  "publishAt": "2026-04-01T09:00:00Z",
+  "unpublishAt": "2026-04-30T23:59:59Z"
+}
+</code></pre>
+<p>The page will be published for exactly one month, then automatically archived.</p>
+<h3>Publish immediately</h3>
+<pre><code class="language-json">{
+  "publishAt": "2026-01-01T00:00:00Z"
+}
+</code></pre>
+<p>A <code>publishAt</code> in the past publishes the page immediately.</p>
+<h3>Clear schedule</h3>
+<pre><code class="language-json">{
+  "publishAt": null,
+  "unpublishAt": null
+}
+</code></pre>
+<p>Removes all scheduled transitions.</p>
+<h2>Page Status Transitions</h2>
+<pre><code>draft --> scheduled --> published --> archived
+  ^                        |
+  |________________________|
+         (manual)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Trigger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draft</code></td>
+<td><code>scheduled</code></td>
+<td>Set <code>publishAt</code> in the future</td>
+</tr>
+<tr>
+<td><code>scheduled</code></td>
+<td><code>published</code></td>
+<td><code>publishAt</code> time reached</td>
+</tr>
+<tr>
+<td><code>published</code></td>
+<td><code>archived</code></td>
+<td><code>unpublishAt</code> time reached</td>
+</tr>
+<tr>
+<td>Any</td>
+<td><code>draft</code></td>
+<td>Manual status change</td>
+</tr>
+<tr>
+<td>Any</td>
+<td><code>published</code></td>
+<td>Set <code>publishAt</code> in the past</td>
+</tr>
+</tbody>
+</table>
+<h2>Permissions</h2>
+<p>Content scheduling requires <code>admin</code> or <code>editor</code> role. Authors can create pages but cannot control their publication schedule.</p>
+<h2>Integration with Translations</h2>
+<p>Scheduling applies per-translation. You can schedule the English version to publish on April 1 and the Spanish version to publish on April 15.</p>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link active","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Content Scheduling"}],["$","p",null,{"children":"Schedule pages to publish and unpublish at specific times."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/core-concepts/plugins/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Plugin System"}]]}],["$","$L8",null,{"href":"/docs/developer-guide/rest-api/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"REST API Reference"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Content Scheduling - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Schedule pages to publish and unpublish at specific times."}]]
+1:null

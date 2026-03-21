@@ -22,6 +22,8 @@ import {
   Code,
   Mail,
   BarChart,
+  Clock,
+  Calendar,
 } from 'lucide-react';
 import {
   Card,
@@ -98,6 +100,29 @@ const defaultFormData: PageFormData = {
   metaDescription: '',
   ogImageUrl: '',
 };
+
+/** Convert an ISO date string to a local datetime-local input value */
+function toLocalDatetime(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Format a remaining duration for countdown display */
+function formatCountdown(targetDate: string): string {
+  const target = new Date(targetDate);
+  const now = new Date();
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) return 'now';
+  const hours = Math.floor(diffMs / 3_600_000);
+  const minutes = Math.floor((diffMs % 3_600_000) / 60_000);
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `in ${days}d ${hours % 24}h`;
+  }
+  return `in ${hours}h ${minutes}m`;
+}
 
 function BlockPreview({ block, isSelected, onEdit, onDelete, onToggleVisibility, onMoveUp, onMoveDown }: {
   block: ContentBlock;
@@ -244,10 +269,14 @@ export function PageEditor() {
   const [formData, setFormData] = useState<PageFormData>(defaultFormData);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
   const [error, setError] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [pageLanguage, setPageLanguage] = useState<string>('en');
+  const [publishAt, setPublishAt] = useState<string>('');
+  const [unpublishAt, setUnpublishAt] = useState<string>('');
+  const [showSchedulePanel, setShowSchedulePanel] = useState(false);
 
   const handleBlockContentChange = (blockId: string, content: Record<string, unknown>) => {
     setBlocks((prev) =>
@@ -272,6 +301,13 @@ export function PageEditor() {
         ogImageUrl: seo.ogImageUrl || (p.ogImageUrl as string) || '',
       });
       setPageLanguage((p.language as string) || 'en');
+      // Load schedule fields
+      if (p.publishAt) {
+        setPublishAt(toLocalDatetime(p.publishAt as string));
+      }
+      if (p.unpublishAt) {
+        setUnpublishAt(toLocalDatetime(p.unpublishAt as string));
+      }
     }).catch((err) => setError(err.message));
 
     // Load blocks
@@ -393,6 +429,67 @@ export function PageEditor() {
     }
   };
 
+  const handleSchedule = async () => {
+    if (!siteId || !pageId) return;
+    setIsScheduling(true);
+    setError(null);
+    try {
+      // Save the page first to persist any pending changes
+      await handleSave();
+
+      const body: Record<string, string | null> = {};
+      if (publishAt) {
+        body.publishAt = new Date(publishAt).toISOString();
+      } else {
+        body.publishAt = null;
+      }
+      if (unpublishAt) {
+        body.unpublishAt = new Date(unpublishAt).toISOString();
+      } else {
+        body.unpublishAt = null;
+      }
+
+      const res = await api.patch<{ data: Record<string, unknown> }>(
+        '/sites/' + siteId + '/pages/' + pageId + '/schedule',
+        body
+      );
+      const updated = res.data;
+      setFormData((prev) => ({
+        ...prev,
+        status: (updated.status as PageFormData['status']) || prev.status,
+      }));
+      setShowSchedulePanel(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Schedule failed');
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
+  const handleClearSchedule = async () => {
+    if (!siteId || !pageId) return;
+    setIsScheduling(true);
+    setError(null);
+    try {
+      const res = await api.patch<{ data: Record<string, unknown> }>(
+        '/sites/' + siteId + '/pages/' + pageId + '/schedule',
+        { publishAt: null, unpublishAt: null }
+      );
+      const updated = res.data;
+      setFormData((prev) => ({
+        ...prev,
+        status: (updated.status as PageFormData['status']) || prev.status,
+      }));
+      setPublishAt('');
+      setUnpublishAt('');
+      setShowSchedulePanel(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Clear schedule failed');
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this page?')) {
       try {
@@ -442,6 +539,15 @@ export function PageEditor() {
                 </Button>
               )}
             </>
+          )}
+          {isEditing && canPublish && (
+            <Button
+              variant="outline"
+              onClick={() => setShowSchedulePanel(!showSchedulePanel)}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              Schedule
+            </Button>
           )}
           <Button onClick={handleSave} disabled={isSaving || !canEdit}>
             <Save className="mr-2 h-4 w-4" />
@@ -704,6 +810,81 @@ export function PageEditor() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Content Scheduling */}
+          {showSchedulePanel && isEditing && (
+            <Card className="border-primary/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Content Schedule
+                </CardTitle>
+                <CardDescription>
+                  Automatically publish or unpublish this page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {formData.status === 'scheduled' && publishAt && (
+                  <div className="rounded-lg bg-primary/10 p-3 text-sm">
+                    <div className="flex items-center gap-2 font-medium text-primary">
+                      <Clock className="h-4 w-4" />
+                      Scheduled to publish {formatCountdown(publishAt)}
+                    </div>
+                    <p className="mt-1 text-muted-foreground">
+                      {new Date(publishAt).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="publishAt">Publish At</Label>
+                  <Input
+                    id="publishAt"
+                    type="datetime-local"
+                    value={publishAt}
+                    onChange={(e) => setPublishAt(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to publish manually
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="unpublishAt">Unpublish At (optional)</Label>
+                  <Input
+                    id="unpublishAt"
+                    type="datetime-local"
+                    value={unpublishAt}
+                    onChange={(e) => setUnpublishAt(e.target.value)}
+                    min={publishAt || undefined}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Page will be archived at this time
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSchedule}
+                    disabled={isScheduling || !publishAt}
+                    className="flex-1"
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    {isScheduling ? 'Scheduling...' : 'Set Schedule'}
+                  </Button>
+                  {(formData.status === 'scheduled' || publishAt || unpublishAt) && (
+                    <Button
+                      variant="outline"
+                      onClick={handleClearSchedule}
+                      disabled={isScheduling}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Block Summary */}
           <Card>

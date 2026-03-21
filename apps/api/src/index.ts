@@ -18,6 +18,8 @@ import { getDb } from './db.js';
 import apiRoutes from './routes/index.js';
 import { loadPlugins } from '@netrun-cms/plugin-runtime';
 import { loadEnabledPlugins } from './plugins.config.js';
+import { startScheduler } from './lib/scheduler.js';
+import { mountGraphQL } from './graphql/index.js';
 
 // ============================================================================
 // LOGGER
@@ -137,6 +139,9 @@ async function initPlugins() {
 // API v1 core routes
 app.use('/api/v1', apiRoutes);
 
+// GraphQL API (read-only, supports both public and authenticated queries)
+mountGraphQL(app);
+
 // Root endpoint
 app.get('/', (_req, res) => {
   res.json({
@@ -166,16 +171,38 @@ app.use(errorHandler({
 // SERVER STARTUP
 // ============================================================================
 
+// ============================================================================
+// CONTENT SCHEDULER
+// ============================================================================
+
+let stopScheduler: (() => void) | null = null;
+
+function initScheduler() {
+  const intervalMs = parseInt(process.env.SCHEDULER_INTERVAL_MS || '60000', 10);
+  const disabled = process.env.SCHEDULER_DISABLED === 'true';
+
+  if (disabled) {
+    logger.info({}, 'Content scheduler disabled via SCHEDULER_DISABLED=true');
+    return;
+  }
+
+  const scheduler = startScheduler(getDb(), { intervalMs, logger: logger as any });
+  stopScheduler = scheduler.stop;
+}
+
 function gracefulShutdown(signal: string) {
   logger.info({ signal }, 'Graceful shutdown initiated');
+  if (stopScheduler) stopScheduler();
   process.exit(0);
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Initialize plugins then start listening
+// Initialize plugins, scheduler, then start listening
 initPlugins().then(() => {
+  initScheduler();
+
   app.listen(PORT, HOST, () => {
     logger.info(
       { host: HOST, port: PORT, env: process.env.NODE_ENV || 'development' },

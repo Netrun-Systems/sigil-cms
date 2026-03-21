@@ -7,6 +7,7 @@
 import type { Response } from 'express';
 import { eq, and, desc, asc, count, isNull, ne, max } from 'drizzle-orm';
 import { pages, sites, contentBlocks, pageRevisions, insertPageSchema, type Page, type PageWithBlocks, type ContentBlock } from '@netrun-cms/db';
+import { schedulePageSchema } from '@netrun-cms/core';
 import { getDb } from '../db.js';
 import { parsePagination } from '../middleware/validation.js';
 import type { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types/index.js';
@@ -883,5 +884,113 @@ export class PagesController {
     };
 
     res.json({ success: true, data: pageWithBlocks });
+  }
+
+  /**
+   * Schedule a page for future publish/unpublish
+   *
+   * PATCH /api/v1/sites/:siteId/pages/:id/schedule
+   *
+   * Body: { publishAt?: string (ISO 8601), unpublishAt?: string (ISO 8601) }
+   *
+   * - If publishAt is in the past or now, publishes immediately.
+   * - If publishAt is in the future, sets status to 'scheduled'.
+   * - unpublishAt sets a future auto-archive time.
+   * - Sending null for either field clears that schedule.
+   */
+  static async schedule(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { siteId, id } = req.params;
+
+    // Verify site belongs to tenant
+    const [site] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.id, siteId), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!site) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Site with ID ${siteId} not found` },
+      });
+      return;
+    }
+
+    // Check page exists
+    const [existing] = await db
+      .select()
+      .from(pages)
+      .where(and(eq(pages.id, id), eq(pages.siteId, siteId)))
+      .limit(1);
+
+    if (!existing) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Page with ID ${id} not found` },
+      });
+      return;
+    }
+
+    // Validate request body
+    const parseResult = schedulePageSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid schedule data',
+          details: parseResult.error.errors,
+        },
+      });
+      return;
+    }
+
+    const { publishAt: publishAtStr, unpublishAt: unpublishAtStr } = parseResult.data;
+    const now = new Date();
+
+    const updateData: Record<string, unknown> = { updatedAt: now };
+
+    // Handle publishAt
+    if (publishAtStr === null) {
+      // Clear schedule — revert to draft if currently scheduled
+      updateData.publishAt = null;
+      if (existing.status === 'scheduled') {
+        updateData.status = 'draft';
+      }
+    } else if (publishAtStr !== undefined) {
+      const publishAt = new Date(publishAtStr);
+      if (publishAt <= now) {
+        // Publish immediately
+        updateData.publishAt = null;
+        updateData.status = 'published';
+        updateData.publishedAt = now;
+      } else {
+        // Schedule for future
+        updateData.publishAt = publishAt;
+        updateData.status = 'scheduled';
+      }
+    }
+
+    // Handle unpublishAt
+    if (unpublishAtStr === null) {
+      updateData.unpublishAt = null;
+    } else if (unpublishAtStr !== undefined) {
+      updateData.unpublishAt = new Date(unpublishAtStr);
+    }
+
+    const [updated] = await db
+      .update(pages)
+      .set(updateData)
+      .where(eq(pages.id, id))
+      .returning();
+
+    const response: ApiResponse<Page> = {
+      success: true,
+      data: updated,
+    };
+
+    res.json(response);
   }
 }

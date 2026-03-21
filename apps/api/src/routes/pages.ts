@@ -86,6 +86,21 @@ router.get('/:id/translations', validateUuidParam('id'), PagesController.listTra
 router.post('/:id/translate', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), PagesController.createTranslation);
 
 /**
+ * PATCH /api/v1/sites/:siteId/pages/:id/schedule
+ * Set or clear publishAt/unpublishAt for content scheduling
+ *
+ * Body: {
+ *   publishAt?: string (ISO 8601) | null,
+ *   unpublishAt?: string (ISO 8601) | null
+ * }
+ *
+ * - publishAt in the future sets status to 'scheduled'
+ * - publishAt in the past or now publishes immediately
+ * - null clears the schedule
+ */
+router.patch('/:id/schedule', validateUuidParam('id'), requireRole('admin', 'editor'), PagesController.schedule);
+
+/**
  * GET /api/v1/sites/:siteId/pages/:pageId/revisions
  * List all revisions for a page (newest first)
  */

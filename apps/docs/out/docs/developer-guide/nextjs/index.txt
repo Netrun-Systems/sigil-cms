@@ -1,0 +1,224 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","developer-guide","d"]
+5:["slug","nextjs","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","developer-guide","d"],{"children":[["slug","nextjs","d"],{"children":["__PAGE__?{\"category\":\"developer-guide\",\"slug\":\"nextjs\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","developer-guide","d"],{"children":[["slug","nextjs","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T1994,<h2>Installation</h2>
+<pre><code class="language-bash">pnpm add @sigil-cms/next @sigil-cms/client
+</code></pre>
+<h2>Environment Variables</h2>
+<pre><code class="language-env">SIGIL_URL=https://cms.example.com
+SIGIL_SITE_SLUG=my-site
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SIGIL_URL</code></td>
+<td>Yes</td>
+<td>Base URL of your Sigil instance</td>
+</tr>
+<tr>
+<td><code>SIGIL_SITE_SLUG</code></td>
+<td>Yes*</td>
+<td>Site slug for public content</td>
+</tr>
+<tr>
+<td><code>SIGIL_SITE_ID</code></td>
+<td>No*</td>
+<td>Site UUID for admin operations</td>
+</tr>
+<tr>
+<td><code>SIGIL_API_KEY</code></td>
+<td>No</td>
+<td>JWT for admin operations</td>
+</tr>
+</tbody>
+</table>
+<p>*At least one of <code>SIGIL_SITE_SLUG</code> or <code>SIGIL_SITE_ID</code> is required.</p>
+<h2>Quick Start</h2>
+<p>Create a catch-all route to render every CMS page:</p>
+<pre><code class="language-tsx">// app/[[...slug]]/page.tsx
+import { SigilPage, generateSigilMetadata, generateSigilStaticParams } from '@sigil-cms/next';
+
+export async function generateMetadata({ params }: { params: Promise&#x3C;{ slug?: string[] }> }) {
+  const { slug } = await params;
+  return generateSigilMetadata(slug?.join('/') ?? 'home');
+}
+
+export async function generateStaticParams() {
+  return generateSigilStaticParams();
+}
+
+export default async function Page({ params }: { params: Promise&#x3C;{ slug?: string[] }> }) {
+  const { slug } = await params;
+  return &#x3C;SigilPage slug={slug?.join('/') ?? 'home'} />;
+}
+</code></pre>
+<p>That's it. Every published page in Sigil is now rendered at its slug.</p>
+<h2>Custom Block Components</h2>
+<p>Default blocks render clean HTML with <code>sigil-block--*</code> CSS classes. Override any type:</p>
+<pre><code class="language-tsx">import { SigilPage } from '@sigil-cms/next';
+import type { BlockComponentProps } from '@sigil-cms/next';
+
+function MyHero({ block, content }: BlockComponentProps) {
+  return (
+    &#x3C;div className="my-hero bg-gradient-to-r from-blue-600 to-purple-600 text-white p-16">
+      &#x3C;h1 className="text-5xl font-bold">{content.heading as string}&#x3C;/h1>
+      &#x3C;p className="text-xl mt-4">{content.subheading as string}&#x3C;/p>
+    &#x3C;/div>
+  );
+}
+
+export default async function Page({ params }) {
+  const { slug } = await params;
+  return &#x3C;SigilPage slug={slug?.join('/') ?? 'home'} components={{ hero: MyHero }} />;
+}
+</code></pre>
+<h2>Default Block Types</h2>
+<table>
+<thead>
+<tr>
+<th>Block Type</th>
+<th>Component</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hero</code></td>
+<td><code>HeroBlock</code></td>
+<td>Heading, subheading, CTA, background image</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>TextBlock</code></td>
+<td>Plain or rich text content</td>
+</tr>
+<tr>
+<td><code>rich_text</code></td>
+<td><code>TextBlock</code></td>
+<td>Same renderer as text</td>
+</tr>
+<tr>
+<td><code>image</code></td>
+<td><code>ImageBlock</code></td>
+<td>Image with caption</td>
+</tr>
+<tr>
+<td><code>gallery</code></td>
+<td><code>GalleryBlock</code></td>
+<td>Image grid (client component)</td>
+</tr>
+<tr>
+<td><code>cta</code></td>
+<td><code>CTABlock</code></td>
+<td>Call-to-action with buttons</td>
+</tr>
+<tr>
+<td><code>video</code></td>
+<td><code>VideoBlock</code></td>
+<td>Video/embed player (client component)</td>
+</tr>
+<tr>
+<td><code>code_block</code></td>
+<td><code>CodeBlock</code></td>
+<td>Code snippet with language hint</td>
+</tr>
+<tr>
+<td><code>feature_grid</code></td>
+<td><code>FeatureGridBlock</code></td>
+<td>Feature cards in a grid</td>
+</tr>
+</tbody>
+</table>
+<p>Import individual blocks:</p>
+<pre><code class="language-tsx">import { HeroBlock, defaultBlockComponents } from '@sigil-cms/next/blocks';
+</code></pre>
+<h2>SigilImage</h2>
+<p>Optimized image rendering using <code>next/image</code>:</p>
+<pre><code class="language-tsx">import { SigilImage, createSigilClient } from '@sigil-cms/next';
+import type { MediaItem } from '@sigil-cms/next';
+
+const sigil = createSigilClient();
+const page = await sigil.pages.getBySlug('about');
+const heroImage = page.blocks[0].content.image as MediaItem;
+
+&#x3C;SigilImage media={heroImage} width={1200} height={630} priority />
+</code></pre>
+<h2>Static Generation</h2>
+<h3>Full SSG</h3>
+<pre><code class="language-tsx">export async function generateStaticParams() {
+  return generateSigilStaticParams();
+}
+</code></pre>
+<h3>Filter by template</h3>
+<pre><code class="language-tsx">export async function generateStaticParams() {
+  return generateSigilStaticParams({ templates: ['blog', 'landing'] });
+}
+</code></pre>
+<h3>ISR (Incremental Static Regeneration)</h3>
+<pre><code class="language-tsx">export const revalidate = 60; // Revalidate every 60 seconds
+</code></pre>
+<h3>On-demand revalidation</h3>
+<pre><code class="language-tsx">// app/api/revalidate/route.ts
+import { revalidatePath } from 'next/cache';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  const { slug, secret } = await request.json();
+  if (secret !== process.env.REVALIDATION_SECRET) {
+    return NextResponse.json({ error: 'Invalid secret' }, { status: 401 });
+  }
+  revalidatePath(`/${slug}`);
+  return NextResponse.json({ revalidated: true });
+}
+</code></pre>
+<h2>Client Factory</h2>
+<pre><code class="language-tsx">import { createSigilClient, getSigilClient } from '@sigil-cms/next';
+
+// Auto-configured from env
+const sigil = createSigilClient();
+
+// Explicit configuration
+const sigil = createSigilClient({
+  url: 'https://cms.example.com',
+  siteSlug: 'my-site',
+  apiKey: process.env.SIGIL_API_KEY,
+});
+
+// Shared singleton
+const page = await getSigilClient().pages.getBySlug('about');
+</code></pre>
+<h2>CSS Classes</h2>
+<p>All components use BEM-style classes prefixed with <code>sigil-</code>:</p>
+<pre><code>sigil-page                    -- Page wrapper
+sigil-block                   -- Every block
+sigil-block--hero             -- Block type modifier
+sigil-hero__heading           -- Block element
+sigil-text__body
+sigil-image__img, __caption
+sigil-gallery__grid, __item
+sigil-cta__heading, __actions, __button--primary
+sigil-video__embed, __iframe
+sigil-code__filename, __pre, __code
+sigil-feature-grid__grid, __item, __icon, __title
+</code></pre>
+<p>Data attributes on every block: <code>data-block-id</code>, <code>data-block-type</code>.</p>
+<h2>Requirements</h2>
+<ul>
+<li>Next.js 14+ (App Router)</li>
+<li>React 18+</li>
+<li><code>@sigil-cms/client</code> (peer dependency)</li>
+</ul>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link active","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Next.js Integration"}],["$","p",null,{"children":"@sigil-cms/next -- server components, metadata, static generation, block rendering."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/developer-guide/typescript-sdk/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"TypeScript SDK"}]]}],["$","$L8",null,{"href":"/docs/developer-guide/cli/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"CLI Reference"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Next.js Integration - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"@sigil-cms/next -- server components, metadata, static generation, block rendering."}]]
+1:null

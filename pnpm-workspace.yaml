@@ -1,4 +1,7 @@
 packages:
   - "packages/@netrun-cms/*"
+  - "packages/client"
+  - "packages/cli"
+  - "packages/next"
   - "apps/*"
   - "plugins/*"

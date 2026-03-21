@@ -1,0 +1,150 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","developer-guide","d"]
+5:["slug","typescript-sdk","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","developer-guide","d"],{"children":[["slug","typescript-sdk","d"],{"children":["__PAGE__?{\"category\":\"developer-guide\",\"slug\":\"typescript-sdk\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","developer-guide","d"],{"children":[["slug","typescript-sdk","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T10fb,<h2>Installation</h2>
+<pre><code class="language-bash">npm install @sigil-cms/client
+# or
+pnpm add @sigil-cms/client
+</code></pre>
+<h2>Features</h2>
+<ul>
+<li>Zero runtime dependencies (uses native <code>fetch</code>)</li>
+<li>Works in Node.js 18+, browsers, and edge runtimes (Cloudflare Workers, Vercel Edge, Deno)</li>
+<li>Full TypeScript types for all API responses</li>
+<li>Supports both public (read-only) and authenticated (admin) operations</li>
+</ul>
+<h2>Quick Start</h2>
+<h3>Public content (no auth)</h3>
+<pre><code class="language-typescript">import { createClient } from '@sigil-cms/client';
+
+const client = createClient({
+  baseUrl: 'https://cms.example.com',
+  siteSlug: 'my-site',
+});
+
+// Fetch a page by slug (includes content blocks)
+const page = await client.pages.getBySlug('about');
+console.log(page.title, page.blocks);
+
+// List all published pages
+const pages = await client.pages.listPublished();
+
+// Get hierarchical page tree (for navigation)
+const tree = await client.pages.getTree();
+
+// Get site theme
+const theme = await client.sites.getPublicTheme();
+
+// Get available languages
+const langs = await client.sites.getLanguages();
+
+// Resolve site by domain
+const site = await client.sites.getByDomain('example.com');
+
+// Search pages
+const results = await client.search('pricing');
+</code></pre>
+<h3>Authenticated operations</h3>
+<pre><code class="language-typescript">const admin = createClient({
+  baseUrl: 'https://cms.example.com',
+  siteId: '550e8400-e29b-41d4-a716-446655440000',
+  apiKey: 'your-jwt-token',
+});
+
+// Pages
+const drafts = await admin.pages.list({ status: 'draft' });
+const newPage = await admin.pages.create({ title: 'New Page', slug: 'new-page' });
+await admin.pages.update(newPage.id, { status: 'published' });
+await admin.pages.delete(newPage.id);
+
+// Content blocks
+const blocks = await admin.blocks.list(pageId);
+const hero = await admin.blocks.create(pageId, {
+  blockType: 'hero',
+  content: { headline: 'Welcome' },
+});
+await admin.blocks.reorder(pageId, [hero.id, ...otherBlockIds]);
+
+// Media
+const media = await admin.media.list({ mimeType: 'image' });
+const folders = await admin.media.listFolders();
+
+// Themes
+const themes = await admin.themes.list();
+const active = await admin.themes.getActive();
+await admin.themes.activate(themeId);
+const copy = await admin.themes.duplicate(themeId, 'My Theme Copy');
+
+// Sites
+const sites = await admin.sites.list();
+await admin.sites.updateDomain(siteId, 'custom.example.com');
+const verified = await admin.sites.verifyDomain(siteId);
+
+// Translations
+const translations = await admin.pages.listTranslations(pageId);
+const spanish = await admin.pages.createTranslation(pageId, 'es');
+
+// Revisions
+const revisions = await admin.pages.listRevisions(pageId);
+await admin.pages.revertToRevision(pageId, revisionId);
+
+// Block type catalog
+const blockTypes = await admin.blocks.listTypes({ category: 'content' });
+</code></pre>
+<h2>Pagination</h2>
+<p>List endpoints return a <code>PaginatedResponse</code>:</p>
+<pre><code class="language-typescript">const result = await client.pages.list({ page: 1, limit: 10 });
+
+result.data;     // Page[]
+result.total;    // Total count
+result.page;     // Current page (1)
+result.pageSize; // Items per page (10)
+result.hasMore;  // true if more pages available
+</code></pre>
+<h2>Error Handling</h2>
+<pre><code class="language-typescript">import { SigilError, SigilNetworkError, SigilTimeoutError } from '@sigil-cms/client';
+
+try {
+  const page = await client.pages.getBySlug('nonexistent');
+} catch (err) {
+  if (err instanceof SigilError) {
+    err.status;       // 404
+    err.code;         // 'NOT_FOUND'
+    err.message;      // 'Page not found'
+    err.isNotFound;   // true
+    err.isServerError; // false
+  }
+
+  if (err instanceof SigilNetworkError) {
+    // DNS, connection refused, etc.
+  }
+
+  if (err instanceof SigilTimeoutError) {
+    // Request exceeded timeout
+  }
+}
+</code></pre>
+<h2>Configuration</h2>
+<pre><code class="language-typescript">const client = createClient({
+  baseUrl: 'https://cms.example.com',  // Required
+
+  // Public mode
+  siteSlug: 'my-site',
+
+  // Admin mode
+  siteId: 'uuid',
+  apiKey: 'jwt-token',
+
+  // Options
+  timeout: 15000,          // Default: 30000ms
+  headers: { 'X-Custom': 'value' },
+  fetch: customFetch,      // Custom fetch implementation
+});
+</code></pre>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link active","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"TypeScript SDK"}],["$","p",null,{"children":"@sigil-cms/client -- fetch and manage content from any Sigil instance."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/developer-guide/rest-api/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"REST API Reference"}]]}],["$","$L8",null,{"href":"/docs/developer-guide/nextjs/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Next.js Integration"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"TypeScript SDK - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"@sigil-cms/client -- fetch and manage content from any Sigil instance."}]]
+1:null

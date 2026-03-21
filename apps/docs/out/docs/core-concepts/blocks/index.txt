@@ -1,0 +1,231 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","core-concepts","d"]
+5:["slug","blocks","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","blocks","d"],{"children":["__PAGE__?{\"category\":\"core-concepts\",\"slug\":\"blocks\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","blocks","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T1380,<h2>Block Architecture</h2>
+<p>Content blocks are the building units of pages. Each block has a <code>blockType</code>, <code>content</code> (JSON), <code>settings</code> (JSON), a <code>sortOrder</code>, and a visibility flag.</p>
+<p>Blocks are scoped to pages: <code>/api/v1/sites/:siteId/pages/:pageId/blocks</code>.</p>
+<h2>Block CRUD</h2>
+<h3>List blocks</h3>
+<pre><code>GET /api/v1/sites/:siteId/pages/:pageId/blocks
+</code></pre>
+<p>Query params: <code>page</code>, <code>limit</code>, <code>blockType</code>, <code>isVisible</code>.</p>
+<h3>Create a block</h3>
+<pre><code>POST /api/v1/sites/:siteId/pages/:pageId/blocks
+</code></pre>
+<pre><code class="language-json">{
+  "blockType": "hero",
+  "content": {
+    "headline": "Welcome to Our Site",
+    "subheadline": "A brief description.",
+    "ctaText": "Get Started",
+    "ctaLink": "/signup",
+    "alignment": "center"
+  },
+  "sortOrder": 0,
+  "isVisible": true
+}
+</code></pre>
+<h3>Reorder blocks</h3>
+<pre><code>PUT /api/v1/sites/:siteId/pages/:pageId/blocks/reorder
+</code></pre>
+<pre><code class="language-json">{
+  "blockIds": ["uuid-1", "uuid-2", "uuid-3"]
+}
+</code></pre>
+<h2>Block Type Catalog</h2>
+<p>Fetch the full catalog of available block types:</p>
+<pre><code>GET /api/v1/blocks/types
+GET /api/v1/blocks/types?category=content
+</code></pre>
+<h3>Layout Blocks</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hero</code></td>
+<td>Hero</td>
+<td>Full-width hero with headline, subheadline, CTA buttons</td>
+</tr>
+<tr>
+<td><code>cta</code></td>
+<td>Call to Action</td>
+<td>Prominent CTA section with headline and button</td>
+</tr>
+<tr>
+<td><code>bento_grid</code></td>
+<td>Bento Grid</td>
+<td>Asymmetric bento-style grid layout</td>
+</tr>
+</tbody>
+</table>
+<h3>Content Blocks</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text</code></td>
+<td>Text</td>
+<td>Plain or Markdown formatted text</td>
+</tr>
+<tr>
+<td><code>rich_text</code></td>
+<td>Rich Text</td>
+<td>HTML rich text with formatting</td>
+</tr>
+<tr>
+<td><code>feature_grid</code></td>
+<td>Feature Grid</td>
+<td>Grid of feature cards with icon, title, description</td>
+</tr>
+<tr>
+<td><code>pricing_table</code></td>
+<td>Pricing Table</td>
+<td>Pricing tiers with features and CTA buttons</td>
+</tr>
+<tr>
+<td><code>testimonial</code></td>
+<td>Testimonials</td>
+<td>Customer testimonials in grid or carousel</td>
+</tr>
+<tr>
+<td><code>faq</code></td>
+<td>FAQ</td>
+<td>Accordion-style frequently asked questions</td>
+</tr>
+<tr>
+<td><code>stats_bar</code></td>
+<td>Stats Bar</td>
+<td>Key statistics or metrics display</td>
+</tr>
+<tr>
+<td><code>timeline</code></td>
+<td>Timeline</td>
+<td>Chronological events or milestones</td>
+</tr>
+<tr>
+<td><code>code_block</code></td>
+<td>Code Block</td>
+<td>Syntax-highlighted code snippet</td>
+</tr>
+<tr>
+<td><code>custom</code></td>
+<td>Custom HTML</td>
+<td>Raw HTML, CSS, and JavaScript</td>
+</tr>
+</tbody>
+</table>
+<h3>Media Blocks</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code></td>
+<td>Image</td>
+<td>Single image with alt text and caption</td>
+</tr>
+<tr>
+<td><code>video</code></td>
+<td>Video</td>
+<td>Embedded YouTube or Vimeo video</td>
+</tr>
+<tr>
+<td><code>gallery</code></td>
+<td>Gallery</td>
+<td>Image gallery in grid, masonry, or carousel layout</td>
+</tr>
+</tbody>
+</table>
+<h3>Interactive Blocks</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>contact_form</code></td>
+<td>Contact Form</td>
+<td>Configurable form with custom fields</td>
+</tr>
+<tr>
+<td><code>newsletter</code></td>
+<td>Newsletter</td>
+<td>Email signup block</td>
+</tr>
+</tbody>
+</table>
+<h3>Artist Blocks</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>embed_player</code></td>
+<td>Embed Player</td>
+<td>Spotify, YouTube, SoundCloud embeds</td>
+</tr>
+<tr>
+<td><code>release_list</code></td>
+<td>Release List</td>
+<td>Music releases (albums, EPs, singles)</td>
+</tr>
+<tr>
+<td><code>event_list</code></td>
+<td>Event List</td>
+<td>Upcoming shows and events</td>
+</tr>
+<tr>
+<td><code>social_links</code></td>
+<td>Social Links</td>
+<td>Social media links with icons</td>
+</tr>
+<tr>
+<td><code>link_tree</code></td>
+<td>Link Tree</td>
+<td>Linktree-style page with avatar and links</td>
+</tr>
+<tr>
+<td><code>artist_bio</code></td>
+<td>Artist Bio</td>
+<td>Biography with photo, genres, social links</td>
+</tr>
+</tbody>
+</table>
+<h2>Plugin Block Types</h2>
+<p>Plugins can register additional block types. The Docs plugin adds <code>doc_callout</code> and <code>doc_code</code>. The Support plugin adds <code>support_button</code>. The Resonance plugin adds analytics-enabled variants.</p>
+<p>Fetch the complete list (including plugin blocks) from the manifest:</p>
+<pre><code>GET /api/v1/plugins/manifest
+</code></pre>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link active","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Content Blocks"}],["$","p",null,{"children":"The composable block system with 23 built-in types across 5 categories."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/core-concepts/pages/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Pages"}]]}],["$","$L8",null,{"href":"/docs/core-concepts/media/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Media Library"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Content Blocks - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"The composable block system with 23 built-in types across 5 categories."}]]
+1:null

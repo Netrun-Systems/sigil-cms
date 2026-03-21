@@ -1,0 +1,143 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","core-concepts","d"]
+5:["slug","themes","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","themes","d"],{"children":["__PAGE__?{\"category\":\"core-concepts\",\"slug\":\"themes\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","themes","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:Te1d,<h2>Theme Model</h2>
+<p>Themes define the visual identity of a site through design tokens. Each site can have multiple themes with one active at a time.</p>
+<h3>Theme Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Theme name</td>
+</tr>
+<tr>
+<td><code>baseTheme</code></td>
+<td>string</td>
+<td>Preset: <code>netrun-dark</code>, <code>kog</code>, <code>intirkon</code>, <code>minimal</code>, <code>frost</code></td>
+</tr>
+<tr>
+<td><code>isActive</code></td>
+<td>boolean</td>
+<td>Whether this is the active theme</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td>object</td>
+<td>Design tokens (colors, typography, spacing, effects)</td>
+</tr>
+<tr>
+<td><code>customCss</code></td>
+<td>string</td>
+<td>Additional custom CSS</td>
+</tr>
+</tbody>
+</table>
+<h3>Token Structure</h3>
+<pre><code class="language-json">{
+  "tokens": {
+    "colors": {
+      "primary": "#90b9ab",
+      "secondary": "#c084fc",
+      "background": "#0a0a0a",
+      "foreground": "#e5e5e5"
+    },
+    "typography": {
+      "headingFont": "Futura",
+      "bodyFont": "Inter",
+      "baseSize": 16,
+      "headingWeight": 700
+    },
+    "spacing": {
+      "sectionPadding": "80px",
+      "blockGap": "24px"
+    },
+    "effects": {
+      "borderRadius": "8px",
+      "shadow": "0 4px 12px rgba(0,0,0,0.15)",
+      "glassBlur": "12px"
+    }
+  }
+}
+</code></pre>
+<h2>Theme API</h2>
+<p>All routes are under <code>/api/v1/sites/:siteId/themes</code>.</p>
+<h3>List themes</h3>
+<pre><code>GET /api/v1/sites/:siteId/themes
+</code></pre>
+<p>Query params: <code>page</code>, <code>limit</code>, <code>baseTheme</code>, <code>isActive</code>.</p>
+<h3>Get active theme</h3>
+<pre><code>GET /api/v1/sites/:siteId/themes/active
+</code></pre>
+<h3>Create a theme</h3>
+<pre><code>POST /api/v1/sites/:siteId/themes
+</code></pre>
+<h3>Activate a theme</h3>
+<pre><code>POST /api/v1/sites/:siteId/themes/:id/activate
+</code></pre>
+<p>Deactivates all other themes for this site.</p>
+<h3>Duplicate a theme</h3>
+<pre><code>POST /api/v1/sites/:siteId/themes/:id/duplicate
+</code></pre>
+<pre><code class="language-json">{ "name": "My Theme Copy" }
+</code></pre>
+<h3>Public theme</h3>
+<p>Consumer sites fetch the active theme without authentication:</p>
+<pre><code>GET /api/v1/public/sites/:siteSlug/theme
+</code></pre>
+<h2>Design Playground</h2>
+<p>The admin panel includes a visual Design Playground with:</p>
+<ul>
+<li><strong>70+ Google Fonts</strong> -- searchable font browser</li>
+<li><strong>Custom font upload</strong> -- <code>.woff2</code>, <code>.ttf</code>, <code>.otf</code> files</li>
+<li><strong>Button shapes</strong> -- rounded, pill, square, with size variants</li>
+<li><strong>Spacing controls</strong> -- section padding, block gaps</li>
+<li><strong>Shadow presets</strong> -- subtle, medium, dramatic</li>
+<li><strong>Glass effects</strong> -- backdrop blur with opacity</li>
+</ul>
+<h2>Theme Presets</h2>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>netrun-dark</code></td>
+<td>Dark theme with sage green accents (#90b9ab)</td>
+</tr>
+<tr>
+<td><code>kog</code></td>
+<td>KOG CRM brand theme</td>
+</tr>
+<tr>
+<td><code>intirkon</code></td>
+<td>Intirkon BI platform theme</td>
+</tr>
+<tr>
+<td><code>minimal</code></td>
+<td>Clean, light theme with minimal styling</td>
+</tr>
+<tr>
+<td><code>frost</code></td>
+<td>Frost reference implementation theme</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>ThemeProvider</code> React context from <code>@netrun-cms/theme</code> applies tokens as CSS variables.</p>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link active","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Themes & Design Playground"}],["$","p",null,{"children":"Design tokens, 70+ Google Fonts, button shapes, and visual theming."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/core-concepts/media/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Media Library"}]]}],["$","$L8",null,{"href":"/docs/core-concepts/plugins/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Plugin System"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Themes & Design Playground - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Design tokens, 70+ Google Fonts, button shapes, and visual theming."}]]
+1:null

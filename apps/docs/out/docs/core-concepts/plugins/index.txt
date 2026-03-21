@@ -1,0 +1,238 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","core-concepts","d"]
+5:["slug","plugins","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","plugins","d"],{"children":["__PAGE__?{\"category\":\"core-concepts\",\"slug\":\"plugins\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","core-concepts","d"],{"children":[["slug","plugins","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T1745,<h2>Architecture</h2>
+<p>Sigil plugins are self-contained feature modules that register routes, block types, admin navigation, and database migrations through a unified <code>PluginContext</code> API.</p>
+<p><strong>Key design principle</strong>: missing environment variables cause a graceful skip -- the core CMS always works. Plugins only activate when their required env vars are present.</p>
+<h2>Plugin Interface</h2>
+<p>Every plugin exports a default <code>CmsPlugin</code> object:</p>
+<pre><code class="language-typescript">interface CmsPlugin {
+  id: string;            // Unique identifier (e.g., 'artist')
+  name: string;          // Human-readable name
+  version: string;       // Semver version
+  requiredEnv?: string[];// Env vars needed (skip if missing)
+  register(ctx: PluginContext): void | Promise&#x3C;void>;
+}
+</code></pre>
+<h2>Plugin Context</h2>
+<p>The <code>register()</code> function receives a <code>PluginContext</code> with these methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>addRoutes(path, router)</code></td>
+<td>Mount authenticated routes under <code>/api/v1/sites/:siteId/&#x3C;path></code></td>
+</tr>
+<tr>
+<td><code>addPublicRoutes(path, router)</code></td>
+<td>Mount public routes under <code>/api/v1/public/&#x3C;path></code></td>
+</tr>
+<tr>
+<td><code>addGlobalRoutes(path, router)</code></td>
+<td>Mount global routes under <code>/api/v1/&#x3C;path></code></td>
+</tr>
+<tr>
+<td><code>addBlockTypes(types)</code></td>
+<td>Register content block types</td>
+</tr>
+<tr>
+<td><code>addAdminNav(section)</code></td>
+<td>Add a navigation section to the admin sidebar</td>
+</tr>
+<tr>
+<td><code>addAdminRoutes(routes)</code></td>
+<td>Register admin panel routes for React lazy loading</td>
+</tr>
+<tr>
+<td><code>runMigration(sql)</code></td>
+<td>Execute raw SQL (CREATE TABLE IF NOT EXISTS)</td>
+</tr>
+<tr>
+<td><code>getConfig(key)</code></td>
+<td>Read an environment variable</td>
+</tr>
+<tr>
+<td><code>emitEvent(event)</code></td>
+<td>Emit a CMS event through the webhook event bus</td>
+</tr>
+</tbody>
+</table>
+<h2>Plugin Manifest</h2>
+<p>The admin SPA fetches plugin metadata to build the UI:</p>
+<pre><code>GET /api/v1/plugins/manifest
+</code></pre>
+<p>Returns:</p>
+<pre><code class="language-json">{
+  "plugins": [
+    {
+      "id": "artist",
+      "name": "Artist",
+      "version": "1.0.0",
+      "enabled": true,
+      "nav": [...],
+      "routes": [...],
+      "blockTypes": [...]
+    }
+  ]
+}
+</code></pre>
+<h2>Available Plugins</h2>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>Features</th>
+<th>Required Env</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SEO</strong></td>
+<td>Sitemap.xml, RSS feed</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Artist</strong></td>
+<td>Releases, events, profiles, 6 block types</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Mailing List</strong></td>
+<td>Subscribe/unsubscribe, broadcast</td>
+<td>-- (ACS optional)</td>
+</tr>
+<tr>
+<td><strong>Contact</strong></td>
+<td>Form submissions, booking inquiries</td>
+<td>-- (ACS optional)</td>
+</tr>
+<tr>
+<td><strong>Photos</strong></td>
+<td>Azure Blob upload, Gemini AI curation</td>
+<td><code>AZURE_STORAGE_CONNECTION_STRING</code></td>
+</tr>
+<tr>
+<td><strong>AI Advisor</strong></td>
+<td>Gemini chat, pgvector RAG, TTS</td>
+<td><code>GEMINI_API_KEY</code></td>
+</tr>
+<tr>
+<td><strong>Store</strong></td>
+<td>Stripe products, checkout, orders, webhooks</td>
+<td><code>STRIPE_SECRET_KEY</code></td>
+</tr>
+<tr>
+<td><strong>Merch</strong></td>
+<td>Printful print-on-demand catalog</td>
+<td><code>PRINTFUL_API_KEY</code></td>
+</tr>
+<tr>
+<td><strong>PayPal</strong></td>
+<td>PayPal Orders API, Smart Buttons</td>
+<td><code>PAYPAL_CLIENT_ID</code></td>
+</tr>
+<tr>
+<td><strong>Booking</strong></td>
+<td>Appointments, Google Calendar sync</td>
+<td>-- (GCal optional)</td>
+</tr>
+<tr>
+<td><strong>Docs</strong></td>
+<td>Knowledge base, versioning, search, feedback</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Resonance</strong></td>
+<td>Block analytics, A/B testing, AI suggestions</td>
+<td>-- (Gemini optional)</td>
+</tr>
+<tr>
+<td><strong>Migrate</strong></td>
+<td>Import from WordPress, Shopify, Square Online</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Support</strong></td>
+<td>Floating help panel, search, chat, announcements</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Charlotte</strong></td>
+<td>Charlotte AI assistant widget</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Webhooks</strong></td>
+<td>Event bus, delivery tracking, retry</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Kamera</strong></td>
+<td>Survai/KAMERA integration</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>Intirkast</strong></td>
+<td>Broadcasting/streaming integration</td>
+<td>--</td>
+</tr>
+<tr>
+<td><strong>KOG</strong></td>
+<td>CRM integration</td>
+<td>--</td>
+</tr>
+</tbody>
+</table>
+<h2>Creating a Plugin</h2>
+<pre><code class="language-typescript">import type { CmsPlugin } from '@netrun-cms/plugin-runtime';
+
+const myPlugin: CmsPlugin = {
+  id: 'my-plugin',
+  name: 'My Custom Plugin',
+  version: '1.0.0',
+
+  async register(ctx) {
+    // Run migrations
+    await ctx.runMigration(`
+      CREATE TABLE IF NOT EXISTS cms_my_table (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        site_id UUID NOT NULL REFERENCES cms_sites(id) ON DELETE CASCADE,
+        data JSONB DEFAULT '{}'
+      );
+    `);
+
+    // Add routes
+    const router = createMyRoutes(ctx.db, ctx.logger);
+    ctx.addRoutes('my-plugin', router);
+
+    // Register block types
+    ctx.addBlockTypes([
+      { type: 'my_block', label: 'My Block', category: 'Custom' },
+    ]);
+
+    // Add admin navigation
+    ctx.addAdminNav({
+      title: 'My Plugin',
+      siteScoped: true,
+      items: [
+        { label: 'Dashboard', icon: 'LayoutDashboard', href: 'my-plugin' },
+      ],
+    });
+  },
+};
+
+export default myPlugin;
+</code></pre>
+<p>Place your plugin in <code>plugins/my-plugin/</code> with <code>src/index.ts</code>, <code>package.json</code>, and <code>tsconfig.json</code>.</p>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link active","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Plugin System"}],["$","p",null,{"children":"Sigil's 19-plugin architecture with env-gated activation and graceful degradation."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/core-concepts/themes/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Themes & Design Playground"}]]}],["$","$L8",null,{"href":"/docs/core-concepts/scheduling/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Content Scheduling"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Plugin System - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Sigil's 19-plugin architecture with env-gated activation and graceful degradation."}]]
+1:null

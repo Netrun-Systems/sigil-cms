@@ -660,6 +660,19 @@ export const createPageSchema = z.object({
   sortOrder: z.number().int().default(0),
 });
 
+export const schedulePageSchema = z.object({
+  publishAt: z.string().datetime().optional().nullable(),
+  unpublishAt: z.string().datetime().optional().nullable(),
+}).refine(
+  (data) => {
+    if (data.publishAt && data.unpublishAt) {
+      return new Date(data.unpublishAt) > new Date(data.publishAt);
+    }
+    return true;
+  },
+  { message: 'unpublishAt must be after publishAt', path: ['unpublishAt'] }
+);
+
 export const blockSettingsSchema = z.object({
   padding: z.enum(['none', 'sm', 'md', 'lg', 'xl']).optional(),
   margin: z.enum(['none', 'sm', 'md', 'lg', 'xl']).optional(),

@@ -1,0 +1,489 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","developer-guide","d"]
+5:["slug","rest-api","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","developer-guide","d"],{"children":[["slug","rest-api","d"],{"children":["__PAGE__?{\"category\":\"developer-guide\",\"slug\":\"rest-api\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","developer-guide","d"],{"children":[["slug","rest-api","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:T2428,<h2>Base URL</h2>
+<pre><code>https://your-instance.com/api/v1
+</code></pre>
+<h2>Authentication</h2>
+<p>All authenticated endpoints require a JWT Bearer token:</p>
+<pre><code>Authorization: Bearer &#x3C;your-jwt-token>
+</code></pre>
+<h2>Response Format</h2>
+<p>All responses follow this shape:</p>
+<pre><code class="language-json">{
+  "success": true,
+  "data": { ... },
+  "meta": { "total": 100, "page": 1, "pageSize": 20 }
+}
+</code></pre>
+<p>Error responses:</p>
+<pre><code class="language-json">{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Page not found"
+  }
+}
+</code></pre>
+<h2>Sites</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/sites</code></td>
+<td>Yes</td>
+<td>List sites for current tenant</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/sites</code></td>
+<td>admin, editor</td>
+<td>Create a site</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/sites/:id</code></td>
+<td>Yes</td>
+<td>Get site by ID</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/sites/:id</code></td>
+<td>admin, editor</td>
+<td>Update a site</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/sites/:id</code></td>
+<td>admin</td>
+<td>Delete a site</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/sites/:id/domain</code></td>
+<td>admin, editor</td>
+<td>Set custom domain</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/sites/:id/domain</code></td>
+<td>admin, editor</td>
+<td>Remove custom domain</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/sites/:id/domain/verify</code></td>
+<td>admin, editor</td>
+<td>Verify DNS config</td>
+</tr>
+</tbody>
+</table>
+<h2>Pages</h2>
+<p>All scoped to <code>/sites/:siteId/pages</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Yes</td>
+<td>List pages (filter: status, language, parentId)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/</code></td>
+<td>admin, editor, author</td>
+<td>Create a page</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Yes</td>
+<td>Get page (query: includeBlocks)</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor, author</td>
+<td>Update a page</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor</td>
+<td>Delete page + blocks</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id/translations</code></td>
+<td>Yes</td>
+<td>List translations</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/:id/translate</code></td>
+<td>admin, editor, author</td>
+<td>Clone page to new language</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/:id/schedule</code></td>
+<td>admin, editor</td>
+<td>Set publish/unpublish schedule</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:pageId/revisions</code></td>
+<td>Yes</td>
+<td>List revision history</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:pageId/revisions/:revisionId</code></td>
+<td>Yes</td>
+<td>Get specific revision</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/:pageId/revisions/:revisionId/revert</code></td>
+<td>admin, editor</td>
+<td>Revert to revision</td>
+</tr>
+</tbody>
+</table>
+<h2>Content Blocks</h2>
+<p>All scoped to <code>/sites/:siteId/pages/:pageId/blocks</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Yes</td>
+<td>List blocks (filter: blockType, isVisible)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/</code></td>
+<td>admin, editor, author</td>
+<td>Create a block</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/reorder</code></td>
+<td>admin, editor, author</td>
+<td>Reorder blocks</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Yes</td>
+<td>Get block by ID</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor, author</td>
+<td>Update block</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor</td>
+<td>Delete block</td>
+</tr>
+</tbody>
+</table>
+<h2>Block Types Catalog</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/blocks/types</code></td>
+<td>No</td>
+<td>List all block types (query: category)</td>
+</tr>
+</tbody>
+</table>
+<p>Categories: <code>layout</code>, <code>content</code>, <code>media</code>, <code>interactive</code>, <code>artist</code>.</p>
+<h2>Media</h2>
+<p>All scoped to <code>/sites/:siteId/media</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/upload</code></td>
+<td>admin, editor, author</td>
+<td>Upload single file (multipart, 50MB max)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/upload/bulk</code></td>
+<td>admin, editor, author</td>
+<td>Upload up to 20 files</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Yes</td>
+<td>List media (filter: folder, mimeType, search)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/folders</code></td>
+<td>Yes</td>
+<td>List folders with counts</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/</code></td>
+<td>admin, editor, author</td>
+<td>Create media record (URL reference)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Yes</td>
+<td>Get media item</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor, author</td>
+<td>Update metadata</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor</td>
+<td>Delete media item</td>
+</tr>
+</tbody>
+</table>
+<h2>Themes</h2>
+<p>All scoped to <code>/sites/:siteId/themes</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Yes</td>
+<td>List themes (filter: baseTheme, isActive)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/active</code></td>
+<td>Yes</td>
+<td>Get active theme</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/</code></td>
+<td>admin, editor</td>
+<td>Create a theme</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Yes</td>
+<td>Get theme by ID</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id</code></td>
+<td>admin, editor</td>
+<td>Update theme</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/:id/activate</code></td>
+<td>admin, editor</td>
+<td>Activate theme</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/:id/duplicate</code></td>
+<td>admin, editor</td>
+<td>Duplicate theme</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/:id</code></td>
+<td>admin</td>
+<td>Delete theme (not active)</td>
+</tr>
+</tbody>
+</table>
+<h2>Public Endpoints (No Auth)</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/public/sites/:siteSlug/pages/:pageSlug</code></td>
+<td>Published page with blocks</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/public/sites/:siteSlug/pages</code></td>
+<td>All published pages</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/public/sites/:siteSlug/theme</code></td>
+<td>Active theme</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/public/sites/:siteSlug/languages</code></td>
+<td>Available languages</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/public/sites/by-domain/:domain</code></td>
+<td>Resolve site by domain</td>
+</tr>
+</tbody>
+</table>
+<h2>Plugin Manifest</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/plugins/manifest</code></td>
+<td>List loaded plugins with nav, routes, block types</td>
+</tr>
+</tbody>
+</table>
+<h2>Seed</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/seed</code></td>
+<td>Bootstrap demo data (requires <code>X-Seed-Key</code> header)</td>
+</tr>
+</tbody>
+</table>
+<h2>Pagination</h2>
+<p>List endpoints support:</p>
+<ul>
+<li><code>page</code> -- page number (default: 1)</li>
+<li><code>limit</code> -- items per page (default: 20, max: 100)</li>
+</ul>
+<p>Response includes <code>meta.total</code>, <code>meta.page</code>, <code>meta.pageSize</code>.</p>
+<h2>Error Codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>HTTP Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UNAUTHORIZED</code></td>
+<td>401</td>
+<td>No auth header or invalid token</td>
+</tr>
+<tr>
+<td><code>TOKEN_EXPIRED</code></td>
+<td>401</td>
+<td>JWT token has expired</td>
+</tr>
+<tr>
+<td><code>INVALID_TOKEN</code></td>
+<td>401</td>
+<td>Token failed verification</td>
+</tr>
+<tr>
+<td><code>FORBIDDEN</code></td>
+<td>403</td>
+<td>Insufficient role permissions</td>
+</tr>
+<tr>
+<td><code>NOT_FOUND</code></td>
+<td>404</td>
+<td>Resource not found</td>
+</tr>
+<tr>
+<td><code>VALIDATION_ERROR</code></td>
+<td>400</td>
+<td>Request body validation failed</td>
+</tr>
+</tbody>
+</table>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link active","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"REST API Reference"}],["$","p",null,{"children":"Complete reference for all Sigil CMS REST API endpoints."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/core-concepts/scheduling/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Content Scheduling"}]]}],["$","$L8",null,{"href":"/docs/developer-guide/typescript-sdk/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"TypeScript SDK"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"REST API Reference - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Complete reference for all Sigil CMS REST API endpoints."}]]
+1:null

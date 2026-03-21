@@ -1,0 +1,138 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","getting-started","d"]
+5:["slug","quickstart","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","getting-started","d"],{"children":[["slug","quickstart","d"],{"children":["__PAGE__?{\"category\":\"getting-started\",\"slug\":\"quickstart\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","getting-started","d"],{"children":[["slug","quickstart","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:Te6f,<h2>Prerequisites</h2>
+<ul>
+<li>Node.js >= 20</li>
+<li>pnpm 9.15+</li>
+<li>PostgreSQL database</li>
+</ul>
+<h2>Option 1: CLI Scaffolding</h2>
+<p>The fastest way to get started:</p>
+<pre><code class="language-bash"># Global install
+npm install -g sigil-cms
+
+# Create a new project
+sigil create my-site
+cd my-site
+npm install
+sigil dev
+</code></pre>
+<p>This creates a project with:</p>
+<ul>
+<li><code>package.json</code> with Sigil dependencies</li>
+<li><code>sigil.config.ts</code> configuration file</li>
+<li><code>.env.example</code> environment template</li>
+<li><code>tsconfig.json</code> TypeScript configuration</li>
+<li><code>content/</code>, <code>src/</code>, <code>public/</code> directories</li>
+</ul>
+<h2>Option 2: From the Monorepo</h2>
+<p>For contributors or full-stack development:</p>
+<pre><code class="language-bash">git clone https://github.com/Netrun-Systems/netrun-cms.git
+cd netrun-cms
+pnpm install
+pnpm build
+pnpm dev
+</code></pre>
+<p>This starts:</p>
+<ul>
+<li><strong>API</strong> on <code>http://localhost:3001</code></li>
+<li><strong>Admin panel</strong> on <code>http://localhost:3001</code> (Vite dev)</li>
+</ul>
+<h2>Environment Variables</h2>
+<p>Copy <code>apps/api/.env.example</code> and set at minimum:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>Yes</td>
+<td>PostgreSQL connection string</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>Yes</td>
+<td>Auth token signing secret</td>
+</tr>
+<tr>
+<td><code>CORS_ORIGIN</code></td>
+<td>No</td>
+<td>Allowed origins (comma-separated)</td>
+</tr>
+</tbody>
+</table>
+<p>Optional variables enable plugins:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Enables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STRIPE_SECRET_KEY</code></td>
+<td>Store plugin (e-commerce)</td>
+</tr>
+<tr>
+<td><code>PRINTFUL_API_KEY</code></td>
+<td>Merch plugin (print-on-demand)</td>
+</tr>
+<tr>
+<td><code>PAYPAL_CLIENT_ID</code> + <code>_SECRET</code></td>
+<td>PayPal plugin</td>
+</tr>
+<tr>
+<td><code>GEMINI_API_KEY</code></td>
+<td>AI Advisor + Resonance AI suggestions</td>
+</tr>
+<tr>
+<td><code>AZURE_STORAGE_CONNECTION_STRING</code></td>
+<td>Photos plugin (Azure Blob Storage)</td>
+</tr>
+<tr>
+<td><code>GOOGLE_CALENDAR_CREDENTIALS</code></td>
+<td>Booking plugin (calendar sync)</td>
+</tr>
+</tbody>
+</table>
+<h2>Database Setup</h2>
+<pre><code class="language-bash">cd packages/@netrun-cms/db
+pnpm db:generate    # Generate migrations from schema
+pnpm db:migrate     # Apply pending migrations
+pnpm db:push        # Push schema directly (dev only)
+pnpm db:studio      # Open Drizzle Studio UI
+</code></pre>
+<p>Or via the CLI:</p>
+<pre><code class="language-bash">sigil migrate              # Apply pending migrations
+sigil migrate --generate   # Generate from schema changes
+sigil migrate --status     # Show migration status
+</code></pre>
+<h2>Seed Demo Content</h2>
+<pre><code class="language-bash">sigil seed             # Populate with sample data
+sigil seed --reset     # Drop existing data first
+</code></pre>
+<h2>Verify Installation</h2>
+<pre><code class="language-bash">sigil info
+</code></pre>
+<p>This displays Node.js version, installed Sigil packages, config file status, and database connection status.</p>
+<h2>Next Steps</h2>
+<ul>
+<li><a href="/docs/core-concepts/sites/">Core Concepts: Sites</a> -- understand multi-tenancy</li>
+<li><a href="/docs/core-concepts/pages/">Core Concepts: Pages</a> -- create content</li>
+<li><a href="/docs/core-concepts/blocks/">Core Concepts: Blocks</a> -- composable content blocks</li>
+<li><a href="/docs/developer-guide/rest-api/">REST API Reference</a> -- full endpoint documentation</li>
+</ul>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link active","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Quick Start"}],["$","p",null,{"children":"Install Sigil CMS and create your first site in under 5 minutes."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/getting-started/introduction/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Introduction"}]]}],["$","$L8",null,{"href":"/docs/getting-started/deployment/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Deployment"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Quick Start - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Install Sigil CMS and create your first site in under 5 minutes."}]]
+1:null

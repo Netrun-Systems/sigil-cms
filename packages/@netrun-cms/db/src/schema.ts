@@ -116,6 +116,8 @@ export const pages = pgTable('cms_pages', {
   fullPath: text('full_path'),
   status: varchar('status', { length: 20 }).notNull().default('draft'),
   publishedAt: timestamp('published_at'),
+  publishAt: timestamp('publish_at'),
+  unpublishAt: timestamp('unpublish_at'),
   language: varchar('language', { length: 5 }).notNull().default('en'),
   metaTitle: varchar('meta_title', { length: 60 }),
   metaDescription: text('meta_description'),
@@ -133,6 +135,8 @@ export const pages = pgTable('cms_pages', {
   statusIdx: index('idx_cms_pages_status').on(table.status),
   publishedAtIdx: index('idx_cms_pages_published_at').on(table.publishedAt),
   fullPathIdx: index('idx_cms_pages_full_path').on(table.fullPath),
+  publishAtIdx: index('idx_cms_pages_publish_at').on(table.publishAt),
+  unpublishAtIdx: index('idx_cms_pages_unpublish_at').on(table.unpublishAt),
   fullTextIdx: index('idx_cms_pages_fulltext').using('gin',
     sql`to_tsvector('english', ${table.title} || ' ' || COALESCE(${table.metaDescription}, ''))`
   ),

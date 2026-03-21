@@ -1,0 +1,46 @@
+{
+  "name": "sigil-cms",
+  "version": "0.1.0",
+  "description": "CLI for Sigil CMS — scaffold, develop, build, and manage Sigil sites",
+  "bin": {
+    "sigil": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --dts --clean",
+    "dev": "tsup src/index.ts --format cjs --dts --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^20.0.0"
+  },
+  "keywords": [
+    "cms",
+    "headless-cms",
+    "sigil",
+    "cli",
+    "scaffold"
+  ],
+  "author": "Netrun Systems <dev@netrunsystems.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Netrun-Systems/netrun-cms",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

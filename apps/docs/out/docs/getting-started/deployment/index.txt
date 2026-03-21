@@ -1,0 +1,104 @@
+3:I[2728,[],""]
+6:I[9836,[],""]
+4:["category","getting-started","d"]
+5:["slug","deployment","d"]
+0:["BY2EV7NIY7ATHraQn-9w7",[[["",{"children":["docs",{"children":[["category","getting-started","d"],{"children":[["slug","deployment","d"],{"children":["__PAGE__?{\"category\":\"getting-started\",\"slug\":\"deployment\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["docs",{"children":[["category","getting-started","d"],{"children":[["slug","deployment","d"],{"children":["__PAGE__",{},[["$L1","$L2",null],null],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children","$5","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children","$4","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children","docs","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/e0e912cd70e5f2c6.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"dark","children":[["$","head",null,{"children":[["$","link",null,{"rel":"preconnect","href":"https://fonts.googleapis.com"}],["$","link",null,{"rel":"preconnect","href":"https://fonts.gstatic.com","crossOrigin":""}],["$","link",null,{"href":"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap","rel":"stylesheet"}]]}],["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]]}]],null],null],["$L7",null]]]]
+8:I[5411,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],""]
+a:I[939,["411","static/chunks/411-a12015b87bf77fc9.js","689","static/chunks/app/docs/%5Bcategory%5D/%5Bslug%5D/page-f5552d401374f4db.js"],"SupportWidget"]
+9:Td67,<h2>Docker Deployment</h2>
+<p>Sigil ships with a multi-stage Dockerfile at <code>apps/api/Dockerfile</code>. Build context must be the repo root:</p>
+<pre><code class="language-bash">docker build -f apps/api/Dockerfile -t sigil-api .
+docker run -p 3000:3000 \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/sigil \
+  -e JWT_SECRET=your-secret-here \
+  sigil-api
+</code></pre>
+<p>The image uses <code>node:20-alpine</code>, runs on port 3000, and bundles all <code>@netrun-cms/*</code> packages.</p>
+<h2>Google Cloud Run</h2>
+<pre><code class="language-bash"># Build and push
+docker build -f apps/api/Dockerfile -t us-central1-docker.pkg.dev/PROJECT/repo/sigil-api:latest .
+docker push us-central1-docker.pkg.dev/PROJECT/repo/sigil-api:latest
+
+# Deploy
+gcloud run deploy sigil-api \
+  --image us-central1-docker.pkg.dev/PROJECT/repo/sigil-api:latest \
+  --port 3000 \
+  --set-env-vars DATABASE_URL=...,JWT_SECRET=... \
+  --region us-central1 \
+  --allow-unauthenticated
+</code></pre>
+<h2>Azure Container Apps</h2>
+<pre><code class="language-bash"># Build and push to ACR
+docker build -f apps/api/Dockerfile -t myregistry.azurecr.io/sigil-api:latest .
+docker push myregistry.azurecr.io/sigil-api:latest
+
+# Update Container App
+az containerapp update \
+  --name sigil-api \
+  --resource-group my-rg \
+  --image myregistry.azurecr.io/sigil-api:latest
+</code></pre>
+<p>Recommended Container App settings for development:</p>
+<ul>
+<li><strong>Min replicas</strong>: 0 (scales to zero = no cost when idle)</li>
+<li><strong>Max replicas</strong>: 1</li>
+<li><strong>CPU</strong>: 0.25 vCPU</li>
+<li><strong>Memory</strong>: 0.5 GB</li>
+<li><strong>Estimated cost</strong>: ~$5/month</li>
+</ul>
+<h2>Admin Panel (Static)</h2>
+<p>The admin is a Vite SPA that can be deployed to any static hosting:</p>
+<pre><code class="language-bash"># Build admin
+pnpm --filter @netrun-cms/admin build
+
+# Deploy to Azure Static Web Apps
+npx @azure/static-web-apps-cli deploy apps/admin/dist \
+  --deployment-token "YOUR_TOKEN"
+</code></pre>
+<p>Or deploy <code>apps/admin/dist/</code> to Vercel, Netlify, or Cloudflare Pages.</p>
+<h2>Database Requirements</h2>
+<p>Sigil requires PostgreSQL. The production schema lives in <code>packages/@netrun-cms/db/src/schema.ts</code> with 7 core tables:</p>
+<ul>
+<li><code>cms_tenants</code> -- multi-tenant isolation</li>
+<li><code>cms_sites</code> -- individual websites</li>
+<li><code>cms_pages</code> -- page content with hierarchy</li>
+<li><code>cms_content_blocks</code> -- composable blocks</li>
+<li><code>cms_media</code> -- file management</li>
+<li><code>cms_themes</code> -- design tokens</li>
+<li><code>cms_users</code> -- authentication</li>
+</ul>
+<p>Plugins create additional tables (e.g., <code>cms_doc_categories</code>, <code>cms_store_products</code>) via their <code>register()</code> migration hooks.</p>
+<h2>Required Environment Variables</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>PostgreSQL connection string</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>Token signing (generate with <code>openssl rand -base64 32</code>)</td>
+</tr>
+<tr>
+<td><code>CORS_ORIGIN</code></td>
+<td>Allowed frontend origins</td>
+</tr>
+<tr>
+<td><code>PORT</code></td>
+<td>Server port (default: 3000)</td>
+</tr>
+<tr>
+<td><code>NODE_ENV</code></td>
+<td><code>production</code> for optimized builds</td>
+</tr>
+</tbody>
+</table>
+2:["$","div",null,{"className":"docs-layout","children":[["$","aside",null,{"className":"docs-sidebar","children":[["$","div",null,{"className":"sidebar-logo","children":[["$","h1",null,{"children":[["$","span",null,{"children":"Sigil"}]," CMS"]}],["$","p",null,{"children":"Documentation"}]]}],["$","nav",null,{"children":[["$","div","getting-started",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Getting Started"}],[["$","$L8","getting-started/introduction",{"href":"/docs/getting-started/introduction","className":"sidebar-link","children":"Introduction"}],["$","$L8","getting-started/quickstart",{"href":"/docs/getting-started/quickstart","className":"sidebar-link","children":"Quick Start"}],["$","$L8","getting-started/deployment",{"href":"/docs/getting-started/deployment","className":"sidebar-link active","children":"Deployment"}]]]}],["$","div","core-concepts",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Core Concepts"}],[["$","$L8","core-concepts/sites",{"href":"/docs/core-concepts/sites","className":"sidebar-link","children":"Sites & Multi-Tenancy"}],["$","$L8","core-concepts/pages",{"href":"/docs/core-concepts/pages","className":"sidebar-link","children":"Pages"}],["$","$L8","core-concepts/blocks",{"href":"/docs/core-concepts/blocks","className":"sidebar-link","children":"Content Blocks"}],["$","$L8","core-concepts/media",{"href":"/docs/core-concepts/media","className":"sidebar-link","children":"Media Library"}],["$","$L8","core-concepts/themes",{"href":"/docs/core-concepts/themes","className":"sidebar-link","children":"Themes & Design Playground"}],["$","$L8","core-concepts/plugins",{"href":"/docs/core-concepts/plugins","className":"sidebar-link","children":"Plugin System"}],["$","$L8","core-concepts/scheduling",{"href":"/docs/core-concepts/scheduling","className":"sidebar-link","children":"Content Scheduling"}]]]}],["$","div","developer-guide",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Developer Guide"}],[["$","$L8","developer-guide/rest-api",{"href":"/docs/developer-guide/rest-api","className":"sidebar-link","children":"REST API Reference"}],["$","$L8","developer-guide/typescript-sdk",{"href":"/docs/developer-guide/typescript-sdk","className":"sidebar-link","children":"TypeScript SDK"}],["$","$L8","developer-guide/nextjs",{"href":"/docs/developer-guide/nextjs","className":"sidebar-link","children":"Next.js Integration"}],["$","$L8","developer-guide/cli",{"href":"/docs/developer-guide/cli","className":"sidebar-link","children":"CLI Reference"}],["$","$L8","developer-guide/authentication",{"href":"/docs/developer-guide/authentication","className":"sidebar-link","children":"Authentication & RBAC"}],["$","$L8","developer-guide/migration",{"href":"/docs/developer-guide/migration","className":"sidebar-link","children":"Migration from Other CMS"}]]]}],["$","div","plugins",{"className":"sidebar-category","children":[["$","span",null,{"className":"sidebar-category-label","children":"Plugins"}],[["$","$L8","plugins/artist",{"href":"/docs/plugins/artist","className":"sidebar-link","children":"Artist Plugin"}],["$","$L8","plugins/booking",{"href":"/docs/plugins/booking","className":"sidebar-link","children":"Booking Plugin"}],["$","$L8","plugins/store",{"href":"/docs/plugins/store","className":"sidebar-link","children":"Store Plugin"}],["$","$L8","plugins/mailing-list",{"href":"/docs/plugins/mailing-list","className":"sidebar-link","children":"Mailing List Plugin"}],["$","$L8","plugins/docs-plugin",{"href":"/docs/plugins/docs-plugin","className":"sidebar-link","children":"Docs Plugin"}],["$","$L8","plugins/resonance",{"href":"/docs/plugins/resonance","className":"sidebar-link","children":"Resonance Plugin"}]]]}]]}]]}],["$","main",null,{"className":"docs-main","children":["$","article",null,{"className":"docs-content","children":[["$","header",null,{"className":"doc-header","children":[["$","h1",null,{"children":"Deployment"}],["$","p",null,{"children":"Deploy Sigil CMS to Docker, Cloud Run, Azure, or Vercel."}]]}],["$","div",null,{"className":"prose","dangerouslySetInnerHTML":{"__html":"$9"}}],["$","nav",null,{"className":"doc-nav","children":[["$","$L8",null,{"href":"/docs/getting-started/quickstart/","children":[["$","span",null,{"className":"nav-label","children":"Previous"}],["$","span",null,{"className":"nav-title","children":"Quick Start"}]]}],["$","$L8",null,{"href":"/docs/core-concepts/sites/","className":"nav-next","children":[["$","span",null,{"className":"nav-label","children":"Next"}],["$","span",null,{"className":"nav-title","children":"Sites & Multi-Tenancy"}]]}]]}]]}]}],["$","$La",null,{}]]}]
+7:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","1",{"charSet":"utf-8"}],["$","title","2",{"children":"Deployment - Sigil CMS Docs"}],["$","meta","3",{"name":"description","content":"Deploy Sigil CMS to Docker, Cloud Run, Azure, or Vercel."}]]
+1:null
