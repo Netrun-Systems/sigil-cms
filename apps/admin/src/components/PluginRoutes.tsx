@@ -43,11 +43,22 @@ const knownPluginPages: Record<string, () => Promise<{ default: React.ComponentT
   'sites/:siteId/contacts': () => import('../pages/Contacts/ContactsList').then(m => ({ default: m.ContactsList as React.ComponentType })),
   // Advisor plugin
   'advisor': () => import('../pages/AdvisorPage').then(m => ({ default: m.AdvisorPage as React.ComponentType })),
-  // Store plugin (pages will be created when admin UI is built out)
-  // 'sites/:siteId/store/products': ...
-  // 'sites/:siteId/store/orders': ...
+  // Store plugin
+  'sites/:siteId/store/products': () => import('../pages/Store/ProductsList').then(m => ({ default: m.ProductsList as React.ComponentType })),
+  'sites/:siteId/store/orders': () => import('../pages/Store/OrdersList').then(m => ({ default: m.OrdersList as React.ComponentType })),
   // Merch plugin
-  // 'sites/:siteId/merch': ...
+  'sites/:siteId/merch': () => import('../pages/Merch/MerchList').then(m => ({ default: m.MerchList as React.ComponentType })),
+  // Booking plugin
+  'sites/:siteId/booking/services': () => import('../pages/Booking/ServicesList').then(m => ({ default: m.ServicesList as React.ComponentType })),
+  'sites/:siteId/booking/appointments': () => import('../pages/Booking/AppointmentsList').then(m => ({ default: m.AppointmentsList as React.ComponentType })),
+  'sites/:siteId/booking/availability': () => import('../pages/Booking/AvailabilityEditor').then(m => ({ default: m.AvailabilityEditor as React.ComponentType })),
+  // Docs plugin
+  'sites/:siteId/docs/articles': () => import('../pages/Docs/ArticlesList').then(m => ({ default: m.ArticlesList as React.ComponentType })),
+  'sites/:siteId/docs/categories': () => import('../pages/Docs/CategoriesList').then(m => ({ default: m.CategoriesList as React.ComponentType })),
+  'sites/:siteId/docs/feedback': () => import('../pages/Docs/FeedbackList').then(m => ({ default: m.FeedbackList as React.ComponentType })),
+  // Resonance plugin
+  'sites/:siteId/resonance': () => import('../pages/Resonance/ResonanceDashboard').then(m => ({ default: m.ResonanceDashboard as React.ComponentType })),
+  'sites/:siteId/resonance/experiments': () => import('../pages/Resonance/ExperimentsList').then(m => ({ default: m.ExperimentsList as React.ComponentType })),
 };
 
 // Create lazy components for known pages
