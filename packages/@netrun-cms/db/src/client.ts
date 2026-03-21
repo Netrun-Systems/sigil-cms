@@ -15,19 +15,28 @@ export interface DbConfig {
   ssl?: boolean | 'require' | 'prefer';
   max?: number;
   idleTimeout?: number;
+  /** Unix socket path for Cloud SQL connections */
+  host?: string;
 }
 
 /**
  * Create a database client with the given configuration
  */
 export function createDbClient(config: DbConfig): DbClient {
-  const { connectionString, ssl = true, max = 10, idleTimeout = 20 } = config;
+  const { connectionString, ssl = true, max = 10, idleTimeout = 20, host } = config;
 
-  const client = postgres(connectionString, {
+  const opts: Record<string, unknown> = {
     ssl: ssl === true ? 'require' : ssl === false ? false : ssl,
     max,
     idle_timeout: idleTimeout,
-  });
+  };
+
+  // Cloud SQL Unix socket support
+  if (host) {
+    opts.host = host;
+  }
+
+  const client = postgres(connectionString, opts);
 
   return drizzle(client, { schema });
 }

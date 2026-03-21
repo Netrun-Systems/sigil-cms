@@ -101,38 +101,45 @@ app.use(createHealthRoutes({
 // PLUGIN SYSTEM
 // ============================================================================
 
+// Manifest handler — set after plugins load, invoked by the route below
+let _manifestHandler: ((_req: unknown, res: { json: (data: unknown) => void }) => void) | null = null;
+
+// Register manifest route EARLY (before 404 handler) — handler is set later by initPlugins
+app.get('/api/v1/plugins/manifest', (_req, res) => {
+  if (_manifestHandler) {
+    _manifestHandler(_req, res);
+  } else {
+    res.json({ success: true, data: { plugins: [] } });
+  }
+});
+
 async function initPlugins() {
   try {
     const plugins = await loadEnabledPlugins();
 
-    if (plugins.length > 0) {
-      const registry = await loadPlugins(plugins, {
-        app,
-        db: getDb() as Parameters<typeof loadPlugins>[1]['db'],
-        logger: logger as Parameters<typeof loadPlugins>[1]['logger'],
-      });
+    logger.info({ count: plugins.length }, 'Loading plugins...');
 
-      // Plugin manifest endpoint — used by admin SPA
-      app.get('/api/v1/plugins/manifest', (_req, res) => {
-        res.json({ success: true, data: registry.getManifest() });
-      });
+    const registry = await loadPlugins(plugins, {
+      app,
+      db: getDb() as Parameters<typeof loadPlugins>[1]['db'],
+      logger: logger as Parameters<typeof loadPlugins>[1]['logger'],
+    });
 
-      logger.info({ count: plugins.length }, 'Plugin system initialized');
-    } else {
-      // No plugins — still provide empty manifest
-      app.get('/api/v1/plugins/manifest', (_req, res) => {
-        res.json({ success: true, data: { plugins: [] } });
-      });
-    }
+    const manifest = registry.getManifest();
+    logger.info({ pluginCount: manifest.plugins.length, pluginIds: manifest.plugins.map((p: { id: string }) => p.id) }, 'Plugin manifest built');
+
+    _manifestHandler = (_req, res) => {
+      res.json({ success: true, data: registry.getManifest() });
+    };
+
+    logger.info({ count: plugins.length, active: manifest.plugins.length }, 'Plugin system initialized');
   } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const errStack = err instanceof Error ? err.stack : '';
     logger.error(
-      { error: err instanceof Error ? err.message : String(err) },
+      { error: errMsg, stack: errStack },
       'Plugin system failed to initialize',
     );
-    // Still provide empty manifest so admin doesn't break
-    app.get('/api/v1/plugins/manifest', (_req, res) => {
-      res.json({ success: true, data: { plugins: [] } });
-    });
   }
 }
 
