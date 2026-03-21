@@ -1,49 +1,10 @@
-# NetrunCMS - Claude Code Project Instructions
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-NetrunCMS is a lean, multi-tenant headless CMS framework maximizing code reuse from the Netrun portfolio. It provides a composable content system with integrated design system and theme customization.
-
-**Estimated Code Reuse**: 72-78% from existing Netrun projects
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENT LAYER                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐        │
-│  │ Public Sites│  │ Admin Panel │  │ Theme Playground │        │
-│  │ (React 18)  │  │ Block Editor│  │ (from KOG)       │        │
-│  └─────────────┘  └─────────────┘  └──────────────────┘        │
-│                          │                                      │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  @netrun-cms/ui (64 components) + design system CSS     │   │
-│  │  @netrun-cms/theme (ThemeProvider + presets)            │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-┌─────────────────────────────────────────────────────────────────┐
-│                         API LAYER                                │
-│  Express.js + Drizzle ORM                                       │
-│  PostgreSQL with Row-Level Security (RLS)                       │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Package Structure
-
-```
-packages/
-├── @netrun-cms/core/     # Core types, enums, utilities
-├── @netrun-cms/ui/       # 64 Shadcn UI components + design system CSS
-├── @netrun-cms/theme/    # ThemeProvider + 4 presets (netrun, kog, intirkon, minimal)
-├── @netrun-cms/db/       # Drizzle schema for CMS tables
-└── @netrun-cms/blocks/   # (Planned) Content block components
-
-apps/
-├── admin/                # (Planned) Visual editor admin panel
-├── api/                  # (Planned) Express.js backend
-└── preview/              # (Planned) Public site renderer
-```
+**Sigil** (formerly NetrunCMS) is a multi-tenant headless CMS framework built as a pnpm monorepo with Turborepo orchestration. It provides composable content blocks, a plugin architecture with 12 feature plugins, a Design Playground with 70+ Google Fonts, and an admin panel with visual editing. Built for brand landing pages, artist sites, service businesses, and documentation portals.
 
 ## Development Commands
 
@@ -51,92 +12,111 @@ apps/
 # Install dependencies
 pnpm install
 
-# Build all packages
+# Build all packages (respects dependency order via Turbo)
 pnpm build
 
-# Run development mode
+# Development mode (all packages with hot reload)
 pnpm dev
 
-# Type check
+# Type check / lint all packages
 pnpm typecheck
+pnpm lint
 
-# Database migrations
-cd packages/@netrun-cms/db && pnpm db:generate
+# Run tests (API only currently has vitest configured)
+pnpm test
+pnpm --filter @netrun-cms/api test:watch   # Watch mode
+
+# Filter to single package
+pnpm --filter @netrun-cms/api dev          # API only (tsx watch, port 3001)
+pnpm --filter @netrun-cms/admin dev        # Admin only (Vite, port 3001)
+pnpm build --filter @netrun-cms/core       # Build single package
+
+# Database (from packages/@netrun-cms/db/)
+cd packages/@netrun-cms/db
+pnpm db:generate    # Generate migrations from schema changes
+pnpm db:migrate     # Run pending migrations
+pnpm db:push        # Push schema directly (dev only)
+pnpm db:studio      # Open Drizzle Studio UI
+
+# Clean everything
+pnpm clean          # Removes all dist/ and node_modules/
 ```
 
-## Key Files
+## Build Dependency Order
 
-| Package | File | Purpose |
-|---------|------|---------|
-| `@netrun-cms/core` | `src/index.ts` | Block types, theme tokens, utilities |
-| `@netrun-cms/ui` | `src/styles/netrun-design-system.css` | 1,415 lines CSS variables |
-| `@netrun-cms/theme` | `src/ThemeContext.tsx` | Theme provider with dark/light modes |
-| `@netrun-cms/theme` | `src/presets.ts` | 4 theme presets |
-| `@netrun-cms/db` | `src/schema.ts` | Drizzle schema for all CMS tables |
+Turbo handles this automatically, but when building manually:
+
+```
+@netrun-cms/core        (no deps — build first)
+  ├── @netrun-cms/db    (depends on core)
+  ├── @netrun-cms/theme (depends on core)
+  ├── @netrun-cms/ui    (no workspace deps, but build after core)
+  ├── @netrun-cms/embeds
+  └── @netrun-cms/blocks (depends on core, ui, theme)
+       ├── apps/api     (depends on core, db, theme + @netrun/shared libs)
+       └── apps/admin   (depends on core, ui, theme, blocks)
+```
+
+## Architecture
+
+**Monorepo**: pnpm workspaces + Turborepo. Node >= 20, pnpm 9.15.
+
+**Packages** (`packages/@netrun-cms/`):
+- **core** — TypeScript types, enums (28), Zod validation schemas, theme token defaults, utilities (`slugify`, `generatePagePath`, `tokensToCssVariables`)
+- **ui** — 64 Shadcn/Radix UI components + design system CSS (1,400+ variables). Exports components from `./` and CSS from `./styles`
+- **theme** — ThemeProvider (React context) + 4 presets (netrun-dark, kog, intirkon, minimal). Exports provider from `./` and presets from `./presets`
+- **blocks** — Composable content block components (Hero, Gallery, CTA, Pricing, FAQ, etc.)
+- **db** — Drizzle ORM schema, migrations, client. Tables: `cms_tenants`, `cms_sites`, `cms_themes`, `cms_pages`, `cms_content_blocks`, `cms_media`, `cms_users`. Uses PostgreSQL with RLS support
+- **embeds** — Platform embed components (Spotify, YouTube, etc.)
+
+**Apps** (`apps/`):
+- **api** — Express.js backend. Uses `tsx watch` for dev, `tsup` for production build (CJS, node18 target). Bundles @netrun-cms/* packages but externalizes @azure/* packages. Port 3001 dev / 3000 prod
+- **admin** — Vite + React 18 SPA. Code-split into vendor chunks (react, radix, query, forms, zod, icons). Deployed to Azure Static Web Apps
+
+## External Dependencies
+
+The API depends on shared libraries from `netrun-shared-ts` (referenced via `file:` paths):
+- `@netrun/error-handling` — Error classes, correlation IDs, Express error handler
+- `@netrun/health` — `/health` and `/ready` endpoint factory
+- `@netrun/logger` — Pino structured logging + request middleware
+- `@netrun/security-middleware` — Helmet, CSRF, rate limiting
+
+If these fail to resolve, rebuild them: `cd /data/workspace/github/netrun-shared-ts && npx turbo build`
+
+## Database
+
+- **ORM**: Drizzle with `postgres` driver
+- **Config**: `packages/@netrun-cms/db/drizzle.config.ts`
+- **Schema**: `packages/@netrun-cms/db/src/schema.ts` (27KB, 7 tables with check constraints and indexes)
+- **Connection**: `DATABASE_URL` env var, defaults to `postgresql://localhost:5432/netrun_cms`
+- **Production DB**: `netrun_cms_dev` on `psql-interfix-westus3`
+
+## Environment Variables
+
+See `apps/api/.env.example` for the full list. Key variables:
+- `DATABASE_URL` — CMS PostgreSQL connection
+- `JWT_SECRET` — Auth token signing
+- `GEMINI_API_KEY` — AI advisor integration
+- `AZURE_STORAGE_CONNECTION_STRING` + `PHOTOS_CONTAINER` — Photo storage
+- `DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASS` — pgvector RAG database (separate from CMS DB)
 
 ## Design System
 
-**Primary Color**: `#90b9ab` (Netrun Sage Green)
-**Typography**: Futura Medium/Bold
-**CSS Variables**: 1,400+ variables in `netrun-design-system.css`
+- **Primary Color**: `#90b9ab` (Netrun Sage Green)
+- **Typography**: Futura Medium/Bold (headings), Inter (body)
+- **Dark mode**: Class-based + `data-theme` attribute
+- **CSS Variables**: `packages/@netrun-cms/ui/src/styles/netrun-design-system.css`
 
-### Theme Presets
+## Deployment
 
-1. **netrun-dark** - Default dark theme with sage green
-2. **kog** - KOG CRM theme with Inter font
-3. **intirkon** - BI platform theme optimized for data viz
-4. **minimal** - Clean content-focused theme
+- **Admin**: Azure Static Web Apps (`apps/admin/staticwebapp.config.json`)
+- **API**: Docker multi-stage build (`apps/api/Dockerfile`), node:20-alpine, port 3000
 
-## Database Schema
+## Frost Backports
 
-PostgreSQL tables with RLS support:
-
-- `cms_tenants` - Multi-tenant organizations
-- `cms_sites` - Individual websites
-- `cms_themes` - Per-site theme customization
-- `cms_pages` - Content pages with hierarchy
-- `cms_content_blocks` - Composable page content
-- `cms_media` - Asset management
-- `cms_users` - CMS users with role-based access
-
-## Code Sources
-
-| Asset | Source Project | Lines |
-|-------|---------------|-------|
-| 64 UI Components | NetrunnewSite | ~15,000 |
-| Design System CSS | KOG (netrun-crm) | 1,415 |
-| ThemeContext | KOG (netrun-crm) | 108 |
-| Theme Presets | KOG + Intirkon themes | ~350 |
-| Core Types | New (based on patterns) | ~600 |
-| Database Schema | New (based on NetrunnewSite) | ~400 |
-
-## Next Steps
-
-1. ~~Create `@netrun-cms/blocks` package with block components~~ ✓ Done
-2. ~~Set up `apps/api` with Express routes~~ ✓ Done
-3. ~~Build `apps/admin` visual editor~~ ✓ Done (10 pages)
-4. Adapt Design Playground from KOG for theme customization
-
-## Frost Backports (March 2026)
-
-Backported from Frost (reference implementation):
-
-| Feature | Files | Status |
-|---------|-------|--------|
-| pgvector RAG | `apps/api/src/lib/rag.ts`, `lib/embeddings.ts` | Done |
-| PostgreSQL sessions | `apps/api/src/lib/sessions.ts` | Done |
-| Lazy Gemini client | `apps/api/src/lib/gemini.ts` | Done |
-| Photo management | `apps/api/src/lib/photos.ts`, `routes/photos.ts` | Done |
-| Photo Curator admin | `apps/admin/src/pages/Photos/PhotoCuratorPage.tsx` | Done |
-| Deprecated ChromaDB | `apps/api/src/lib/chroma.ts` (stub) | Done |
-| Deprecated Redis sessions | `apps/api/src/lib/redis.ts` (stub) | Done |
-
-The advisor now uses pgvector (charlotte_db Cloud SQL) for RAG instead of ChromaDB,
-and PostgreSQL for session persistence instead of Redis. Photo management uses
-Azure Blob Storage + PostgreSQL metadata (same pattern as Frost).
-
----
-
-*Version: 1.0.0*
-*Created: January 2026*
-*Based on plan: /home/garza/.claude/plans/cached-strolling-swan.md*
+The API includes features backported from Frost (reference implementation):
+- **pgvector RAG** (`lib/rag.ts`, `lib/embeddings.ts`) — replaces ChromaDB
+- **PostgreSQL sessions** (`lib/sessions.ts`) — replaces Redis
+- **Lazy Gemini client** (`lib/gemini.ts`) — AI advisor
+- **Photo management** (`lib/photos.ts`, `routes/photos.ts`) — Azure Blob Storage + PostgreSQL metadata
+- ChromaDB (`lib/chroma.ts`) and Redis (`lib/redis.ts`) remain as deprecated stubs

@@ -34,6 +34,7 @@ import {
   MessageCircle,
   Activity,
   FlaskConical,
+  Upload,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -66,6 +67,7 @@ const icons: Record<string, LucideIcon> = {
   MessageCircle,
   Activity,
   FlaskConical,
+  Upload,
 };
 
 /**

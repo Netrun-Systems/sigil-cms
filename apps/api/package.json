@@ -32,6 +32,7 @@
     "@netrun-cms/plugin-booking": "workspace:*",
     "@netrun-cms/plugin-docs": "workspace:*",
     "@netrun-cms/plugin-resonance": "workspace:*",
+    "@netrun-cms/plugin-migrate": "workspace:*",
     "@netrun/error-handling": "file:../../../netrun-shared-ts/packages/error-handling",
     "@netrun/health": "file:../../../netrun-shared-ts/packages/health",
     "@netrun/logger": "file:../../../netrun-shared-ts/packages/logger",

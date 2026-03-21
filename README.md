@@ -1,6 +1,8 @@
-# NetrunCMS
+# Sigil CMS
 
-A multi-tenant headless CMS framework with a modular plugin architecture. Built with TypeScript, React 18, Express.js, Drizzle ORM, and PostgreSQL.
+**Sigil** — a multi-tenant headless CMS framework with a modular plugin architecture by Netrun Systems. Built for brand landing pages, artist sites, service businesses, and documentation portals. TypeScript, React 18, Express.js, Drizzle ORM, PostgreSQL.
+
+> *A sigil is a mark of identity and purpose — exactly what your brand's web presence should be.*
 
 ## Architecture
 
@@ -76,6 +78,7 @@ Plugins are self-contained feature modules. Missing env vars cause a graceful sk
 | **Booking** | Appointment scheduling, Google Calendar | — (GCal optional) |
 | **Docs** | Knowledge base, versioning, search, feedback | — |
 | **Resonance** | Block-level analytics, A/B testing, AI suggestions | — (Gemini optional) |
+| **Migrate** | Import from WordPress, Shopify, Square Online | — |
 
 ## Core CMS Features
 
@@ -135,6 +138,17 @@ Each plugin registers its own routes at startup. See plugin source for endpoint 
 - **Frontend**: React 18, Vite 5, Tailwind CSS, Radix UI
 - **Build**: Turborepo, tsup
 - **Shared Libraries**: @netrun/error-handling, @netrun/health, @netrun/logger, @netrun/security-middleware, @netrun/stripe-client
+
+## Migration
+
+Import existing sites into Sigil from WordPress (WXR export + REST API), Shopify (Admin API + Storefront API), and Square Online (Catalog API + web scraping). The migration plugin handles:
+
+- Content extraction and block mapping (Gutenberg, Elementor, Liquid sections → Sigil blocks)
+- Media download and URL rewriting
+- SEO metadata preservation (Yoast, RankMath)
+- Navigation menu import
+- Theme token extraction (colors, fonts, spacing)
+- Per-item error tracking with retry support
 
 ## License
 

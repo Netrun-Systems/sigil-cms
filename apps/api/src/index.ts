@@ -23,7 +23,7 @@ import { loadEnabledPlugins } from './plugins.config.js';
 // LOGGER
 // ============================================================================
 
-const logger = createLogger({ service: 'netrun-cms-api' });
+const logger = createLogger({ service: 'sigil-api' });
 
 // ============================================================================
 // APP SETUP
@@ -76,7 +76,7 @@ if (process.env.NODE_ENV === 'production') {
 // ============================================================================
 
 app.use(createHealthRoutes({
-  service: 'netrun-cms-api',
+  service: 'sigil-api',
   version: process.env.npm_package_version || '1.0.0',
   dbCheck: async () => {
     const start = Date.now();
@@ -142,7 +142,7 @@ app.get('/', (_req, res) => {
   res.json({
     success: true,
     data: {
-      name: 'NetrunCMS API',
+      name: 'Sigil CMS API',
       version: '1.0.0',
       documentation: '/api/v1/health',
     },
@@ -179,7 +179,7 @@ initPlugins().then(() => {
   app.listen(PORT, HOST, () => {
     logger.info(
       { host: HOST, port: PORT, env: process.env.NODE_ENV || 'development' },
-      'NetrunCMS API server started',
+      'Sigil CMS API server started',
     );
   });
 });

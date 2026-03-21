@@ -27,6 +27,7 @@ export async function loadEnabledPlugins(): Promise<CmsPlugin[]> {
     () => import('@netrun-cms/plugin-booking'),
     () => import('@netrun-cms/plugin-docs'),
     () => import('@netrun-cms/plugin-resonance'),
+    () => import('@netrun-cms/plugin-migrate'),
   ];
 
   for (const loader of loaders) {

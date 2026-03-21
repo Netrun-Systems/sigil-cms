@@ -157,8 +157,8 @@ export function Sidebar() {
           <span className="text-lg font-bold text-primary-foreground">N</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-bold text-sidebar-foreground">NetrunCMS</span>
-          <span className="text-xs text-sidebar-foreground/60">Admin Panel</span>
+          <span className="text-sm font-bold text-sidebar-foreground">Sigil</span>
+          <span className="text-xs text-sidebar-foreground/60">by Netrun</span>
         </div>
       </div>
 
