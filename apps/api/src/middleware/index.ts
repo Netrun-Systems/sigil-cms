@@ -12,3 +12,11 @@ export {
   isValidUuid,
   validateUuidParam,
 } from './validation.js';
+export {
+  enforceSiteLimit,
+  enforcePageLimit,
+  enforceStorageLimit,
+  enforceCustomDomain,
+  enforcePluginAccess,
+  enforceApiAccess,
+} from './plan-enforcement.js';

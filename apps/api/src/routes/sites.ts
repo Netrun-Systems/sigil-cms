@@ -6,7 +6,7 @@
 
 import { Router } from 'express';
 import { SitesController } from '../controllers/SitesController.js';
-import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
+import { authenticate, requireRole, tenantContext, validateUuidParam, enforceSiteLimit, enforceCustomDomain } from '../middleware/index.js';
 
 import type { Router as RouterType } from "express";
 const router: RouterType = Router();
@@ -39,7 +39,7 @@ router.get('/', SitesController.list);
  *   settings?: object
  * }
  */
-router.post('/', requireRole('admin', 'editor'), SitesController.create);
+router.post('/', requireRole('admin', 'editor'), enforceSiteLimit(), SitesController.create);
 
 /**
  * GET /api/v1/sites/:id
@@ -67,7 +67,7 @@ router.delete('/:id', validateUuidParam('id'), requireRole('admin'), SitesContro
  *
  * Body: { domain: string }
  */
-router.put('/:id/domain', validateUuidParam('id'), requireRole('admin', 'editor'), SitesController.updateDomain);
+router.put('/:id/domain', validateUuidParam('id'), requireRole('admin', 'editor'), enforceCustomDomain(), SitesController.updateDomain);
 
 /**
  * DELETE /api/v1/sites/:siteId/domain

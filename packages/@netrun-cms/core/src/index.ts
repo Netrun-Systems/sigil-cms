@@ -119,7 +119,7 @@ export interface BaseEntity {
 export interface Tenant extends BaseEntity {
   name: string;
   slug: string;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
+  plan: 'free' | 'starter' | 'pro' | 'business' | 'enterprise';
   settings: Record<string, unknown>;
   isActive: boolean;
 }
@@ -820,6 +820,27 @@ export function tokensToCssVariables(tokens: ThemeTokens, prefix = 'netrun'): st
 function kebabCase(str: string): string {
   return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
+
+// ============================================================================
+// PLAN DEFINITIONS & ENFORCEMENT
+// ============================================================================
+
+export {
+  PLANS,
+  PLAN_NAMES,
+  getPlanLimits,
+  getPlanDefinition,
+  isPluginAllowed,
+  isWithinLimit,
+  formatPrice,
+  getStripePriceEnvKey,
+} from './plans.js';
+
+export type {
+  PlanLimits,
+  PlanDefinition,
+  PlanName,
+} from './plans.js';
 
 // ============================================================================
 // DEFAULT THEME TOKENS

@@ -8,7 +8,7 @@ import { Router } from 'express';
 import type { Router as RouterType } from 'express';
 import multer from 'multer';
 import { MediaController } from '../controllers/MediaController.js';
-import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
+import { authenticate, requireRole, tenantContext, validateUuidParam, enforceStorageLimit } from '../middleware/index.js';
 
 const router: RouterType = Router({ mergeParams: true });
 
@@ -27,7 +27,7 @@ router.use(tenantContext);
  *
  * Multipart form: file (single), optional fields: altText, caption, folder
  */
-router.post('/upload', requireRole('admin', 'editor', 'author'), upload.single('file'), MediaController.createWithFile);
+router.post('/upload', requireRole('admin', 'editor', 'author'), enforceStorageLimit(), upload.single('file'), MediaController.createWithFile);
 
 /**
  * POST /api/v1/sites/:siteId/media/upload/bulk
@@ -35,7 +35,7 @@ router.post('/upload', requireRole('admin', 'editor', 'author'), upload.single('
  *
  * Multipart form: files (array), optional fields: folder
  */
-router.post('/upload/bulk', requireRole('admin', 'editor', 'author'), upload.array('files', 20), MediaController.createWithFiles);
+router.post('/upload/bulk', requireRole('admin', 'editor', 'author'), enforceStorageLimit(), upload.array('files', 20), MediaController.createWithFiles);
 
 /**
  * GET /api/v1/sites/:siteId/media

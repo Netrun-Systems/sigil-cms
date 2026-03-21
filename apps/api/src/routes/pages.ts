@@ -7,7 +7,7 @@
 import { Router } from 'express';
 import type { Router as RouterType } from 'express';
 import { PagesController } from '../controllers/PagesController.js';
-import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
+import { authenticate, requireRole, tenantContext, validateUuidParam, enforcePageLimit } from '../middleware/index.js';
 
 const router: RouterType = Router({ mergeParams: true });
 
@@ -45,7 +45,7 @@ router.get('/', PagesController.list);
  *   sortOrder?: number
  * }
  */
-router.post('/', requireRole('admin', 'editor', 'author'), PagesController.create);
+router.post('/', requireRole('admin', 'editor', 'author'), enforcePageLimit(), PagesController.create);
 
 /**
  * GET /api/v1/sites/:siteId/pages/:id

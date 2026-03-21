@@ -15,6 +15,7 @@ const PagesList = lazy(() => import('./pages/Pages/PagesList').then(m => ({ defa
 const PageEditor = lazy(() => import('./pages/Pages/PageEditor').then(m => ({ default: m.PageEditor })));
 const MediaLibrary = lazy(() => import('./pages/Media/MediaLibrary').then(m => ({ default: m.MediaLibrary })));
 const ThemeEditor = lazy(() => import('./pages/Themes/ThemeEditor').then(m => ({ default: m.ThemeEditor })));
+const BillingPage = lazy(() => import('./pages/Billing/BillingPage').then(m => ({ default: m.BillingPage })));
 
 function PageLoader() {
   return (
@@ -59,6 +60,9 @@ function App() {
         {/* Themes */}
         <Route path="themes" element={<Suspense fallback={<PageLoader />}><ThemeEditor /></Suspense>} />
         <Route path="sites/:siteId/themes" element={<Suspense fallback={<PageLoader />}><ThemeEditor /></Suspense>} />
+
+        {/* Billing */}
+        <Route path="billing" element={<Suspense fallback={<PageLoader />}><BillingPage /></Suspense>} />
 
         {/* Plugin routes — dynamically rendered from manifest */}
         <PluginRoutes />

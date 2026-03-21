@@ -64,7 +64,11 @@ app.use(requestLogger(logger, {
 // Rate limiting on all API traffic
 app.use('/api', createApiRateLimiter());
 
-// Body parsing
+// Stripe webhook needs raw body BEFORE json parsing
+// The billing router's /webhook route uses its own rawBodyMiddleware
+app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }));
+
+// Body parsing (all other routes)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

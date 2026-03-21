@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { NavLink, useParams } from 'react-router-dom';
-import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, ChevronDown, } from 'lucide-react';
+import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, CreditCard, ChevronDown, } from 'lucide-react';
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
 import { usePluginManifest } from '../../hooks/usePluginManifest';
@@ -86,6 +86,10 @@ export function Sidebar() {
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                             : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Palette, { className: "h-5 w-5" }), _jsx("span", { children: "Theme" })] })] }), sitePluginSections.map((section) => (_jsxs("div", { children: [_jsx("div", { className: "mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50", children: section.title }), _jsx("div", { className: "space-y-1", children: section.items.map((item) => (_jsxs(NavLink, { to: item.href, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
                                                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(item.icon, { className: "h-5 w-5" }), _jsx("span", { children: item.label })] }, item.href))) })] }, section.title)))] }))] }), canManageSettings && (_jsx("div", { className: "border-t border-sidebar-border p-4", children: _jsxs(NavLink, { to: "/settings", className: "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", children: [_jsx(Settings, { className: "h-5 w-5" }), _jsx("span", { children: "Settings" })] }) }))] }));
+                                                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(item.icon, { className: "h-5 w-5" }), _jsx("span", { children: item.label })] }, item.href))) })] }, section.title)))] }))] }), canManageSettings && (_jsxs("div", { className: "border-t border-sidebar-border p-4 space-y-1", children: [_jsxs(NavLink, { to: "/billing", className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors', isActive
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(CreditCard, { className: "h-5 w-5" }), _jsx("span", { children: "Billing" })] }), _jsxs(NavLink, { to: "/settings", className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors', isActive
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Settings, { className: "h-5 w-5" }), _jsx("span", { children: "Settings" })] })] }))] }));
 }
 //# sourceMappingURL=Sidebar.js.map

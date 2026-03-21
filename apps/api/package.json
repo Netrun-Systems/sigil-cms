@@ -45,6 +45,7 @@
     "@netrun/health": "file:../../../netrun-shared-ts/packages/health",
     "@netrun/logger": "file:../../../netrun-shared-ts/packages/logger",
     "@netrun/security-middleware": "file:../../../netrun-shared-ts/packages/security-middleware",
+    "@netrun/stripe-client": "file:../../../netrun-shared-ts/packages/stripe-client",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.39.0",

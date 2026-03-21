@@ -8,6 +8,7 @@ export default defineConfig({
   noExternal: [
     '@netrun-cms/db', '@netrun-cms/core', '@netrun-cms/theme', '@netrun-cms/plugin-runtime',
     '@netrun/error-handling', '@netrun/health', '@netrun/logger', '@netrun/security-middleware',
+    '@netrun/stripe-client',
   ],
   external: ['@azure/communication-email', '@azure/storage-blob', '@google-cloud/storage', '@aws-sdk/client-s3'],
   treeshake: true,

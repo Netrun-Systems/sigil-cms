@@ -41,7 +41,7 @@ export const tenants = pgTable('cms_tenants', {
   slugIdx: index('idx_cms_tenants_slug').on(table.slug),
   planIdx: index('idx_cms_tenants_plan').on(table.plan),
   planCheck: check('cms_tenants_plan_check',
-    sql`${table.plan} IN ('free', 'starter', 'pro', 'enterprise')`
+    sql`${table.plan} IN ('free', 'starter', 'pro', 'business', 'enterprise')`
   ),
 }));
 
@@ -359,9 +359,10 @@ export const artistProfiles = pgTable('cms_artist_profiles', {
 // RELATIONS
 // ============================================================================
 
-export const tenantsRelations = relations(tenants, ({ many }) => ({
+export const tenantsRelations = relations(tenants, ({ one, many }) => ({
   sites: many(sites),
   users: many(users),
+  subscription: one(subscriptions),
 }));
 
 export const sitesRelations = relations(sites, ({ one, many }) => ({
@@ -703,6 +704,58 @@ export type InsertSubscriber = z.infer<typeof insertSubscriberSchema>;
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+
+// ============================================================================
+// SUBSCRIPTIONS TABLE - Stripe billing integration
+// ============================================================================
+export const subscriptions = pgTable('cms_subscriptions', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }).unique(),
+  stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
+  stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }),
+  plan: varchar('plan', { length: 20 }).notNull().default('free'),
+  billingInterval: varchar('billing_interval', { length: 10 }).default('monthly'),
+  status: varchar('status', { length: 20 }).notNull().default('active'),
+  currentPeriodStart: timestamp('current_period_start'),
+  currentPeriodEnd: timestamp('current_period_end'),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  trialEnd: timestamp('trial_end'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  tenantIdIdx: index('idx_cms_subscriptions_tenant_id').on(table.tenantId),
+  stripeCustomerIdx: index('idx_cms_subscriptions_stripe_customer').on(table.stripeCustomerId),
+  stripeSubIdx: index('idx_cms_subscriptions_stripe_sub').on(table.stripeSubscriptionId),
+  statusIdx: index('idx_cms_subscriptions_status').on(table.status),
+  planCheck: check('cms_subscriptions_plan_check',
+    sql`${table.plan} IN ('free', 'starter', 'pro', 'business', 'enterprise')`
+  ),
+  statusCheck: check('cms_subscriptions_status_check',
+    sql`${table.status} IN ('active', 'past_due', 'canceled', 'trialing', 'incomplete')`
+  ),
+  intervalCheck: check('cms_subscriptions_interval_check',
+    sql`${table.billingInterval} IN ('monthly', 'yearly')`
+  ),
+}));
+
+// Subscription relations
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [subscriptions.tenantId],
+    references: [tenants.id],
+  }),
+}));
+
+// Subscription Zod schemas
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const selectSubscriptionSchema = createSelectSchema(subscriptions);
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 // Extended types
 export type PageWithBlocks = Page & {

@@ -14,6 +14,7 @@ import themesRouter from './themes.js';
 import designAiRouter from './design-ai.js';
 import publicRouter from './public.js';
 import seedRouter from './seed.js';
+import billingRouter from './billing.js';
 import { validateUuidParam } from '../middleware/index.js';
 
 import type { Router as RouterType } from "express";
@@ -51,6 +52,9 @@ router.use('/sites/:siteId/themes', validateUuidParam('siteId'), themesRouter);
 
 // Design AI: /api/v1/sites/:siteId/design (Stitch generation + Charlotte advisor)
 router.use('/sites/:siteId/design', validateUuidParam('siteId'), designAiRouter);
+
+// Billing: /api/v1/billing (subscription management, Stripe integration)
+router.use('/billing', billingRouter);
 
 // NOTE: The following routes have been moved to plugins:
 // - releases, events, artist-profiles → @netrun-cms/plugin-artist
