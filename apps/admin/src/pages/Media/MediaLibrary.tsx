@@ -40,7 +40,8 @@ import {
   DialogTrigger,
   cn,
 } from '@netrun-cms/ui';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { api, ApiError } from '../../lib/api';
 
 interface MediaFile {
   id: string;
@@ -57,110 +58,6 @@ interface MediaFile {
   createdAt: string;
 }
 
-const mockMedia: MediaFile[] = [
-  {
-    id: '1',
-    filename: 'hero-banner.jpg',
-    originalFilename: 'hero-banner.jpg',
-    mimeType: 'image/jpeg',
-    fileSize: 245000,
-    url: '/uploads/hero-banner.jpg',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300',
-    altText: 'Hero banner image',
-    folder: 'banners',
-    width: 1920,
-    height: 1080,
-    createdAt: '2026-01-15',
-  },
-  {
-    id: '2',
-    filename: 'logo.svg',
-    originalFilename: 'netrun-logo.svg',
-    mimeType: 'image/svg+xml',
-    fileSize: 4500,
-    url: '/uploads/logo.svg',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=300',
-    altText: 'Company logo',
-    folder: 'branding',
-    createdAt: '2026-01-10',
-  },
-  {
-    id: '3',
-    filename: 'team-photo.jpg',
-    originalFilename: 'team-photo.jpg',
-    mimeType: 'image/jpeg',
-    fileSize: 890000,
-    url: '/uploads/team-photo.jpg',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300',
-    altText: 'Team photo',
-    folder: 'about',
-    width: 2400,
-    height: 1600,
-    createdAt: '2026-01-08',
-  },
-  {
-    id: '4',
-    filename: 'product-demo.mp4',
-    originalFilename: 'product-demo.mp4',
-    mimeType: 'video/mp4',
-    fileSize: 15000000,
-    url: '/uploads/product-demo.mp4',
-    folder: 'videos',
-    createdAt: '2026-01-05',
-  },
-  {
-    id: '5',
-    filename: 'whitepaper.pdf',
-    originalFilename: 'cloud-infrastructure-guide.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 2500000,
-    url: '/uploads/whitepaper.pdf',
-    folder: 'documents',
-    createdAt: '2026-01-03',
-  },
-  {
-    id: '6',
-    filename: 'service-icon-1.png',
-    originalFilename: 'cloud-icon.png',
-    mimeType: 'image/png',
-    fileSize: 12000,
-    url: '/uploads/service-icon-1.png',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=300',
-    altText: 'Cloud service icon',
-    folder: 'icons',
-    width: 256,
-    height: 256,
-    createdAt: '2025-12-28',
-  },
-  {
-    id: '7',
-    filename: 'office-photo.jpg',
-    originalFilename: 'office-photo.jpg',
-    mimeType: 'image/jpeg',
-    fileSize: 456000,
-    url: '/uploads/office-photo.jpg',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=300',
-    altText: 'Office photo',
-    folder: 'about',
-    width: 1800,
-    height: 1200,
-    createdAt: '2025-12-20',
-  },
-  {
-    id: '8',
-    filename: 'case-study-banner.jpg',
-    originalFilename: 'case-study-banner.jpg',
-    mimeType: 'image/jpeg',
-    fileSize: 320000,
-    url: '/uploads/case-study-banner.jpg',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300',
-    altText: 'Case study banner',
-    folder: 'banners',
-    width: 1600,
-    height: 900,
-    createdAt: '2025-12-15',
-  },
-];
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
@@ -384,16 +281,38 @@ function MediaCard({
 
 export function MediaLibrary() {
   const { siteId } = useParams();
+  const [media, setMedia] = useState<MediaFile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadFolder, setUploadFolder] = useState('uploads');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const folders = [...new Set(mockMedia.map((m) => m.folder))];
+  const loadMedia = async () => {
+    if (!siteId) return;
+    setIsLoading(true);
+    try {
+      const res = await api.get<{ data: MediaFile[] }>('/sites/' + siteId + '/media?limit=100');
+      setMedia(res.data || []);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load media');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const filteredMedia = mockMedia.filter((file) => {
+  useEffect(() => {
+    loadMedia();
+  }, [siteId]);
+
+  const folders = [...new Set(media.map((m) => m.folder).filter(Boolean))];
+
+  const filteredMedia = media.filter((file) => {
     const matchesSearch =
       file.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
       file.originalFilename.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -424,24 +343,57 @@ export function MediaLibrary() {
     });
   };
 
-  const handleDelete = (fileId: string) => {
+  const handleDelete = async (fileId: string) => {
     if (confirm('Are you sure you want to delete this file?')) {
-      // Delete file
-      setSelectedFiles((prev) => {
-        const next = new Set(prev);
-        next.delete(fileId);
-        return next;
-      });
+      try {
+        await api.delete('/sites/' + siteId + '/media/' + fileId);
+        setMedia((prev) => prev.filter((m) => m.id !== fileId));
+        setSelectedFiles((prev) => {
+          const next = new Set(prev);
+          next.delete(fileId);
+          return next;
+        });
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Delete failed');
+      }
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (
       confirm(`Are you sure you want to delete ${selectedFiles.size} files?`)
     ) {
-      // Delete files
-      setSelectedFiles(new Set());
+      try {
+        const ids = Array.from(selectedFiles);
+        await Promise.all(ids.map((id) => api.delete('/sites/' + siteId + '/media/' + id)));
+        setMedia((prev) => prev.filter((m) => !selectedFiles.has(m.id)));
+        setSelectedFiles(new Set());
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Delete failed');
+      }
     }
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || !siteId) return;
+    setError(null);
+    for (const file of Array.from(files)) {
+      try {
+        const mediaRecord = {
+          filename: file.name,
+          originalFilename: file.name,
+          mimeType: file.type,
+          fileSize: file.size,
+          url: '/uploads/' + file.name,
+          folder: uploadFolder,
+        };
+        await api.post('/sites/' + siteId + '/media', mediaRecord);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Upload failed for ' + file.name);
+      }
+    }
+    setShowUploadDialog(false);
+    loadMedia();
   };
 
   return (
@@ -464,6 +416,9 @@ export function MediaLibrary() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {error && (
+            <span className="text-sm text-destructive">{error}</span>
+          )}
           {selectedFiles.size > 0 && (
             <Button variant="destructive" onClick={handleDeleteSelected}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -604,37 +559,39 @@ export function MediaLibrary() {
               Drag and drop files or click to browse
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,video/*,application/pdf"
+            className="hidden"
+            onChange={(e) => handleFileUpload(e.target.files)}
+          />
+          <div
+            className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <Upload className="h-10 w-10 text-muted-foreground" />
             <p className="mt-4 text-sm font-medium">
-              Drag and drop files here, or click to browse
+              Click to browse for files
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               PNG, JPG, GIF, SVG, PDF, MP4 up to 50MB
             </p>
-            <Button className="mt-4">
-              <Upload className="mr-2 h-4 w-4" />
-              Select Files
-            </Button>
           </div>
           <div className="space-y-2">
             <Label>Upload to folder</Label>
-            <Select defaultValue="uploads">
+            <Select value={uploadFolder} onValueChange={setUploadFolder}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {folders.map((folder) => (
+                <SelectItem value="uploads">uploads</SelectItem>
+                {folders.filter((f) => f !== 'uploads').map((folder) => (
                   <SelectItem key={folder} value={folder} className="capitalize">
                     {folder}
                   </SelectItem>
                 ))}
-                <SelectItem value="new">
-                  <span className="flex items-center gap-2">
-                    <FolderPlus className="h-4 w-4" />
-                    New folder...
-                  </span>
-                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -642,7 +599,10 @@ export function MediaLibrary() {
             <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
               Cancel
             </Button>
-            <Button>Upload</Button>
+            <Button onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-2 h-4 w-4" />
+              Select Files
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

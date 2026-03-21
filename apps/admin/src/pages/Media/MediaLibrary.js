@@ -1,112 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useParams, Link } from 'react-router-dom';
-import { Image, Video, FileText, File, Upload, Search, LayoutGrid, List, Trash2, Copy, Eye, FolderPlus, ArrowLeft, Check, } from 'lucide-react';
+import { Image, Video, FileText, File, Upload, Search, LayoutGrid, List, Trash2, Copy, Eye, ArrowLeft, Check, } from 'lucide-react';
 import { Card, CardContent, Button, Input, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, cn, } from '@netrun-cms/ui';
-import { useState } from 'react';
-const mockMedia = [
-    {
-        id: '1',
-        filename: 'hero-banner.jpg',
-        originalFilename: 'hero-banner.jpg',
-        mimeType: 'image/jpeg',
-        fileSize: 245000,
-        url: '/uploads/hero-banner.jpg',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300',
-        altText: 'Hero banner image',
-        folder: 'banners',
-        width: 1920,
-        height: 1080,
-        createdAt: '2026-01-15',
-    },
-    {
-        id: '2',
-        filename: 'logo.svg',
-        originalFilename: 'netrun-logo.svg',
-        mimeType: 'image/svg+xml',
-        fileSize: 4500,
-        url: '/uploads/logo.svg',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=300',
-        altText: 'Company logo',
-        folder: 'branding',
-        createdAt: '2026-01-10',
-    },
-    {
-        id: '3',
-        filename: 'team-photo.jpg',
-        originalFilename: 'team-photo.jpg',
-        mimeType: 'image/jpeg',
-        fileSize: 890000,
-        url: '/uploads/team-photo.jpg',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300',
-        altText: 'Team photo',
-        folder: 'about',
-        width: 2400,
-        height: 1600,
-        createdAt: '2026-01-08',
-    },
-    {
-        id: '4',
-        filename: 'product-demo.mp4',
-        originalFilename: 'product-demo.mp4',
-        mimeType: 'video/mp4',
-        fileSize: 15000000,
-        url: '/uploads/product-demo.mp4',
-        folder: 'videos',
-        createdAt: '2026-01-05',
-    },
-    {
-        id: '5',
-        filename: 'whitepaper.pdf',
-        originalFilename: 'cloud-infrastructure-guide.pdf',
-        mimeType: 'application/pdf',
-        fileSize: 2500000,
-        url: '/uploads/whitepaper.pdf',
-        folder: 'documents',
-        createdAt: '2026-01-03',
-    },
-    {
-        id: '6',
-        filename: 'service-icon-1.png',
-        originalFilename: 'cloud-icon.png',
-        mimeType: 'image/png',
-        fileSize: 12000,
-        url: '/uploads/service-icon-1.png',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=300',
-        altText: 'Cloud service icon',
-        folder: 'icons',
-        width: 256,
-        height: 256,
-        createdAt: '2025-12-28',
-    },
-    {
-        id: '7',
-        filename: 'office-photo.jpg',
-        originalFilename: 'office-photo.jpg',
-        mimeType: 'image/jpeg',
-        fileSize: 456000,
-        url: '/uploads/office-photo.jpg',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=300',
-        altText: 'Office photo',
-        folder: 'about',
-        width: 1800,
-        height: 1200,
-        createdAt: '2025-12-20',
-    },
-    {
-        id: '8',
-        filename: 'case-study-banner.jpg',
-        originalFilename: 'case-study-banner.jpg',
-        mimeType: 'image/jpeg',
-        fileSize: 320000,
-        url: '/uploads/case-study-banner.jpg',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300',
-        altText: 'Case study banner',
-        folder: 'banners',
-        width: 1600,
-        height: 900,
-        createdAt: '2025-12-15',
-    },
-];
+import { useState, useEffect, useRef } from 'react';
+import { api } from '../../lib/api';
 function formatFileSize(bytes) {
     if (bytes < 1024)
         return bytes + ' B';
@@ -148,14 +45,37 @@ function MediaCard({ file, isSelected, onSelect, onDelete, viewMode, }) {
 }
 export function MediaLibrary() {
     const { siteId } = useParams();
+    const [media, setMedia] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [selectedType, setSelectedType] = useState(null);
     const [viewMode, setViewMode] = useState('grid');
     const [selectedFiles, setSelectedFiles] = useState(new Set());
     const [showUploadDialog, setShowUploadDialog] = useState(false);
-    const folders = [...new Set(mockMedia.map((m) => m.folder))];
-    const filteredMedia = mockMedia.filter((file) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [uploadFolder, setUploadFolder] = useState('uploads');
+    const fileInputRef = useRef(null);
+    const loadMedia = async () => {
+        if (!siteId)
+            return;
+        setIsLoading(true);
+        try {
+            const res = await api.get('/sites/' + siteId + '/media?limit=100');
+            setMedia(res.data || []);
+        }
+        catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load media');
+        }
+        finally {
+            setIsLoading(false);
+        }
+    };
+    useEffect(() => {
+        loadMedia();
+    }, [siteId]);
+    const folders = [...new Set(media.map((m) => m.folder).filter(Boolean))];
+    const filteredMedia = media.filter((file) => {
         const matchesSearch = file.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
             file.originalFilename.toLowerCase().includes(searchQuery.toLowerCase()) ||
             file.altText?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -180,25 +100,61 @@ export function MediaLibrary() {
             return next;
         });
     };
-    const handleDelete = (fileId) => {
+    const handleDelete = async (fileId) => {
         if (confirm('Are you sure you want to delete this file?')) {
-            // Delete file
-            setSelectedFiles((prev) => {
-                const next = new Set(prev);
-                next.delete(fileId);
-                return next;
-            });
+            try {
+                await api.delete('/sites/' + siteId + '/media/' + fileId);
+                setMedia((prev) => prev.filter((m) => m.id !== fileId));
+                setSelectedFiles((prev) => {
+                    const next = new Set(prev);
+                    next.delete(fileId);
+                    return next;
+                });
+            }
+            catch (err) {
+                setError(err instanceof Error ? err.message : 'Delete failed');
+            }
         }
     };
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         if (confirm(`Are you sure you want to delete ${selectedFiles.size} files?`)) {
-            // Delete files
-            setSelectedFiles(new Set());
+            try {
+                const ids = Array.from(selectedFiles);
+                await Promise.all(ids.map((id) => api.delete('/sites/' + siteId + '/media/' + id)));
+                setMedia((prev) => prev.filter((m) => !selectedFiles.has(m.id)));
+                setSelectedFiles(new Set());
+            }
+            catch (err) {
+                setError(err instanceof Error ? err.message : 'Delete failed');
+            }
         }
     };
-    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { className: "flex items-center gap-4", children: [siteId && (_jsx(Button, { variant: "ghost", size: "icon", asChild: true, children: _jsx(Link, { to: `/sites/${siteId}`, children: _jsx(ArrowLeft, { className: "h-5 w-5" }) }) })), _jsxs("div", { children: [_jsx("h1", { className: "text-3xl font-bold tracking-tight", children: "Media Library" }), _jsx("p", { className: "text-muted-foreground", children: siteId ? 'Manage media for this site' : 'Manage all media files' })] })] }), _jsxs("div", { className: "flex items-center gap-2", children: [selectedFiles.size > 0 && (_jsxs(Button, { variant: "destructive", onClick: handleDeleteSelected, children: [_jsx(Trash2, { className: "mr-2 h-4 w-4" }), "Delete (", selectedFiles.size, ")"] })), _jsxs(Button, { onClick: () => setShowUploadDialog(true), children: [_jsx(Upload, { className: "mr-2 h-4 w-4" }), "Upload Files"] })] })] }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", children: [_jsxs("div", { className: "flex flex-1 gap-4", children: [_jsxs("div", { className: "relative flex-1 max-w-md", children: [_jsx(Search, { className: "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" }), _jsx(Input, { placeholder: "Search files...", value: searchQuery, onChange: (e) => setSearchQuery(e.target.value), className: "pl-9" })] }), _jsxs(Select, { value: selectedFolder || 'all', onValueChange: (v) => setSelectedFolder(v === 'all' ? null : v), children: [_jsx(SelectTrigger, { className: "w-[150px]", children: _jsx(SelectValue, { placeholder: "All folders" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "all", children: "All folders" }), folders.map((folder) => (_jsx(SelectItem, { value: folder, className: "capitalize", children: folder }, folder)))] })] }), _jsxs(Select, { value: selectedType || 'all', onValueChange: (v) => setSelectedType(v === 'all' ? null : v), children: [_jsx(SelectTrigger, { className: "w-[150px]", children: _jsx(SelectValue, { placeholder: "All types" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "all", children: "All types" }), _jsx(SelectItem, { value: "image", children: "Images" }), _jsx(SelectItem, { value: "video", children: "Videos" }), _jsx(SelectItem, { value: "document", children: "Documents" })] })] })] }), _jsxs("div", { className: "flex gap-1", children: [_jsx(Button, { variant: viewMode === 'grid' ? 'secondary' : 'ghost', size: "icon", onClick: () => setViewMode('grid'), children: _jsx(LayoutGrid, { className: "h-4 w-4" }) }), _jsx(Button, { variant: viewMode === 'list' ? 'secondary' : 'ghost', size: "icon", onClick: () => setViewMode('list'), children: _jsx(List, { className: "h-4 w-4" }) })] })] }) }) }), filteredMedia.length > 0 ? (viewMode === 'grid' ? (_jsx("div", { className: "grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5", children: filteredMedia.map((file) => (_jsx(MediaCard, { file: file, isSelected: selectedFiles.has(file.id), onSelect: () => handleSelect(file.id), onDelete: () => handleDelete(file.id), viewMode: viewMode }, file.id))) })) : (_jsx(Card, { children: _jsx(CardContent, { className: "p-4 space-y-2", children: filteredMedia.map((file) => (_jsx(MediaCard, { file: file, isSelected: selectedFiles.has(file.id), onSelect: () => handleSelect(file.id), onDelete: () => handleDelete(file.id), viewMode: viewMode }, file.id))) }) }))) : (_jsx(Card, { children: _jsxs(CardContent, { className: "flex flex-col items-center justify-center py-12", children: [_jsx("div", { className: "flex h-16 w-16 items-center justify-center rounded-full bg-muted", children: _jsx(Image, { className: "h-8 w-8 text-muted-foreground" }) }), _jsx("h3", { className: "mt-4 text-lg font-semibold", children: "No files found" }), _jsx("p", { className: "mt-2 text-center text-sm text-muted-foreground", children: searchQuery || selectedFolder || selectedType
+    const handleFileUpload = async (files) => {
+        if (!files || !siteId)
+            return;
+        setError(null);
+        for (const file of Array.from(files)) {
+            try {
+                const mediaRecord = {
+                    filename: file.name,
+                    originalFilename: file.name,
+                    mimeType: file.type,
+                    fileSize: file.size,
+                    url: '/uploads/' + file.name,
+                    folder: uploadFolder,
+                };
+                await api.post('/sites/' + siteId + '/media', mediaRecord);
+            }
+            catch (err) {
+                setError(err instanceof Error ? err.message : 'Upload failed for ' + file.name);
+            }
+        }
+        setShowUploadDialog(false);
+        loadMedia();
+    };
+    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { className: "flex items-center gap-4", children: [siteId && (_jsx(Button, { variant: "ghost", size: "icon", asChild: true, children: _jsx(Link, { to: `/sites/${siteId}`, children: _jsx(ArrowLeft, { className: "h-5 w-5" }) }) })), _jsxs("div", { children: [_jsx("h1", { className: "text-3xl font-bold tracking-tight", children: "Media Library" }), _jsx("p", { className: "text-muted-foreground", children: siteId ? 'Manage media for this site' : 'Manage all media files' })] })] }), _jsxs("div", { className: "flex items-center gap-2", children: [error && (_jsx("span", { className: "text-sm text-destructive", children: error })), selectedFiles.size > 0 && (_jsxs(Button, { variant: "destructive", onClick: handleDeleteSelected, children: [_jsx(Trash2, { className: "mr-2 h-4 w-4" }), "Delete (", selectedFiles.size, ")"] })), _jsxs(Button, { onClick: () => setShowUploadDialog(true), children: [_jsx(Upload, { className: "mr-2 h-4 w-4" }), "Upload Files"] })] })] }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", children: [_jsxs("div", { className: "flex flex-1 gap-4", children: [_jsxs("div", { className: "relative flex-1 max-w-md", children: [_jsx(Search, { className: "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" }), _jsx(Input, { placeholder: "Search files...", value: searchQuery, onChange: (e) => setSearchQuery(e.target.value), className: "pl-9" })] }), _jsxs(Select, { value: selectedFolder || 'all', onValueChange: (v) => setSelectedFolder(v === 'all' ? null : v), children: [_jsx(SelectTrigger, { className: "w-[150px]", children: _jsx(SelectValue, { placeholder: "All folders" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "all", children: "All folders" }), folders.map((folder) => (_jsx(SelectItem, { value: folder, className: "capitalize", children: folder }, folder)))] })] }), _jsxs(Select, { value: selectedType || 'all', onValueChange: (v) => setSelectedType(v === 'all' ? null : v), children: [_jsx(SelectTrigger, { className: "w-[150px]", children: _jsx(SelectValue, { placeholder: "All types" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "all", children: "All types" }), _jsx(SelectItem, { value: "image", children: "Images" }), _jsx(SelectItem, { value: "video", children: "Videos" }), _jsx(SelectItem, { value: "document", children: "Documents" })] })] })] }), _jsxs("div", { className: "flex gap-1", children: [_jsx(Button, { variant: viewMode === 'grid' ? 'secondary' : 'ghost', size: "icon", onClick: () => setViewMode('grid'), children: _jsx(LayoutGrid, { className: "h-4 w-4" }) }), _jsx(Button, { variant: viewMode === 'list' ? 'secondary' : 'ghost', size: "icon", onClick: () => setViewMode('list'), children: _jsx(List, { className: "h-4 w-4" }) })] })] }) }) }), filteredMedia.length > 0 ? (viewMode === 'grid' ? (_jsx("div", { className: "grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5", children: filteredMedia.map((file) => (_jsx(MediaCard, { file: file, isSelected: selectedFiles.has(file.id), onSelect: () => handleSelect(file.id), onDelete: () => handleDelete(file.id), viewMode: viewMode }, file.id))) })) : (_jsx(Card, { children: _jsx(CardContent, { className: "p-4 space-y-2", children: filteredMedia.map((file) => (_jsx(MediaCard, { file: file, isSelected: selectedFiles.has(file.id), onSelect: () => handleSelect(file.id), onDelete: () => handleDelete(file.id), viewMode: viewMode }, file.id))) }) }))) : (_jsx(Card, { children: _jsxs(CardContent, { className: "flex flex-col items-center justify-center py-12", children: [_jsx("div", { className: "flex h-16 w-16 items-center justify-center rounded-full bg-muted", children: _jsx(Image, { className: "h-8 w-8 text-muted-foreground" }) }), _jsx("h3", { className: "mt-4 text-lg font-semibold", children: "No files found" }), _jsx("p", { className: "mt-2 text-center text-sm text-muted-foreground", children: searchQuery || selectedFolder || selectedType
                                 ? 'Try adjusting your search or filter criteria.'
-                                : 'Upload your first file to get started.' }), !searchQuery && !selectedFolder && !selectedType && (_jsxs(Button, { className: "mt-4", onClick: () => setShowUploadDialog(true), children: [_jsx(Upload, { className: "mr-2 h-4 w-4" }), "Upload Files"] }))] }) })), _jsx(Dialog, { open: showUploadDialog, onOpenChange: setShowUploadDialog, children: _jsxs(DialogContent, { children: [_jsxs(DialogHeader, { children: [_jsx(DialogTitle, { children: "Upload Files" }), _jsx(DialogDescription, { children: "Drag and drop files or click to browse" })] }), _jsxs("div", { className: "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center", children: [_jsx(Upload, { className: "h-10 w-10 text-muted-foreground" }), _jsx("p", { className: "mt-4 text-sm font-medium", children: "Drag and drop files here, or click to browse" }), _jsx("p", { className: "mt-1 text-xs text-muted-foreground", children: "PNG, JPG, GIF, SVG, PDF, MP4 up to 50MB" }), _jsxs(Button, { className: "mt-4", children: [_jsx(Upload, { className: "mr-2 h-4 w-4" }), "Select Files"] })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { children: "Upload to folder" }), _jsxs(Select, { defaultValue: "uploads", children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, {}) }), _jsxs(SelectContent, { children: [folders.map((folder) => (_jsx(SelectItem, { value: folder, className: "capitalize", children: folder }, folder))), _jsx(SelectItem, { value: "new", children: _jsxs("span", { className: "flex items-center gap-2", children: [_jsx(FolderPlus, { className: "h-4 w-4" }), "New folder..."] }) })] })] })] }), _jsxs(DialogFooter, { children: [_jsx(Button, { variant: "outline", onClick: () => setShowUploadDialog(false), children: "Cancel" }), _jsx(Button, { children: "Upload" })] })] }) })] }));
+                                : 'Upload your first file to get started.' }), !searchQuery && !selectedFolder && !selectedType && (_jsxs(Button, { className: "mt-4", onClick: () => setShowUploadDialog(true), children: [_jsx(Upload, { className: "mr-2 h-4 w-4" }), "Upload Files"] }))] }) })), _jsx(Dialog, { open: showUploadDialog, onOpenChange: setShowUploadDialog, children: _jsxs(DialogContent, { children: [_jsxs(DialogHeader, { children: [_jsx(DialogTitle, { children: "Upload Files" }), _jsx(DialogDescription, { children: "Drag and drop files or click to browse" })] }), _jsx("input", { ref: fileInputRef, type: "file", multiple: true, accept: "image/*,video/*,application/pdf", className: "hidden", onChange: (e) => handleFileUpload(e.target.files) }), _jsxs("div", { className: "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center cursor-pointer", onClick: () => fileInputRef.current?.click(), children: [_jsx(Upload, { className: "h-10 w-10 text-muted-foreground" }), _jsx("p", { className: "mt-4 text-sm font-medium", children: "Click to browse for files" }), _jsx("p", { className: "mt-1 text-xs text-muted-foreground", children: "PNG, JPG, GIF, SVG, PDF, MP4 up to 50MB" })] }), _jsxs("div", { className: "space-y-2", children: [_jsx(Label, { children: "Upload to folder" }), _jsxs(Select, { value: uploadFolder, onValueChange: setUploadFolder, children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, {}) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "uploads", children: "uploads" }), folders.filter((f) => f !== 'uploads').map((folder) => (_jsx(SelectItem, { value: folder, className: "capitalize", children: folder }, folder)))] })] })] }), _jsxs(DialogFooter, { children: [_jsx(Button, { variant: "outline", onClick: () => setShowUploadDialog(false), children: "Cancel" }), _jsxs(Button, { onClick: () => fileInputRef.current?.click(), children: [_jsx(Upload, { className: "mr-2 h-4 w-4" }), "Select Files"] })] })] }) })] }));
 }
 function Label({ children, ...props }) {
     return (_jsx("label", { className: "text-sm font-medium", ...props, children: children }));

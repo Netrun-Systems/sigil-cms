@@ -47,8 +47,10 @@ import {
   Badge,
   cn,
 } from '@netrun-cms/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BlockType } from '@netrun-cms/core';
+import { api } from '../../lib/api';
+import { BlockContentEditor } from '../../components/BlockContentEditor';
 
 interface ContentBlock {
   id: string;
@@ -94,8 +96,9 @@ const defaultFormData: PageFormData = {
   ogImageUrl: '',
 };
 
-function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, onMoveDown }: {
+function BlockPreview({ block, isSelected, onEdit, onDelete, onToggleVisibility, onMoveUp, onMoveDown }: {
   block: ContentBlock;
+  isSelected?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onToggleVisibility: () => void;
@@ -109,10 +112,11 @@ function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, o
     <div
       className={cn(
         'group relative rounded-lg border bg-card transition-all hover:border-primary',
+        isSelected && 'border-primary ring-1 ring-primary',
         !block.isVisible && 'opacity-50'
       )}
     >
-      <div className="flex items-center gap-3 p-4">
+      <div className="flex items-center gap-3 p-4 cursor-pointer" onClick={onEdit}>
         <div className="cursor-grab">
           <GripVertical className="h-5 w-5 text-muted-foreground" />
         </div>
@@ -135,7 +139,7 @@ function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, o
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={onMoveUp}
+            onClick={(e) => { e.stopPropagation(); onMoveUp(); }}
           >
             <ChevronUp className="h-4 w-4" />
           </Button>
@@ -143,7 +147,7 @@ function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, o
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={onMoveDown}
+            onClick={(e) => { e.stopPropagation(); onMoveDown(); }}
           >
             <ChevronDown className="h-4 w-4" />
           </Button>
@@ -151,7 +155,7 @@ function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, o
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={onToggleVisibility}
+            onClick={(e) => { e.stopPropagation(); onToggleVisibility(); }}
           >
             {block.isVisible ? (
               <Eye className="h-4 w-4" />
@@ -163,7 +167,7 @@ function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, o
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={onEdit}
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
           >
             <Settings className="h-4 w-4" />
           </Button>
@@ -171,7 +175,7 @@ function BlockPreview({ block, onEdit, onDelete, onToggleVisibility, onMoveUp, o
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={onDelete}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -233,53 +237,48 @@ export function PageEditor() {
   const navigate = useNavigate();
   const isEditing = Boolean(pageId);
 
-  // Mock data for existing page
-  const existingPage: PageFormData | null = isEditing
-    ? {
-        title: 'About Us',
-        slug: 'about',
-        status: 'published',
-        template: 'default',
-        parentId: null,
-        metaTitle: 'About Us - Netrun Systems',
-        metaDescription: 'Learn about Netrun Systems and our mission to provide enterprise cloud infrastructure.',
-        ogImageUrl: '',
-      }
-    : null;
-
-  const [formData, setFormData] = useState<PageFormData>(existingPage || defaultFormData);
-  const [blocks, setBlocks] = useState<ContentBlock[]>(
-    isEditing
-      ? [
-          {
-            id: '1',
-            type: 'hero',
-            content: { headline: 'About Us', subheadline: 'Our Story' },
-            isVisible: true,
-          },
-          {
-            id: '2',
-            type: 'text',
-            content: { body: 'Welcome to Netrun Systems...' },
-            isVisible: true,
-          },
-          {
-            id: '3',
-            type: 'feature_grid',
-            content: { features: [] },
-            isVisible: true,
-          },
-          {
-            id: '4',
-            type: 'cta',
-            content: { headline: 'Get Started', buttonText: 'Contact Us' },
-            isVisible: true,
-          },
-        ]
-      : []
-  );
+  const [formData, setFormData] = useState<PageFormData>(defaultFormData);
+  const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
+  const [error, setError] = useState<string | null>(null);
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  const handleBlockContentChange = (blockId: string, content: Record<string, unknown>) => {
+    setBlocks((prev) =>
+      prev.map((b) => (b.id === blockId ? { ...b, content } : b))
+    );
+  };
+
+  useEffect(() => {
+    if (!siteId || !pageId) return;
+    // Load page data
+    api.get<{ data: Record<string, unknown> }>('/sites/' + siteId + '/pages/' + pageId).then((res) => {
+      const p = res.data;
+      const seo = (p.seo || {}) as Record<string, string>;
+      setFormData({
+        title: (p.title as string) || '',
+        slug: (p.slug as string) || '',
+        status: (p.status as PageFormData['status']) || 'draft',
+        template: (p.template as string) || 'default',
+        parentId: (p.parentId as string) || null,
+        metaTitle: seo.metaTitle || (p.metaTitle as string) || '',
+        metaDescription: seo.metaDescription || (p.metaDescription as string) || '',
+        ogImageUrl: seo.ogImageUrl || (p.ogImageUrl as string) || '',
+      });
+    }).catch((err) => setError(err.message));
+
+    // Load blocks
+    api.get<{ data: Array<Record<string, unknown>> }>('/sites/' + siteId + '/pages/' + pageId + '/blocks').then((res) => {
+      const loaded = (res.data || []).map((b) => ({
+        id: b.id as string,
+        type: (b.blockType as BlockType) || (b.type as BlockType),
+        content: (b.content as Record<string, unknown>) || {},
+        isVisible: b.isVisible !== false,
+      }));
+      setBlocks(loaded);
+    }).catch((err) => setError(err.message));
+  }, [siteId, pageId]);
 
   const handleChange = (field: keyof PageFormData, value: string | null) => {
     setFormData((prev) => ({
@@ -335,16 +334,67 @@ export function PageEditor() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    if (!isEditing) {
-      navigate(`/sites/${siteId}/pages`);
+    setError(null);
+    try {
+      const pagePayload = {
+        title: formData.title,
+        slug: formData.slug,
+        status: formData.status,
+        template: formData.template,
+        parentId: formData.parentId,
+        seo: {
+          metaTitle: formData.metaTitle,
+          metaDescription: formData.metaDescription,
+          ogImageUrl: formData.ogImageUrl,
+        },
+      };
+
+      let savedPageId = pageId;
+
+      if (isEditing) {
+        await api.put('/sites/' + siteId + '/pages/' + pageId, pagePayload);
+      } else {
+        const res = await api.post<{ data: { id: string } }>('/sites/' + siteId + '/pages', pagePayload);
+        savedPageId = res.data.id;
+      }
+
+      // Save blocks
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        const blockPayload = {
+          blockType: block.type,
+          content: block.content,
+          sortOrder: i,
+          isVisible: block.isVisible,
+        };
+        // Existing blocks have UUID ids, new ones have timestamp ids
+        const isExistingBlock = block.id.includes('-');
+        if (isExistingBlock) {
+          await api.put('/sites/' + siteId + '/pages/' + savedPageId + '/blocks/' + block.id, blockPayload);
+        } else {
+          const res = await api.post<{ data: { id: string } }>('/sites/' + siteId + '/pages/' + savedPageId + '/blocks', blockPayload);
+          block.id = res.data.id;
+        }
+      }
+
+      if (!isEditing && savedPageId) {
+        navigate('/sites/' + siteId + '/pages/' + savedPageId);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this page?')) {
-      navigate(`/sites/${siteId}/pages`);
+      try {
+        await api.delete('/sites/' + siteId + '/pages/' + pageId);
+        navigate('/sites/' + siteId + '/pages');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Delete failed');
+      }
     }
   };
 
@@ -387,6 +437,12 @@ export function PageEditor() {
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
       {/* Main Editor Layout */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Content Editor - Main Area */}
@@ -402,15 +458,50 @@ export function PageEditor() {
               {blocks.length > 0 ? (
                 <div className="space-y-3">
                   {blocks.map((block) => (
-                    <BlockPreview
-                      key={block.id}
-                      block={block}
-                      onEdit={() => {}}
-                      onDelete={() => handleDeleteBlock(block.id)}
-                      onToggleVisibility={() => handleToggleBlockVisibility(block.id)}
-                      onMoveUp={() => handleMoveBlock(block.id, 'up')}
-                      onMoveDown={() => handleMoveBlock(block.id, 'down')}
-                    />
+                    <div key={block.id}>
+                      <BlockPreview
+                        block={block}
+                        isSelected={selectedBlockId === block.id}
+                        onEdit={() =>
+                          setSelectedBlockId(
+                            selectedBlockId === block.id ? null : block.id
+                          )
+                        }
+                        onDelete={() => {
+                          handleDeleteBlock(block.id);
+                          if (selectedBlockId === block.id) setSelectedBlockId(null);
+                        }}
+                        onToggleVisibility={() => handleToggleBlockVisibility(block.id)}
+                        onMoveUp={() => handleMoveBlock(block.id, 'up')}
+                        onMoveDown={() => handleMoveBlock(block.id, 'down')}
+                      />
+                      {selectedBlockId === block.id && (
+                        <Card className="mt-2 border-primary/30">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-base">
+                                Edit {blockTypes.find((b) => b.type === block.type)?.label || block.type} Content
+                              </CardTitle>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => setSelectedBlockId(null)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <BlockContentEditor
+                              blockType={block.type}
+                              content={block.content}
+                              onChange={(content) => handleBlockContentChange(block.id, content)}
+                            />
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (

@@ -1,0 +1,21 @@
+{
+  "name": "@netrun-cms/renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sigil CMS public site renderer — server-side HTML rendering",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup src/server.ts --format cjs --target node18",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "marked": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

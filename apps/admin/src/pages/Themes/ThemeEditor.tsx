@@ -44,6 +44,7 @@ import {
 } from '@netrun-cms/theme';
 import type { ThemeTokens, ColorTokens, TypographyTokens, EffectTokens, SpacingTokens } from '@netrun-cms/core';
 import { useState, useEffect, useCallback } from 'react';
+import { api } from '../../lib/api';
 import { FontBrowser, type CustomFont, generateFontFaceCss } from '../../components/FontBrowser';
 
 // ============================================================================
@@ -517,10 +518,33 @@ export function ThemeEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+  const [activeThemeId, setActiveThemeId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setCustomTokens(tokens);
   }, [tokens]);
+
+  // Load active theme from API
+  useEffect(() => {
+    if (!siteId) return;
+    api.get<{ data: Record<string, unknown> }>('/sites/' + siteId + '/themes/active').then((res) => {
+      const theme = res.data;
+      if (theme && theme.id) {
+        setActiveThemeId(theme.id as string);
+        if (theme.baseTheme) {
+          setSelectedPreset(theme.baseTheme as string);
+        }
+        if (theme.tokens) {
+          const savedTokens = theme.tokens as ThemeTokens;
+          setCustomTokens(savedTokens);
+          setSiteTheme({ darkTokens: savedTokens, lightTokens: savedTokens });
+        }
+      }
+    }).catch(() => {
+      // No active theme yet — that's fine, use defaults
+    });
+  }, [siteId, setSiteTheme]);
 
   const handlePresetSelect = (presetId: string) => {
     setSelectedPreset(presetId);
@@ -550,9 +574,26 @@ export function ThemeEditor() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    setHasChanges(false);
+    setError(null);
+    try {
+      const payload = {
+        name: selectedPreset.charAt(0).toUpperCase() + selectedPreset.slice(1).replace(/-/g, ' '),
+        baseTheme: selectedPreset,
+        isActive: true,
+        tokens: customTokens,
+      };
+      if (activeThemeId) {
+        await api.put('/sites/' + siteId + '/themes/' + activeThemeId, payload);
+      } else {
+        const res = await api.post<{ data: { id: string } }>('/sites/' + siteId + '/themes', payload);
+        setActiveThemeId(res.data.id);
+      }
+      setHasChanges(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -597,6 +638,12 @@ export function ThemeEditor() {
           </Button>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* Preview Mode Toggle */}
       <Card>

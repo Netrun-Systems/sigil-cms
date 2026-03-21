@@ -33,7 +33,8 @@ import {
   Separator,
   cn,
 } from '@netrun-cms/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
 
 interface SiteFormData {
   name: string;
@@ -70,29 +71,31 @@ export function SiteEditor() {
   const navigate = useNavigate();
   const isEditing = Boolean(siteId);
 
-  // Mock data for existing site
-  const existingSite: SiteFormData | null = isEditing
-    ? {
-        name: 'Netrun Systems',
-        slug: 'netrun-systems',
-        domain: 'netrunsystems.com',
-        defaultLanguage: 'en',
-        status: 'published',
-        description: 'Netrun Systems corporate website',
-        favicon: '/favicon.ico',
-        logo: '/logo.svg',
-        logoDark: '/logo-dark.svg',
-        googleAnalyticsId: 'G-XXXXXXXXXX',
-        metaTitle: 'Netrun Systems - Cloud Infrastructure & DevSecOps',
-        metaDescription:
-          'Netrun Systems provides enterprise cloud infrastructure, DevSecOps, and multi-tenant management platforms.',
-      }
-    : null;
-
-  const [formData, setFormData] = useState<SiteFormData>(
-    existingSite || defaultFormData
-  );
+  const [formData, setFormData] = useState<SiteFormData>(defaultFormData);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!siteId) return;
+    api.get<{ data: Record<string, unknown> }>('/sites/' + siteId).then((res) => {
+      const s = res.data;
+      const settings = (s.settings || {}) as Record<string, string>;
+      setFormData({
+        name: (s.name as string) || '',
+        slug: (s.slug as string) || '',
+        domain: (s.domain as string) || '',
+        defaultLanguage: (s.defaultLanguage as string) || 'en',
+        status: (s.status as SiteFormData['status']) || 'draft',
+        description: settings.description || '',
+        favicon: settings.favicon || '',
+        logo: settings.logo || '',
+        logoDark: settings.logoDark || '',
+        googleAnalyticsId: settings.googleAnalyticsId || '',
+        metaTitle: settings.metaTitle || '',
+        metaDescription: settings.metaDescription || '',
+      });
+    }).catch((err) => setError(err.message));
+  }, [siteId]);
 
   const handleChange = (field: keyof SiteFormData, value: string) => {
     setFormData((prev) => ({
@@ -112,18 +115,45 @@ export function SiteEditor() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    if (!isEditing) {
-      navigate('/sites');
+    setError(null);
+    try {
+      const payload = {
+        name: formData.name,
+        slug: formData.slug,
+        domain: formData.domain,
+        defaultLanguage: formData.defaultLanguage,
+        status: formData.status,
+        settings: {
+          description: formData.description,
+          favicon: formData.favicon,
+          logo: formData.logo,
+          logoDark: formData.logoDark,
+          googleAnalyticsId: formData.googleAnalyticsId,
+          metaTitle: formData.metaTitle,
+          metaDescription: formData.metaDescription,
+        },
+      };
+      if (isEditing) {
+        await api.put('/sites/' + siteId, payload);
+      } else {
+        const res = await api.post<{ data: { id: string } }>('/sites', payload);
+        navigate('/sites/' + res.data.id);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this site?')) {
-      // Delete site
-      navigate('/sites');
+      try {
+        await api.delete('/sites/' + siteId);
+        navigate('/sites');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Delete failed');
+      }
     }
   };
 
@@ -159,6 +189,12 @@ export function SiteEditor() {
           </Button>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* Quick Links for existing site */}
       {isEditing && (

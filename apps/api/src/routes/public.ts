@@ -60,4 +60,34 @@ router.get('/sites/:siteSlug/theme', async (req: Request, res: Response) => {
   res.json({ success: true, data: theme || null });
 });
 
+/**
+ * GET /api/v1/public/sites/:siteSlug/pages
+ * List all published pages for a site (for navigation / sitemap)
+ */
+router.get('/sites/:siteSlug/pages', async (req: Request, res: Response) => {
+  const db = getDb();
+  const siteSlug = req.params.siteSlug as string;
+
+  const [site] = await db.select({ id: sites.id }).from(sites)
+    .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
+  if (!site) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Site not found' } }); return; }
+
+  const publishedPages = await db.select({
+    id: pages.id,
+    title: pages.title,
+    slug: pages.slug,
+    fullPath: pages.fullPath,
+    status: pages.status,
+    metaTitle: pages.metaTitle,
+    metaDescription: pages.metaDescription,
+    ogImageUrl: pages.ogImageUrl,
+    template: pages.template,
+    sortOrder: pages.sortOrder,
+  }).from(pages)
+    .where(and(eq(pages.siteId, site.id), eq(pages.status, 'published')))
+    .orderBy(asc(pages.sortOrder));
+
+  res.json({ success: true, data: publishedPages });
+});
+
 export default router;

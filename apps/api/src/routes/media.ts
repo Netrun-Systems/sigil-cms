@@ -1,19 +1,41 @@
 /**
  * Media Routes
  *
- * CRUD routes for media files with site filtering
+ * CRUD routes for media files with site filtering and file upload
  */
 
 import { Router } from 'express';
 import type { Router as RouterType } from 'express';
+import multer from 'multer';
 import { MediaController } from '../controllers/MediaController.js';
 import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
 
 const router: RouterType = Router({ mergeParams: true });
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+});
+
 // All routes require authentication and tenant context
 router.use(authenticate);
 router.use(tenantContext);
+
+/**
+ * POST /api/v1/sites/:siteId/media/upload
+ * Upload a single file and create a media record
+ *
+ * Multipart form: file (single), optional fields: altText, caption, folder
+ */
+router.post('/upload', requireRole('admin', 'editor', 'author'), upload.single('file'), MediaController.createWithFile);
+
+/**
+ * POST /api/v1/sites/:siteId/media/upload/bulk
+ * Upload multiple files (up to 20) and create media records
+ *
+ * Multipart form: files (array), optional fields: folder
+ */
+router.post('/upload/bulk', requireRole('admin', 'editor', 'author'), upload.array('files', 20), MediaController.createWithFiles);
 
 /**
  * GET /api/v1/sites/:siteId/media

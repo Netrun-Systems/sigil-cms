@@ -7,6 +7,7 @@
 import type { Response } from 'express';
 import { eq, and, desc, asc, count, like, or } from 'drizzle-orm';
 import { media, sites, insertMediaSchema, type Media } from '@netrun-cms/db';
+import { uploadFile } from '@netrun-cms/plugin-runtime';
 import { getDb } from '../db.js';
 import { parsePagination } from '../middleware/validation.js';
 import type { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types/index.js';
@@ -398,5 +399,190 @@ export class MediaController {
     };
 
     res.json(response);
+  }
+
+  /**
+   * Upload a single file and create a media record
+   *
+   * POST /api/v1/sites/:siteId/media/upload
+   */
+  static async createWithFile(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { siteId } = req.params;
+
+    // Verify site belongs to tenant
+    const [site] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.id, siteId), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!site) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: `Site with ID ${siteId} not found`,
+        },
+      };
+      res.status(404).json(response);
+      return;
+    }
+
+    const file = req.file;
+    if (!file) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'No file provided. Send a file in the "file" field.',
+        },
+      };
+      res.status(400).json(response);
+      return;
+    }
+
+    // Upload to storage
+    const { id: storageId, storedName, url } = await uploadFile(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+    );
+
+    // Create media record
+    const insertData = {
+      siteId,
+      filename: storedName,
+      originalFilename: file.originalname,
+      mimeType: file.mimetype,
+      fileSize: file.size,
+      url,
+      altText: (req.body.altText as string) || null,
+      caption: (req.body.caption as string) || null,
+      folder: (req.body.folder as string) || null,
+      metadata: { storageId, storedName },
+    };
+
+    const parseResult = insertMediaSchema.safeParse(insertData);
+    if (!parseResult.success) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid media data',
+          details: parseResult.error.errors,
+        },
+      };
+      res.status(400).json(response);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [mediaItem] = await db
+      .insert(media)
+      .values(parseResult.data as any)
+      .returning();
+
+    const response: ApiResponse<Media> = {
+      success: true,
+      data: mediaItem,
+    };
+
+    res.status(201).json(response);
+  }
+
+  /**
+   * Upload multiple files and create media records
+   *
+   * POST /api/v1/sites/:siteId/media/upload/bulk
+   */
+  static async createWithFiles(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { siteId } = req.params;
+
+    // Verify site belongs to tenant
+    const [site] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.id, siteId), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!site) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: `Site with ID ${siteId} not found`,
+        },
+      };
+      res.status(404).json(response);
+      return;
+    }
+
+    const files = req.files as Express.Multer.File[] | undefined;
+    if (!files?.length) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'No files provided. Send files in the "files" field.',
+        },
+      };
+      res.status(400).json(response);
+      return;
+    }
+
+    const folder = (req.body.folder as string) || null;
+    const created: Media[] = [];
+    const errors: Array<{ filename: string; error: string }> = [];
+
+    for (const file of files) {
+      try {
+        const { id: storageId, storedName, url } = await uploadFile(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+        );
+
+        const insertData = {
+          siteId,
+          filename: storedName,
+          originalFilename: file.originalname,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          url,
+          folder,
+          metadata: { storageId, storedName },
+        };
+
+        const parseResult = insertMediaSchema.safeParse(insertData);
+        if (!parseResult.success) {
+          errors.push({ filename: file.originalname, error: 'Validation failed' });
+          continue;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [mediaItem] = await db
+          .insert(media)
+          .values(parseResult.data as any)
+          .returning();
+
+        created.push(mediaItem);
+      } catch (err) {
+        errors.push({
+          filename: file.originalname,
+          error: err instanceof Error ? err.message : 'Upload failed',
+        });
+      }
+    }
+
+    const response: ApiResponse<{ uploaded: Media[]; errors: Array<{ filename: string; error: string }> }> = {
+      success: true,
+      data: { uploaded: created, errors },
+    };
+
+    res.status(created.length > 0 ? 201 : 400).json(response);
   }
 }
