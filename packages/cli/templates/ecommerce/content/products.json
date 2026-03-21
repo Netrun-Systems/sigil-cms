@@ -1,0 +1,32 @@
+{
+  "_type": "page",
+  "_slug": "products",
+  "title": "Products",
+  "seo": {
+    "title": "Products — {{SITE_NAME}}",
+    "description": "Browse all products available at {{SITE_NAME}}."
+  },
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Products"
+    },
+    {
+      "_type": "product-grid",
+      "source": "products/*",
+      "columns": 4,
+      "orderBy": "createdAt",
+      "order": "desc",
+      "showPrice": true,
+      "showAddToCart": true,
+      "filter": {
+        "enabled": true,
+        "categories": ["All"]
+      },
+      "pagination": {
+        "enabled": true,
+        "perPage": 12
+      }
+    }
+  ]
+}

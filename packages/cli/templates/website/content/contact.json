@@ -1,0 +1,26 @@
+{
+  "_type": "page",
+  "_slug": "contact",
+  "title": "Contact Us",
+  "seo": {
+    "title": "Contact — {{SITE_NAME}}",
+    "description": "Get in touch with the {{SITE_NAME}} team."
+  },
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Contact Us\n\nWe would love to hear from you. Fill out the form below and we will get back to you shortly."
+    },
+    {
+      "_type": "contact-form",
+      "fields": [
+        { "name": "name", "label": "Name", "type": "text", "required": true },
+        { "name": "email", "label": "Email", "type": "email", "required": true },
+        { "name": "subject", "label": "Subject", "type": "text", "required": false },
+        { "name": "message", "label": "Message", "type": "textarea", "required": true }
+      ],
+      "submitLabel": "Send Message",
+      "successMessage": "Thank you! We will be in touch soon."
+    }
+  ]
+}

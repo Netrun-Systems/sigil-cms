@@ -1,0 +1,24 @@
+{
+  "_type": "page",
+  "_slug": "cart",
+  "title": "Shopping Cart",
+  "seo": {
+    "title": "Cart — {{SITE_NAME}}",
+    "description": "Review your shopping cart."
+  },
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Shopping Cart"
+    },
+    {
+      "_type": "cart",
+      "emptyMessage": "Your cart is empty.",
+      "showContinueShopping": true,
+      "continueShoppingHref": "/products",
+      "checkoutButton": {
+        "label": "Proceed to Checkout"
+      }
+    }
+  ]
+}

@@ -47,15 +47,25 @@ import {
   Switch,
   Separator,
   Badge,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
   cn,
 } from '@netrun-cms/ui';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { BlockType } from '@netrun-cms/core';
 import { api } from '../../lib/api';
 import { BlockContentEditor } from '../../components/BlockContentEditor';
 import { LanguageSelector } from '../../components/LanguageSelector';
 import { RevisionHistory } from '../../components/RevisionHistory';
 import { usePermissions } from '../../hooks/usePermissions';
+import {
+  LivePreviewPanel,
+  PreviewModeToggle,
+  type PreviewMode,
+  type ViewportSize,
+} from '../../components/LivePreviewPanel';
+import { usePreviewChannel, useDebouncedCallback } from '../../hooks/usePreviewChannel';
 
 interface ContentBlock {
   id: string;
@@ -260,6 +270,186 @@ function AddBlockButton({ onAdd }: { onAdd: (type: string) => void }) {
   );
 }
 
+/**
+ * Extracted editor content (blocks + SEO tabs) so it can be rendered
+ * in both the default grid layout and the split-pane layout.
+ */
+function EditorContent({
+  activeTab,
+  setActiveTab,
+  blocks,
+  selectedBlockId,
+  setSelectedBlockId,
+  handleDeleteBlock,
+  handleToggleBlockVisibility,
+  handleMoveBlock,
+  handleBlockContentChange,
+  handleAddBlock,
+  formData,
+  handleChange,
+}: {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  blocks: ContentBlock[];
+  selectedBlockId: string | null;
+  setSelectedBlockId: (id: string | null) => void;
+  handleDeleteBlock: (id: string) => void;
+  handleToggleBlockVisibility: (id: string) => void;
+  handleMoveBlock: (id: string, dir: 'up' | 'down') => void;
+  handleBlockContentChange: (blockId: string, content: Record<string, unknown>) => void;
+  handleAddBlock: (type: string) => void;
+  formData: PageFormData;
+  handleChange: (field: keyof PageFormData, value: string | null) => void;
+}) {
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList>
+        <TabsTrigger value="content">Content Blocks</TabsTrigger>
+        <TabsTrigger value="seo">SEO</TabsTrigger>
+      </TabsList>
+
+      {/* Content Blocks Tab */}
+      <TabsContent value="content" className="space-y-4 mt-4">
+        {blocks.length > 0 ? (
+          <div className="space-y-3">
+            {blocks.map((block) => (
+              <div key={block.id}>
+                <BlockPreview
+                  block={block}
+                  isSelected={selectedBlockId === block.id}
+                  onEdit={() =>
+                    setSelectedBlockId(
+                      selectedBlockId === block.id ? null : block.id
+                    )
+                  }
+                  onDelete={() => {
+                    handleDeleteBlock(block.id);
+                    if (selectedBlockId === block.id) setSelectedBlockId(null);
+                  }}
+                  onToggleVisibility={() => handleToggleBlockVisibility(block.id)}
+                  onMoveUp={() => handleMoveBlock(block.id, 'up')}
+                  onMoveDown={() => handleMoveBlock(block.id, 'down')}
+                />
+                {selectedBlockId === block.id && (
+                  <Card className="mt-2 border-primary/30">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">
+                          Edit {blockTypes.find((b) => b.type === block.type)?.label || block.type} Content
+                        </CardTitle>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setSelectedBlockId(null)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <BlockContentEditor
+                        blockType={block.type}
+                        content={block.content}
+                        onChange={(content) => handleBlockContentChange(block.id, content)}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <LayoutGrid className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">No content blocks yet</h3>
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                Start building your page by adding content blocks
+              </p>
+            </CardContent>
+          </Card>
+        )}
+        <AddBlockButton onAdd={handleAddBlock} />
+      </TabsContent>
+
+      {/* SEO Tab */}
+      <TabsContent value="seo" className="space-y-4 mt-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>SEO Settings</CardTitle>
+            <CardDescription>
+              Search engine optimization for this page
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="metaTitle">Meta Title</Label>
+              <Input
+                id="metaTitle"
+                value={formData.metaTitle}
+                onChange={(e) => handleChange('metaTitle', e.target.value)}
+                placeholder={formData.title || 'Page Title'}
+                maxLength={60}
+              />
+              <p className="text-xs text-muted-foreground">
+                {formData.metaTitle.length}/60 characters
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="metaDescription">Meta Description</Label>
+              <Textarea
+                id="metaDescription"
+                value={formData.metaDescription}
+                onChange={(e) => handleChange('metaDescription', e.target.value)}
+                placeholder="A compelling description for search results"
+                rows={3}
+                maxLength={160}
+              />
+              <p className="text-xs text-muted-foreground">
+                {formData.metaDescription.length}/160 characters
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ogImageUrl">Social Image URL</Label>
+              <Input
+                id="ogImageUrl"
+                value={formData.ogImageUrl}
+                onChange={(e) => handleChange('ogImageUrl', e.target.value)}
+                placeholder="/images/og-image.jpg"
+              />
+              <p className="text-xs text-muted-foreground">
+                Image shown when shared on social media (1200x630px recommended)
+              </p>
+            </div>
+
+            <Separator />
+
+            <div className="rounded-lg border bg-muted/50 p-4">
+              <p className="mb-2 text-sm font-medium">Search Preview</p>
+              <div className="space-y-1">
+                <p className="text-lg text-blue-600 hover:underline">
+                  {formData.metaTitle || formData.title || 'Page Title'}
+                </p>
+                <p className="text-sm text-green-700">
+                  netrunsystems.com/{formData.slug || 'page-slug'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {formData.metaDescription || 'Meta description will appear here...'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  );
+}
+
 export function PageEditor() {
   const { siteId, pageId } = useParams();
   const navigate = useNavigate();
@@ -277,6 +467,46 @@ export function PageEditor() {
   const [publishAt, setPublishAt] = useState<string>('');
   const [unpublishAt, setUnpublishAt] = useState<string>('');
   const [showSchedulePanel, setShowSchedulePanel] = useState(false);
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('edit');
+  const [previewViewport, setPreviewViewport] = useState<ViewportSize>('desktop');
+
+  // --- Live Preview Channel ---
+  const { iframeRef, sendUpdate } = usePreviewChannel();
+
+  const previewUrl = useMemo(() => {
+    const base = (import.meta as unknown as { env?: Record<string, string> }).env
+      ?.VITE_PREVIEW_URL;
+    if (!base || !formData.slug) return null;
+    return `${base.replace(/\/$/, '')}/${formData.slug}?preview=true`;
+  }, [formData.slug]);
+
+  // Debounced sender — fires 300ms after the last edit
+  const debouncedSendPreview = useDebouncedCallback(
+    useCallback(
+      (
+        page: { title: string; slug: string; template: string; status: string },
+        blks: typeof blocks,
+      ) => {
+        sendUpdate(page, blks);
+      },
+      [sendUpdate],
+    ),
+    300,
+  );
+
+  // Send preview updates whenever blocks or page metadata change
+  useEffect(() => {
+    if (previewMode === 'edit') return; // No iframe visible, skip
+    debouncedSendPreview(
+      {
+        title: formData.title,
+        slug: formData.slug,
+        template: formData.template,
+        status: formData.status,
+      },
+      blocks,
+    );
+  }, [formData.title, formData.slug, formData.template, formData.status, blocks, previewMode, debouncedSendPreview]);
 
   const handleBlockContentChange = (blockId: string, content: Record<string, unknown>) => {
     setBlocks((prev) =>
@@ -528,10 +758,7 @@ export function PageEditor() {
           )}
           {isEditing && (
             <>
-              <Button variant="outline">
-                <Eye className="mr-2 h-4 w-4" />
-                Preview
-              </Button>
+              <PreviewModeToggle mode={previewMode} onChange={setPreviewMode} />
               {canDelete && (
                 <Button variant="destructive" onClick={handleDelete}>
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -562,386 +789,299 @@ export function PageEditor() {
         </div>
       )}
 
-      {/* Main Editor Layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Content Editor - Main Area */}
-        <div className="lg:col-span-2 space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="content">Content Blocks</TabsTrigger>
-              <TabsTrigger value="seo">SEO</TabsTrigger>
-            </TabsList>
+      {/* Main Editor Layout — supports edit / split / preview modes */}
+      {previewMode === 'preview' ? (
+        /* Full-width preview mode */
+        <div className="rounded-lg border overflow-hidden" style={{ height: 'calc(100vh - 160px)' }}>
+          <LivePreviewPanel
+            iframeRef={iframeRef}
+            previewUrl={previewUrl}
+            viewport={previewViewport}
+            onViewportChange={setPreviewViewport}
+          />
+        </div>
+      ) : previewMode === 'split' ? (
+        /* Split mode — editor left, preview right */
+        <ResizablePanelGroup direction="horizontal" className="rounded-lg border" style={{ height: 'calc(100vh - 160px)' }}>
+          <ResizablePanel defaultSize={55} minSize={30}>
+            <div className="h-full overflow-y-auto p-6">
+              <EditorContent
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                blocks={blocks}
+                selectedBlockId={selectedBlockId}
+                setSelectedBlockId={setSelectedBlockId}
+                handleDeleteBlock={handleDeleteBlock}
+                handleToggleBlockVisibility={handleToggleBlockVisibility}
+                handleMoveBlock={handleMoveBlock}
+                handleBlockContentChange={handleBlockContentChange}
+                handleAddBlock={handleAddBlock}
+                formData={formData}
+                handleChange={handleChange}
+              />
+            </div>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={45} minSize={25}>
+            <LivePreviewPanel
+              iframeRef={iframeRef}
+              previewUrl={previewUrl}
+              viewport={previewViewport}
+              onViewportChange={setPreviewViewport}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      ) : (
+        /* Default edit mode — original layout */
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Content Editor - Main Area */}
+          <div className="lg:col-span-2 space-y-6">
+            <EditorContent
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              blocks={blocks}
+              selectedBlockId={selectedBlockId}
+              setSelectedBlockId={setSelectedBlockId}
+              handleDeleteBlock={handleDeleteBlock}
+              handleToggleBlockVisibility={handleToggleBlockVisibility}
+              handleMoveBlock={handleMoveBlock}
+              handleBlockContentChange={handleBlockContentChange}
+              handleAddBlock={handleAddBlock}
+              formData={formData}
+              handleChange={handleChange}
+            />
+          </div>
 
-            {/* Content Blocks Tab */}
-            <TabsContent value="content" className="space-y-4 mt-4">
-              {blocks.length > 0 ? (
-                <div className="space-y-3">
-                  {blocks.map((block) => (
-                    <div key={block.id}>
-                      <BlockPreview
-                        block={block}
-                        isSelected={selectedBlockId === block.id}
-                        onEdit={() =>
-                          setSelectedBlockId(
-                            selectedBlockId === block.id ? null : block.id
-                          )
-                        }
-                        onDelete={() => {
-                          handleDeleteBlock(block.id);
-                          if (selectedBlockId === block.id) setSelectedBlockId(null);
-                        }}
-                        onToggleVisibility={() => handleToggleBlockVisibility(block.id)}
-                        onMoveUp={() => handleMoveBlock(block.id, 'up')}
-                        onMoveDown={() => handleMoveBlock(block.id, 'down')}
-                      />
-                      {selectedBlockId === block.id && (
-                        <Card className="mt-2 border-primary/30">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-base">
-                                Edit {blockTypes.find((b) => b.type === block.type)?.label || block.type} Content
-                              </CardTitle>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => setSelectedBlockId(null)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <BlockContentEditor
-                              blockType={block.type}
-                              content={block.content}
-                              onChange={(content) => handleBlockContentChange(block.id, content)}
-                            />
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-                  ))}
+          {/* Sidebar - Page Settings */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Page Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => handleChange('title', e.target.value)}
+                    placeholder="Page Title"
+                  />
                 </div>
-              ) : (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                      <LayoutGrid className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <h3 className="mt-4 text-lg font-semibold">No content blocks yet</h3>
-                    <p className="mt-2 text-center text-sm text-muted-foreground">
-                      Start building your page by adding content blocks
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-              <AddBlockButton onAdd={handleAddBlock} />
-            </TabsContent>
 
-            {/* SEO Tab */}
-            <TabsContent value="seo" className="space-y-4 mt-4">
-              <Card>
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Slug</Label>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">/</span>
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => handleChange('slug', e.target.value)}
+                      placeholder="page-slug"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      handleChange('status', value as PageFormData['status'])
+                    }
+                    disabled={!canPublish}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {!canPublish && (
+                    <p className="text-xs text-muted-foreground">
+                      Only admins and editors can change publish status
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="template">Template</Label>
+                  <Select
+                    value={formData.template}
+                    onValueChange={(value) => handleChange('template', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default</SelectItem>
+                      <SelectItem value="landing">Landing Page</SelectItem>
+                      <SelectItem value="blog">Blog</SelectItem>
+                      <SelectItem value="product">Product</SelectItem>
+                      <SelectItem value="contact">Contact</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="parent">Parent Page</Label>
+                  <Select
+                    value={formData.parentId || 'none'}
+                    onValueChange={(value) =>
+                      handleChange('parentId', value === 'none' ? null : value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="No parent" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No parent (root level)</SelectItem>
+                      <SelectItem value="services">Services</SelectItem>
+                      <SelectItem value="about">About</SelectItem>
+                      <SelectItem value="blog">Blog</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Content Scheduling */}
+            {showSchedulePanel && isEditing && (
+              <Card className="border-primary/30">
                 <CardHeader>
-                  <CardTitle>SEO Settings</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Content Schedule
+                  </CardTitle>
                   <CardDescription>
-                    Search engine optimization for this page
+                    Automatically publish or unpublish this page
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="metaTitle">Meta Title</Label>
-                    <Input
-                      id="metaTitle"
-                      value={formData.metaTitle}
-                      onChange={(e) => handleChange('metaTitle', e.target.value)}
-                      placeholder={formData.title || 'Page Title'}
-                      maxLength={60}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {formData.metaTitle.length}/60 characters
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="metaDescription">Meta Description</Label>
-                    <Textarea
-                      id="metaDescription"
-                      value={formData.metaDescription}
-                      onChange={(e) => handleChange('metaDescription', e.target.value)}
-                      placeholder="A compelling description for search results"
-                      rows={3}
-                      maxLength={160}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {formData.metaDescription.length}/160 characters
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="ogImageUrl">Social Image URL</Label>
-                    <Input
-                      id="ogImageUrl"
-                      value={formData.ogImageUrl}
-                      onChange={(e) => handleChange('ogImageUrl', e.target.value)}
-                      placeholder="/images/og-image.jpg"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Image shown when shared on social media (1200x630px recommended)
-                    </p>
-                  </div>
-
-                  <Separator />
-
-                  <div className="rounded-lg border bg-muted/50 p-4">
-                    <p className="mb-2 text-sm font-medium">Search Preview</p>
-                    <div className="space-y-1">
-                      <p className="text-lg text-blue-600 hover:underline">
-                        {formData.metaTitle || formData.title || 'Page Title'}
-                      </p>
-                      <p className="text-sm text-green-700">
-                        netrunsystems.com/{formData.slug || 'page-slug'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {formData.metaDescription || 'Meta description will appear here...'}
+                  {formData.status === 'scheduled' && publishAt && (
+                    <div className="rounded-lg bg-primary/10 p-3 text-sm">
+                      <div className="flex items-center gap-2 font-medium text-primary">
+                        <Clock className="h-4 w-4" />
+                        Scheduled to publish {formatCountdown(publishAt)}
+                      </div>
+                      <p className="mt-1 text-muted-foreground">
+                        {new Date(publishAt).toLocaleString()}
                       </p>
                     </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="publishAt">Publish At</Label>
+                    <Input
+                      id="publishAt"
+                      type="datetime-local"
+                      value={publishAt}
+                      onChange={(e) => setPublishAt(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Leave empty to publish manually
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="unpublishAt">Unpublish At (optional)</Label>
+                    <Input
+                      id="unpublishAt"
+                      type="datetime-local"
+                      value={unpublishAt}
+                      onChange={(e) => setUnpublishAt(e.target.value)}
+                      min={publishAt || undefined}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Page will be archived at this time
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSchedule}
+                      disabled={isScheduling || !publishAt}
+                      className="flex-1"
+                    >
+                      <Clock className="mr-2 h-4 w-4" />
+                      {isScheduling ? 'Scheduling...' : 'Set Schedule'}
+                    </Button>
+                    {(formData.status === 'scheduled' || publishAt || unpublishAt) && (
+                      <Button
+                        variant="outline"
+                        onClick={handleClearSchedule}
+                        disabled={isScheduling}
+                      >
+                        Clear
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+            )}
 
-        {/* Sidebar - Page Settings */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Page Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleChange('title', e.target.value)}
-                  placeholder="Page Title"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="slug">Slug</Label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-muted-foreground">/</span>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => handleChange('slug', e.target.value)}
-                    placeholder="page-slug"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    handleChange('status', value as PageFormData['status'])
-                  }
-                  disabled={!canPublish}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
-                  </SelectContent>
-                </Select>
-                {!canPublish && (
-                  <p className="text-xs text-muted-foreground">
-                    Only admins and editors can change publish status
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="template">Template</Label>
-                <Select
-                  value={formData.template}
-                  onValueChange={(value) => handleChange('template', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Default</SelectItem>
-                    <SelectItem value="landing">Landing Page</SelectItem>
-                    <SelectItem value="blog">Blog</SelectItem>
-                    <SelectItem value="product">Product</SelectItem>
-                    <SelectItem value="contact">Contact</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="parent">Parent Page</Label>
-                <Select
-                  value={formData.parentId || 'none'}
-                  onValueChange={(value) =>
-                    handleChange('parentId', value === 'none' ? null : value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="No parent" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No parent (root level)</SelectItem>
-                    <SelectItem value="services">Services</SelectItem>
-                    <SelectItem value="about">About</SelectItem>
-                    <SelectItem value="blog">Blog</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Content Scheduling */}
-          {showSchedulePanel && isEditing && (
-            <Card className="border-primary/30">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Content Schedule
-                </CardTitle>
-                <CardDescription>
-                  Automatically publish or unpublish this page
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {formData.status === 'scheduled' && publishAt && (
-                  <div className="rounded-lg bg-primary/10 p-3 text-sm">
-                    <div className="flex items-center gap-2 font-medium text-primary">
-                      <Clock className="h-4 w-4" />
-                      Scheduled to publish {formatCountdown(publishAt)}
-                    </div>
-                    <p className="mt-1 text-muted-foreground">
-                      {new Date(publishAt).toLocaleString()}
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="publishAt">Publish At</Label>
-                  <Input
-                    id="publishAt"
-                    type="datetime-local"
-                    value={publishAt}
-                    onChange={(e) => setPublishAt(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Leave empty to publish manually
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="unpublishAt">Unpublish At (optional)</Label>
-                  <Input
-                    id="unpublishAt"
-                    type="datetime-local"
-                    value={unpublishAt}
-                    onChange={(e) => setUnpublishAt(e.target.value)}
-                    min={publishAt || undefined}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Page will be archived at this time
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleSchedule}
-                    disabled={isScheduling || !publishAt}
-                    className="flex-1"
-                  >
-                    <Clock className="mr-2 h-4 w-4" />
-                    {isScheduling ? 'Scheduling...' : 'Set Schedule'}
-                  </Button>
-                  {(formData.status === 'scheduled' || publishAt || unpublishAt) && (
-                    <Button
-                      variant="outline"
-                      onClick={handleClearSchedule}
-                      disabled={isScheduling}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Block Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Total Blocks</span>
-                  <Badge variant="secondary">{blocks.length}</Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Visible Blocks</span>
-                  <Badge variant="secondary">
-                    {blocks.filter((b) => b.isVisible).length}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Hidden Blocks</span>
-                  <Badge variant="secondary">
-                    {blocks.filter((b) => !b.isVisible).length}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Language / Translations */}
-          {isEditing && siteId && pageId && (
+            {/* Block Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Languages</CardTitle>
+                <CardTitle>Content Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <LanguageSelector
-                  siteId={siteId}
-                  pageId={pageId}
-                  currentLanguage={pageLanguage}
-                />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Total Blocks</span>
+                    <Badge variant="secondary">{blocks.length}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Visible Blocks</span>
+                    <Badge variant="secondary">
+                      {blocks.filter((b) => b.isVisible).length}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Hidden Blocks</span>
+                    <Badge variant="secondary">
+                      {blocks.filter((b) => !b.isVisible).length}
+                    </Badge>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Revision History */}
-          {isEditing && siteId && pageId && (
-            <RevisionHistory
-              siteId={siteId}
-              pageId={pageId}
-              onReverted={() => {
-                // Reload page data after revert
-                window.location.reload();
-              }}
-            />
-          )}
+            {/* Language / Translations */}
+            {isEditing && siteId && pageId && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Languages</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <LanguageSelector
+                    siteId={siteId}
+                    pageId={pageId}
+                    currentLanguage={pageLanguage}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Revision History */}
+            {isEditing && siteId && pageId && (
+              <RevisionHistory
+                siteId={siteId}
+                pageId={pageId}
+                onReverted={() => {
+                  // Reload page data after revert
+                  window.location.reload();
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

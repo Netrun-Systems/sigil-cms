@@ -1,0 +1,23 @@
+{
+  "_type": "page",
+  "_slug": "blog",
+  "title": "Blog",
+  "seo": {
+    "title": "Blog — {{SITE_NAME}}",
+    "description": "Insights, tutorials, and updates from the {{SITE_NAME}} team."
+  },
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Blog\n\nThe latest news and insights from our team."
+    },
+    {
+      "_type": "page-list",
+      "source": "blog/*",
+      "orderBy": "publishedAt",
+      "order": "desc",
+      "limit": 10,
+      "display": "cards"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import { startCommand } from "./commands/start";
 import { migrateCommand } from "./commands/migrate";
 import { seedCommand } from "./commands/seed";
 import { infoCommand } from "./commands/info";
+import { generateTypesCommand } from "./commands/generate";
 
 const VERSION = "0.1.0";
 
@@ -25,5 +26,6 @@ program.addCommand(startCommand);
 program.addCommand(migrateCommand);
 program.addCommand(seedCommand);
 program.addCommand(infoCommand);
+program.addCommand(generateTypesCommand);
 
 program.parse();

@@ -1,0 +1,8 @@
+{
+  "_type": "doc",
+  "_slug": "api-reference/overview",
+  "title": "API Overview",
+  "section": "api-reference",
+  "order": 1,
+  "body": "# API Overview\n\nThe {{SITE_NAME}} API provides programmatic access to all content.\n\n## Base URL\n\n```\nhttp://localhost:3000/api\n```\n\n## Response Format\n\nAll responses are JSON:\n\n```json\n{\n  \"data\": { ... },\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 42\n  }\n}\n```\n\n## Error Format\n\n```json\n{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}\n```\n\n## Rate Limiting\n\nThe API is rate-limited to 100 requests per minute per IP address."
+}

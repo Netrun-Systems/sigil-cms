@@ -1,0 +1,55 @@
+{
+  "_type": "page",
+  "_slug": "index",
+  "title": "{{SITE_NAME}}",
+  "seo": {
+    "title": "{{SITE_NAME}} — Welcome",
+    "description": "Welcome to {{SITE_NAME}}. We build great things."
+  },
+  "blocks": [
+    {
+      "_type": "hero",
+      "heading": "Welcome to {{SITE_NAME}}",
+      "subheading": "We help businesses grow with modern solutions.",
+      "cta": {
+        "label": "Get Started",
+        "href": "/contact"
+      },
+      "image": {
+        "src": "/images/hero.jpg",
+        "alt": "Hero image"
+      }
+    },
+    {
+      "_type": "feature-grid",
+      "heading": "What We Do",
+      "columns": 3,
+      "features": [
+        {
+          "icon": "zap",
+          "title": "Fast Delivery",
+          "description": "We ship quickly without compromising quality."
+        },
+        {
+          "icon": "shield",
+          "title": "Secure by Default",
+          "description": "Security is built in from the ground up."
+        },
+        {
+          "icon": "trending-up",
+          "title": "Scalable Solutions",
+          "description": "Grow from startup to enterprise without re-platforming."
+        }
+      ]
+    },
+    {
+      "_type": "cta",
+      "heading": "Ready to get started?",
+      "body": "Contact us today to discuss your project.",
+      "button": {
+        "label": "Contact Us",
+        "href": "/contact"
+      }
+    }
+  ]
+}

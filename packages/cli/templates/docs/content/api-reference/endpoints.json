@@ -1,0 +1,8 @@
+{
+  "_type": "doc",
+  "_slug": "api-reference/endpoints",
+  "title": "Endpoints",
+  "section": "api-reference",
+  "order": 3,
+  "body": "# Endpoints\n\n## Pages\n\n| Method | Path | Description |\n|--------|------|-------------|\n| GET | `/api/pages` | List all pages |\n| GET | `/api/pages/:slug` | Get page by slug |\n| POST | `/api/pages` | Create a page |\n| PUT | `/api/pages/:id` | Update a page |\n| DELETE | `/api/pages/:id` | Delete a page |\n\n## Documents\n\n| Method | Path | Description |\n|--------|------|-------------|\n| GET | `/api/docs` | List all docs |\n| GET | `/api/docs/:section/:slug` | Get doc by section and slug |\n| POST | `/api/docs` | Create a doc |\n| PUT | `/api/docs/:id` | Update a doc |\n| DELETE | `/api/docs/:id` | Delete a doc |\n\n## Search\n\n| Method | Path | Description |\n|--------|------|-------------|\n| GET | `/api/search?q=query` | Full-text search across all content |\n\n## Media\n\n| Method | Path | Description |\n|--------|------|-------------|\n| GET | `/api/media` | List uploads |\n| POST | `/api/media` | Upload a file |\n| DELETE | `/api/media/:id` | Delete a file |"
+}

@@ -1,0 +1,8 @@
+{
+  "_type": "doc",
+  "_slug": "getting-started/installation",
+  "title": "Installation",
+  "section": "getting-started",
+  "order": 2,
+  "body": "# Installation\n\n## Prerequisites\n\n- Node.js 18 or later\n- PostgreSQL 14 or later\n- npm or pnpm\n\n## Install\n\n```bash\nnpm install {{PROJECT_NAME}}\n```\n\n## Configuration\n\nCreate a `.env` file in your project root:\n\n```env\nDATABASE_URL=\"postgresql://user:password@localhost:5432/mydb\"\n```\n\n## Verify\n\nRun the development server to confirm everything is working:\n\n```bash\nnpm run dev\n```\n\nYou should see output confirming the server is running on `http://localhost:3000`."
+}

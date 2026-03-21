@@ -1,0 +1,41 @@
+{
+  "_type": "page",
+  "_slug": "services",
+  "title": "Services",
+  "seo": {
+    "title": "Services — {{SITE_NAME}}",
+    "description": "Explore our range of professional services."
+  },
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Our Services\n\nWe offer a full range of services to help you build, launch, and grow."
+    },
+    {
+      "_type": "feature-grid",
+      "columns": 2,
+      "features": [
+        {
+          "icon": "code",
+          "title": "Web Development",
+          "description": "Custom websites and web applications built with modern technology."
+        },
+        {
+          "icon": "palette",
+          "title": "Design",
+          "description": "User-centered design that converts visitors into customers."
+        },
+        {
+          "icon": "cloud",
+          "title": "Cloud Infrastructure",
+          "description": "Reliable, scalable hosting and DevOps for your applications."
+        },
+        {
+          "icon": "headphones",
+          "title": "Support",
+          "description": "Ongoing maintenance and support to keep your systems running."
+        }
+      ]
+    }
+  ]
+}

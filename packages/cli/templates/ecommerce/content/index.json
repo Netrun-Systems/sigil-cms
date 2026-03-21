@@ -1,0 +1,42 @@
+{
+  "_type": "page",
+  "_slug": "index",
+  "title": "{{SITE_NAME}}",
+  "seo": {
+    "title": "{{SITE_NAME}} — Shop",
+    "description": "Browse our collection of products."
+  },
+  "blocks": [
+    {
+      "_type": "hero",
+      "heading": "Welcome to {{SITE_NAME}}",
+      "subheading": "Discover our latest products.",
+      "cta": {
+        "label": "Shop Now",
+        "href": "/products"
+      },
+      "image": {
+        "src": "/images/hero.jpg",
+        "alt": "Featured products"
+      }
+    },
+    {
+      "_type": "product-grid",
+      "heading": "Featured Products",
+      "source": "products/*",
+      "filter": { "featured": true },
+      "columns": 4,
+      "limit": 8,
+      "showPrice": true,
+      "showAddToCart": true
+    },
+    {
+      "_type": "cta",
+      "heading": "View all products",
+      "button": {
+        "label": "Browse Collection",
+        "href": "/products"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "_type": "page",
+  "_slug": "portfolio",
+  "title": "Portfolio",
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Portfolio\n\nA selection of recent and featured work."
+    },
+    {
+      "_type": "gallery",
+      "source": "portfolio/*",
+      "columns": 3,
+      "orderBy": "date",
+      "order": "desc",
+      "lightbox": true,
+      "filter": {
+        "enabled": true,
+        "categories": ["All", "Painting", "Photography", "Digital", "Sculpture", "Mixed Media"]
+      }
+    }
+  ]
+}

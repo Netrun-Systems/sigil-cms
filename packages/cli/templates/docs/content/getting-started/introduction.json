@@ -1,0 +1,8 @@
+{
+  "_type": "doc",
+  "_slug": "getting-started/introduction",
+  "title": "Introduction",
+  "section": "getting-started",
+  "order": 1,
+  "body": "# Introduction\n\nWelcome to the **{{SITE_NAME}}** documentation.\n\nThis guide will help you get up and running quickly. Use the sidebar to navigate between sections.\n\n## What is {{SITE_NAME}}?\n\nProvide a brief overview of your project here.\n\n## Key Features\n\n- Feature one\n- Feature two\n- Feature three\n\n## Next Steps\n\nHead to [Installation](/docs/getting-started/installation) to set up your environment."
+}

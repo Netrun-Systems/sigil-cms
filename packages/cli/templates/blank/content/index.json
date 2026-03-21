@@ -1,0 +1,11 @@
+{
+  "_type": "page",
+  "_slug": "index",
+  "title": "Welcome to {{SITE_NAME}}",
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "Your new Sigil site is ready. Edit this page in `content/index.json` or through the admin panel."
+    }
+  ]
+}

@@ -33,6 +33,8 @@ export type { SigilNextConfig } from './client.js';
 export { SigilPage } from './components/sigil-page.js';
 export { SigilBlock, SigilBlockList } from './components/sigil-block.js';
 export { SigilImage } from './components/sigil-image.js';
+export { SigilPreviewProvider, useSigilPreview } from './components/sigil-preview-provider.js';
+export type { SigilPreviewProviderProps } from './components/sigil-preview-provider.js';
 
 // Metadata / static generation
 export { generateSigilMetadata, generateSigilStaticParams } from './metadata.js';

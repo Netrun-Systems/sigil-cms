@@ -1,0 +1,8 @@
+{
+  "_type": "doc",
+  "_slug": "api-reference/authentication",
+  "title": "Authentication",
+  "section": "api-reference",
+  "order": 2,
+  "body": "# Authentication\n\nThe API uses JWT bearer tokens for authenticated endpoints.\n\n## Login\n\n```bash\nPOST /api/auth/login\nContent-Type: application/json\n\n{\n  \"email\": \"user@example.com\",\n  \"password\": \"your-password\"\n}\n```\n\n**Response:**\n\n```json\n{\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"expiresIn\": 86400\n  }\n}\n```\n\n## Using the Token\n\nInclude the token in the `Authorization` header:\n\n```bash\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIs...\n```\n\n## Public vs. Protected\n\n- `GET /api/pages/*` — public (read access)\n- `POST/PUT/DELETE /api/*` — requires authentication"
+}

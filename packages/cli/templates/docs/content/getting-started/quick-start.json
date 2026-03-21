@@ -1,0 +1,8 @@
+{
+  "_type": "doc",
+  "_slug": "getting-started/quick-start",
+  "title": "Quick Start",
+  "section": "getting-started",
+  "order": 3,
+  "body": "# Quick Start\n\nGet a working example in under 5 minutes.\n\n## 1. Create a new project\n\n```bash\nnpx sigil create my-project --template docs\ncd my-project\n```\n\n## 2. Configure the database\n\n```bash\ncp .env.example .env\n# Edit .env with your PostgreSQL credentials\n```\n\n## 3. Run migrations\n\n```bash\nsigil migrate\n```\n\n## 4. Start the server\n\n```bash\nsigil dev\n```\n\n## 5. Open the admin panel\n\nVisit `http://localhost:3000/admin` to manage your documentation content.\n\n## Next Steps\n\n- Add new doc pages via the admin panel or by creating JSON files in `content/`\n- Customize the sidebar in `sigil.config.ts`\n- See the [API Reference](/docs/api-reference/overview) for programmatic access"
+}

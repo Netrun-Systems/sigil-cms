@@ -1,0 +1,22 @@
+{
+  "_type": "page",
+  "_slug": "contact",
+  "title": "Contact",
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# Contact\n\nInterested in a commission, collaboration, or purchase? Get in touch."
+    },
+    {
+      "_type": "contact-form",
+      "fields": [
+        { "name": "name", "label": "Name", "type": "text", "required": true },
+        { "name": "email", "label": "Email", "type": "email", "required": true },
+        { "name": "inquiry", "label": "Inquiry Type", "type": "select", "required": false, "options": ["Commission", "Purchase", "Collaboration", "General"] },
+        { "name": "message", "label": "Message", "type": "textarea", "required": true }
+      ],
+      "submitLabel": "Send",
+      "successMessage": "Thank you for reaching out. I will respond shortly."
+    }
+  ]
+}

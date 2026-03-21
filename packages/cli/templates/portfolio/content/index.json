@@ -1,0 +1,33 @@
+{
+  "_type": "page",
+  "_slug": "index",
+  "title": "{{SITE_NAME}}",
+  "blocks": [
+    {
+      "_type": "hero",
+      "heading": "{{SITE_NAME}}",
+      "subheading": "Artist / Designer / Creator",
+      "image": {
+        "src": "/images/hero.jpg",
+        "alt": "Featured work"
+      }
+    },
+    {
+      "_type": "gallery",
+      "source": "portfolio/*",
+      "columns": 3,
+      "limit": 6,
+      "orderBy": "date",
+      "order": "desc",
+      "lightbox": true
+    },
+    {
+      "_type": "cta",
+      "heading": "View the full collection",
+      "button": {
+        "label": "Portfolio",
+        "href": "/portfolio"
+      }
+    }
+  ]
+}

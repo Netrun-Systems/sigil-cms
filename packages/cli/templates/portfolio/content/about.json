@@ -1,0 +1,21 @@
+{
+  "_type": "page",
+  "_slug": "about",
+  "title": "About",
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# About\n\nI am a multidisciplinary artist working across painting, photography, and digital media. My work explores the intersection of technology and human experience."
+    },
+    {
+      "_type": "image",
+      "src": "/images/portrait.jpg",
+      "alt": "Artist portrait",
+      "caption": "In the studio"
+    },
+    {
+      "_type": "text",
+      "body": "## Bio\n\nReplace this with your own biography, exhibition history, and artist statement.\n\n## Exhibitions\n\n- 2025 — Gallery Name, City\n- 2024 — Gallery Name, City\n\n## Education\n\n- MFA, School Name, Year\n- BFA, School Name, Year"
+    }
+  ]
+}

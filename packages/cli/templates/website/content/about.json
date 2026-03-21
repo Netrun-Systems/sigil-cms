@@ -1,0 +1,25 @@
+{
+  "_type": "page",
+  "_slug": "about",
+  "title": "About Us",
+  "seo": {
+    "title": "About — {{SITE_NAME}}",
+    "description": "Learn more about {{SITE_NAME}} and our mission."
+  },
+  "blocks": [
+    {
+      "_type": "text",
+      "body": "# About {{SITE_NAME}}\n\nWe are a team passionate about building great products. Our mission is to help businesses succeed with technology that works."
+    },
+    {
+      "_type": "image",
+      "src": "/images/team.jpg",
+      "alt": "Our team",
+      "caption": "The {{SITE_NAME}} team"
+    },
+    {
+      "_type": "text",
+      "body": "## Our Story\n\nFounded with a simple idea: technology should empower, not complicate. We build tools and platforms that let our clients focus on what they do best.\n\n## Our Values\n\n- **Quality first** — We never cut corners.\n- **Transparency** — Open communication at every step.\n- **Continuous improvement** — Always learning, always shipping."
+    }
+  ]
+}
