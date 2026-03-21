@@ -7,3 +7,5 @@ packages:
   - "apps/*"
   - "plugins/*"
   - "plugins/@kog/*"
+  - "plugins/@intirfix/*"
+  - "plugins/@poppies/*"

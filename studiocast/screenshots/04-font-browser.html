@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Font Browser</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; }
+  .topbar h2 { font-size: 20px; font-weight: 600; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid #1e1e1e; padding: 0 40px; flex-shrink: 0; }
+  .tab { padding: 14px 24px; font-size: 13px; font-weight: 500; color: #666; cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab.active { color: #90b9ab; border-bottom-color: #90b9ab; }
+
+  .editor-area { flex: 1; display: grid; grid-template-columns: 420px 1fr; overflow: hidden; }
+  .controls { padding: 28px 32px; overflow-y: auto; border-right: 1px solid #1e1e1e; position: relative; }
+  .control-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 12px; font-weight: 600; }
+
+  /* Font selector field */
+  .font-selector { position: relative; margin-bottom: 24px; }
+  .font-field { background: #1a1a1a; border: 1px solid #90b9ab; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .font-field .current { font-size: 15px; font-weight: 500; }
+  .font-field .arrow { color: #90b9ab; font-size: 12px; }
+
+  /* Dropdown */
+  .font-dropdown { position: absolute; top: 54px; left: 0; right: 0; background: #141414; border: 1px solid #2a2a2a; border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,0.6); z-index: 100; max-height: 600px; overflow-y: auto; }
+  .dropdown-search { padding: 14px 16px; border-bottom: 1px solid #1e1e1e; }
+  .dropdown-search input { width: 100%; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px 14px; color: #e5e5e5; font-size: 13px; outline: none; }
+  .dropdown-search input::placeholder { color: #555; }
+
+  .dropdown-tabs { display: flex; gap: 0; border-bottom: 1px solid #1e1e1e; padding: 0 16px; }
+  .dropdown-tab { padding: 10px 14px; font-size: 12px; color: #666; cursor: pointer; border-bottom: 2px solid transparent; }
+  .dropdown-tab.active { color: #90b9ab; border-bottom-color: #90b9ab; }
+
+  .font-category { padding: 10px 16px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; }
+  .font-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #1a1a1a; }
+  .font-item:hover { background: #1a1a1a; }
+  .font-item.selected { background: #0f1a17; }
+  .font-name { font-size: 14px; color: #e5e5e5; }
+  .font-preview { font-size: 18px; color: #999; }
+  .font-check { color: #90b9ab; font-size: 16px; }
+
+  /* Right side preview */
+  .preview-panel { background: #0e0e0e; padding: 32px; overflow-y: auto; }
+  .preview-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-bottom: 20px; }
+  .type-preview { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 40px; margin-bottom: 24px; }
+  .type-preview h1 { font-size: 48px; font-weight: 700; color: #e5e5e5; margin-bottom: 12px; line-height: 1.1; }
+  .type-preview h2 { font-size: 28px; font-weight: 600; color: #ccc; margin-bottom: 16px; }
+  .type-preview p { font-size: 16px; color: #999; line-height: 1.7; margin-bottom: 16px; }
+  .type-preview .caption { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+
+  .type-scale { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 28px; }
+  .scale-row { display: flex; align-items: baseline; gap: 20px; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-label { font-size: 11px; color: #555; width: 60px; font-family: 'SF Mono', monospace; }
+  .scale-size { color: #e5e5e5; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item"><span class="nav-icon">&#9998;</span> Pages</div>
+      <div class="nav-item active"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item"><span class="nav-icon">&#9733;</span> Marketplace</div>
+      <div class="nav-item"><span class="nav-icon">&#9878;</span> Store</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Community</div>
+      <div class="nav-item"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <h2>Design Playground</h2>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-outline">Reset</button>
+        <button class="btn btn-primary">Save Theme</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab">Presets</div>
+      <div class="tab">Colors</div>
+      <div class="tab active">Type</div>
+      <div class="tab">Shapes</div>
+      <div class="tab">Effects</div>
+      <div class="tab">Spacing</div>
+    </div>
+    <div class="editor-area">
+      <div class="controls">
+        <div class="control-label">Heading Font</div>
+        <div class="font-selector">
+          <div class="font-field">
+            <span class="current">Inter</span>
+            <span class="arrow">&#9660;</span>
+          </div>
+          <div class="font-dropdown">
+            <div class="dropdown-search">
+              <input type="text" placeholder="Search 70+ Google Fonts..." value="Inter">
+            </div>
+            <div class="dropdown-tabs">
+              <div class="dropdown-tab active">All</div>
+              <div class="dropdown-tab">Sans-serif</div>
+              <div class="dropdown-tab">Serif</div>
+              <div class="dropdown-tab">Display</div>
+              <div class="dropdown-tab">Custom Upload</div>
+            </div>
+            <div class="font-category">Sans-serif</div>
+            <div class="font-item selected">
+              <div>
+                <div class="font-name">Inter</div>
+                <div class="font-preview" style="font-family: sans-serif;">The quick brown fox</div>
+              </div>
+              <span class="font-check">&#10003;</span>
+            </div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Poppins</div>
+                <div class="font-preview" style="font-family: sans-serif; font-weight: 300;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Montserrat</div>
+                <div class="font-preview" style="font-family: sans-serif; letter-spacing: 0.5px;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Open Sans</div>
+                <div class="font-preview" style="font-family: sans-serif;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-category">Serif</div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Playfair Display</div>
+                <div class="font-preview" style="font-family: Georgia, serif; font-style: italic;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Merriweather</div>
+                <div class="font-preview" style="font-family: Georgia, serif;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Lora</div>
+                <div class="font-preview" style="font-family: Georgia, serif;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-category">Display</div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Bebas Neue</div>
+                <div class="font-preview" style="font-family: Impact, sans-serif; text-transform: uppercase; letter-spacing: 2px;">The quick brown fox</div>
+              </div>
+            </div>
+            <div class="font-item">
+              <div>
+                <div class="font-name">Oswald</div>
+                <div class="font-preview" style="font-family: 'Arial Narrow', sans-serif; font-weight: 600;">The quick brown fox</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-label" style="margin-top: 24px;">Body Font</div>
+        <div class="font-selector">
+          <div class="font-field" style="border-color: #333;">
+            <span class="current">Inter</span>
+            <span class="arrow" style="color:#666;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="preview-label">Type Preview</div>
+        <div class="type-preview">
+          <h1>Heading One</h1>
+          <h2>Heading Two</h2>
+          <p>Body text demonstrates how your content will look with the selected font pairing. Good typography creates hierarchy, improves readability, and reinforces your brand identity across every page.</p>
+          <div class="caption">Caption &middot; Small Text &middot; Labels</div>
+        </div>
+        <div class="preview-label" style="margin-top:28px;">Type Scale</div>
+        <div class="type-scale">
+          <div class="scale-row"><span class="scale-label">6xl</span><span class="scale-size" style="font-size:48px; font-weight:700;">Display</span></div>
+          <div class="scale-row"><span class="scale-label">4xl</span><span class="scale-size" style="font-size:36px; font-weight:700;">Heading</span></div>
+          <div class="scale-row"><span class="scale-label">2xl</span><span class="scale-size" style="font-size:24px; font-weight:600;">Subhead</span></div>
+          <div class="scale-row"><span class="scale-label">lg</span><span class="scale-size" style="font-size:18px;">Lead text</span></div>
+          <div class="scale-row"><span class="scale-label">base</span><span class="scale-size" style="font-size:16px; color:#999;">Body text</span></div>
+          <div class="scale-row"><span class="scale-label">sm</span><span class="scale-size" style="font-size:14px; color:#777;">Small</span></div>
+          <div class="scale-row"><span class="scale-label">xs</span><span class="scale-size" style="font-size:12px; color:#666;">Caption</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

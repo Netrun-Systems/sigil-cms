@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Community</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; }
+  .topbar h2 { font-size: 20px; font-weight: 600; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+  .content { padding: 32px 40px; }
+
+  .forum-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+
+  /* Category tabs */
+  .category-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .cat-tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #999; cursor: pointer; }
+  .cat-tab.active { background: #0f1a17; border-color: #90b9ab44; color: #90b9ab; }
+  .cat-tab .count { font-size: 11px; color: #555; margin-left: 4px; }
+
+  /* Thread list */
+  .thread-list { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
+  .thread-item { display: flex; gap: 16px; padding: 18px 24px; border-bottom: 1px solid #1a1a1a; transition: background 0.1s; cursor: pointer; }
+  .thread-item:hover { background: #181818; }
+  .thread-item:last-child { border-bottom: none; }
+
+  .vote-box { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 44px; }
+  .vote-arrow { color: #444; font-size: 14px; cursor: pointer; }
+  .vote-arrow.up-active { color: #90b9ab; }
+  .vote-score { font-size: 16px; font-weight: 700; color: #e5e5e5; }
+
+  .thread-content { flex: 1; }
+  .thread-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .thread-badges { display: flex; gap: 6px; }
+  .thread-badge { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 4px; }
+  .badge-solved { background: #4ade8022; color: #4ade80; }
+  .badge-pinned { background: #e5a84b22; color: #e5a84b; }
+  .badge-question { background: #5b9bd522; color: #5b9bd5; }
+  .badge-discussion { background: #a78bfa22; color: #a78bfa; }
+
+  .thread-excerpt { font-size: 13px; color: #777; line-height: 1.5; margin-bottom: 10px; }
+  .thread-meta { display: flex; align-items: center; gap: 16px; }
+  .thread-author { display: flex; align-items: center; gap: 8px; }
+  .author-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; }
+  .author-avatar.a1 { background: #90b9ab33; color: #90b9ab; }
+  .author-avatar.a2 { background: #5b9bd533; color: #5b9bd5; }
+  .author-avatar.a3 { background: #a78bfa33; color: #a78bfa; }
+  .author-avatar.a4 { background: #e5a84b33; color: #e5a84b; }
+  .author-avatar.a5 { background: #ec489933; color: #ec4899; }
+  .author-name { font-size: 12px; color: #999; }
+  .meta-sep { color: #333; }
+  .meta-item { font-size: 12px; color: #666; }
+
+  .thread-stats { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; text-align: center; }
+  .reply-count { font-size: 18px; font-weight: 700; color: #e5e5e5; }
+  .reply-label { font-size: 10px; color: #555; text-transform: uppercase; }
+
+  /* Leaderboard sidebar */
+  .leaderboard { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .leaderboard-title { font-size: 15px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .leader-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+  .leader-item:last-child { border-bottom: none; }
+  .leader-rank { font-size: 14px; font-weight: 700; color: #555; width: 24px; }
+  .leader-rank.gold { color: #f59e0b; }
+  .leader-rank.silver { color: #9ca3af; }
+  .leader-rank.bronze { color: #b45309; }
+  .leader-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+  .leader-info { flex: 1; }
+  .leader-name { font-size: 13px; font-weight: 500; }
+  .leader-rep-label { font-size: 11px; color: #666; }
+  .leader-rep { font-size: 14px; font-weight: 700; color: #90b9ab; }
+
+  /* Stats panel */
+  .forum-stats { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 24px; }
+  .forum-stats-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+  .fs-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
+  .fs-row:last-child { border-bottom: none; }
+  .fs-label { font-size: 13px; color: #888; }
+  .fs-value { font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item"><span class="nav-icon">&#9998;</span> Pages</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item"><span class="nav-icon">&#9733;</span> Marketplace</div>
+      <div class="nav-item"><span class="nav-icon">&#9878;</span> Store</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item active"><span class="nav-icon">&#128101;</span> Community <span class="nav-badge">18</span></div>
+      <div class="nav-item"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <h2>Community Forum</h2>
+      <button class="btn btn-primary">+ New Thread</button>
+    </div>
+    <div class="content">
+      <div class="category-tabs">
+        <span class="cat-tab active">All Threads <span class="count">48</span></span>
+        <span class="cat-tab">Questions <span class="count">22</span></span>
+        <span class="cat-tab">Discussion <span class="count">14</span></span>
+        <span class="cat-tab">Announcements <span class="count">6</span></span>
+        <span class="cat-tab">Showcase <span class="count">6</span></span>
+      </div>
+
+      <div class="forum-layout">
+        <div class="thread-list">
+          <div class="thread-item">
+            <div class="vote-box">
+              <span class="vote-arrow up-active">&#9650;</span>
+              <span class="vote-score">24</span>
+              <span class="vote-arrow">&#9660;</span>
+            </div>
+            <div class="thread-content">
+              <div class="thread-title">
+                How to customize the Booking plugin for multi-timezone support?
+                <div class="thread-badges">
+                  <span class="thread-badge badge-solved">Solved</span>
+                  <span class="thread-badge badge-question">Question</span>
+                </div>
+              </div>
+              <div class="thread-excerpt">I need to support clients across EST, PST, and CET timezones. The default booking widget shows local time only...</div>
+              <div class="thread-meta">
+                <div class="thread-author"><div class="author-avatar a1">SR</div><span class="author-name">sarah_dev</span></div>
+                <span class="meta-sep">&middot;</span>
+                <span class="meta-item">2 hours ago</span>
+              </div>
+            </div>
+            <div class="thread-stats">
+              <span class="reply-count">8</span>
+              <span class="reply-label">replies</span>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="vote-box">
+              <span class="vote-arrow">&#9650;</span>
+              <span class="vote-score">19</span>
+              <span class="vote-arrow">&#9660;</span>
+            </div>
+            <div class="thread-content">
+              <div class="thread-title">
+                Announcing Sigil v2.4 - Design Playground overhaul
+                <div class="thread-badges">
+                  <span class="thread-badge badge-pinned">Pinned</span>
+                </div>
+              </div>
+              <div class="thread-excerpt">We've completely redesigned the Design Playground with live preview, 70+ Google Fonts, and a new shape picker...</div>
+              <div class="thread-meta">
+                <div class="thread-author"><div class="author-avatar a2">DG</div><span class="author-name">danielgarza</span></div>
+                <span class="meta-sep">&middot;</span>
+                <span class="meta-item">1 day ago</span>
+              </div>
+            </div>
+            <div class="thread-stats">
+              <span class="reply-count">14</span>
+              <span class="reply-label">replies</span>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="vote-box">
+              <span class="vote-arrow">&#9650;</span>
+              <span class="vote-score">12</span>
+              <span class="vote-arrow">&#9660;</span>
+            </div>
+            <div class="thread-content">
+              <div class="thread-title">
+                Best practices for multi-site architecture with shared themes?
+                <div class="thread-badges"><span class="thread-badge badge-discussion">Discussion</span></div>
+              </div>
+              <div class="thread-excerpt">Running 5 client sites on a single Sigil instance. Looking for advice on theme inheritance and overrides...</div>
+              <div class="thread-meta">
+                <div class="thread-author"><div class="author-avatar a3">MK</div><span class="author-name">mike_k</span></div>
+                <span class="meta-sep">&middot;</span>
+                <span class="meta-item">3 days ago</span>
+              </div>
+            </div>
+            <div class="thread-stats">
+              <span class="reply-count">6</span>
+              <span class="reply-label">replies</span>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="vote-box">
+              <span class="vote-arrow">&#9650;</span>
+              <span class="vote-score">9</span>
+              <span class="vote-arrow">&#9660;</span>
+            </div>
+            <div class="thread-content">
+              <div class="thread-title">
+                Store plugin: Inventory sync with external warehouse API
+                <div class="thread-badges"><span class="thread-badge badge-question">Question</span></div>
+              </div>
+              <div class="thread-excerpt">Has anyone built a webhook integration to sync inventory counts between Sigil Store and a third-party warehouse system?</div>
+              <div class="thread-meta">
+                <div class="thread-author"><div class="author-avatar a4">JW</div><span class="author-name">jenny_w</span></div>
+                <span class="meta-sep">&middot;</span>
+                <span class="meta-item">4 days ago</span>
+              </div>
+            </div>
+            <div class="thread-stats">
+              <span class="reply-count">3</span>
+              <span class="reply-label">replies</span>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="vote-box">
+              <span class="vote-arrow">&#9650;</span>
+              <span class="vote-score">7</span>
+              <span class="vote-arrow">&#9660;</span>
+            </div>
+            <div class="thread-content">
+              <div class="thread-title">
+                Showcase: My photography portfolio built with Sigil
+                <div class="thread-badges"><span class="thread-badge" style="background:#ec489911;color:#ec4899;">Showcase</span></div>
+              </div>
+              <div class="thread-excerpt">Just launched my photography portfolio using the Gallery blocks and custom theme. Sharing the setup for feedback...</div>
+              <div class="thread-meta">
+                <div class="thread-author"><div class="author-avatar a5">LP</div><span class="author-name">lens_pro</span></div>
+                <span class="meta-sep">&middot;</span>
+                <span class="meta-item">5 days ago</span>
+              </div>
+            </div>
+            <div class="thread-stats">
+              <span class="reply-count">11</span>
+              <span class="reply-label">replies</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="leaderboard">
+            <div class="leaderboard-title">&#127942; Reputation Leaders</div>
+            <div class="leader-item">
+              <span class="leader-rank gold">1</span>
+              <div class="leader-avatar" style="background:#90b9ab33;color:#90b9ab;">DG</div>
+              <div class="leader-info">
+                <div class="leader-name">danielgarza</div>
+                <div class="leader-rep-label">Admin</div>
+              </div>
+              <span class="leader-rep">1,420</span>
+            </div>
+            <div class="leader-item">
+              <span class="leader-rank silver">2</span>
+              <div class="leader-avatar" style="background:#5b9bd533;color:#5b9bd5;">SR</div>
+              <div class="leader-info">
+                <div class="leader-name">sarah_dev</div>
+                <div class="leader-rep-label">Contributor</div>
+              </div>
+              <span class="leader-rep">890</span>
+            </div>
+            <div class="leader-item">
+              <span class="leader-rank bronze">3</span>
+              <div class="leader-avatar" style="background:#a78bfa33;color:#a78bfa;">MK</div>
+              <div class="leader-info">
+                <div class="leader-name">mike_k</div>
+                <div class="leader-rep-label">Contributor</div>
+              </div>
+              <span class="leader-rep">645</span>
+            </div>
+            <div class="leader-item">
+              <span class="leader-rank">4</span>
+              <div class="leader-avatar" style="background:#e5a84b33;color:#e5a84b;">JW</div>
+              <div class="leader-info">
+                <div class="leader-name">jenny_w</div>
+                <div class="leader-rep-label">Member</div>
+              </div>
+              <span class="leader-rep">412</span>
+            </div>
+            <div class="leader-item">
+              <span class="leader-rank">5</span>
+              <div class="leader-avatar" style="background:#ec489933;color:#ec4899;">LP</div>
+              <div class="leader-info">
+                <div class="leader-name">lens_pro</div>
+                <div class="leader-rep-label">Member</div>
+              </div>
+              <span class="leader-rep">298</span>
+            </div>
+          </div>
+
+          <div class="forum-stats">
+            <div class="forum-stats-title">Forum Stats</div>
+            <div class="fs-row"><span class="fs-label">Total Threads</span><span class="fs-value">48</span></div>
+            <div class="fs-row"><span class="fs-label">Total Replies</span><span class="fs-value">312</span></div>
+            <div class="fs-row"><span class="fs-label">Members</span><span class="fs-value">86</span></div>
+            <div class="fs-row"><span class="fs-label">Active Today</span><span class="fs-value" style="color:#90b9ab;">12</span></div>
+            <div class="fs-row"><span class="fs-label">Solved Questions</span><span class="fs-value" style="color:#4ade80;">18/22</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+{
+  "topics": [
+    {
+      "topic_title": "Sigil Overview",
+      "screenshot": "01-dashboard.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "Sigil is a multi-tenant headless CMS by Netrun Systems. One deployment hosts unlimited sites — each with its own pages, theme, media library, and custom domain. The admin dashboard shows your entire portfolio at a glance: sites, pages, media, and which of the twenty-one plugins are active."},
+        {"speaker": "GUEST", "text": "Most CMS platforms charge per site. Squarespace is sixteen dollars per site per month. Sigil runs all your sites on a single Cloud Run instance for under fifteen dollars total. The plugin system means you only load what you need — if a site doesn't need commerce, those routes never mount."}
+      ]
+    },
+    {
+      "topic_title": "Sites and Domains",
+      "screenshot": "02-sites-domains.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "The Sites and Domains page manages every site in your tenant. Each card shows the site name, slug, custom domain with SSL verification status, page count, and quick actions — publish, unpublish, duplicate, or configure."},
+        {"speaker": "GUEST", "text": "Custom domains map through Google Cloud Run with automatic SSL certificate provisioning. Point a CNAME record at ghs dot googlehosted dot com, and the system verifies DNS and provisions the cert. No manual certificate management, no nginx config."}
+      ]
+    },
+    {
+      "topic_title": "Design Playground",
+      "screenshot": "03-design-playground.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "The Design Playground replaces the typical five-option theme dropdown. Six control tabs — Presets, Colors, Typography, Shapes, Effects, and Spacing — let you change every visual parameter of the site. Button shapes go from square to pill. Shadow intensity has five presets. Heading scale uses continuous sliders for H1 through H3. Every change updates the live preview instantly."},
+        {"speaker": "GUEST", "text": "The old approach was picking a template and living with its constraints. Here you start from a preset — Netrun Dark, KOG, Intirkon, Minimal, or Frost — then override anything. The spacing tab alone has seven sliders plus section padding and container width. That level of control used to require a CSS developer."}
+      ]
+    },
+    {
+      "topic_title": "Font Browser",
+      "screenshot": "04-font-browser.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "The Font Browser gives access to over seventy curated Google Fonts across six categories — sans-serif, serif, display, handwriting, and monospace. Each font renders in its own typeface in the dropdown. Hover to lazy-load, click to apply. Fonts load via the Google Fonts CSS API — no API key needed."},
+        {"speaker": "GUEST", "text": "There is also a Custom Upload tab. Drop woff2, woff, ttf, or otf files. The system auto-detects the font weight and style from the filename, generates the at-font-face CSS, and injects it immediately. No build step. Upload your brand font and it is live in the preview within seconds."}
+      ]
+    },
+    {
+      "topic_title": "Block Editor",
+      "screenshot": "05-block-editor.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "Pages are built from composable content blocks. The page editor shows a block list with drag handles for reordering. Click a block to expand its inline editor — hero blocks get headline, subheadline, background image, and CTA fields. Text blocks get a markdown editor. Gallery blocks manage image URLs. The open block registry means plugins can add their own block types — the artist plugin adds six, the community plugin adds three."},
+        {"speaker": "GUEST", "text": "Traditional CMS platforms give you a WYSIWYG editor and hope for the best. The block system means each content unit has a typed schema. When you drop in a pricing table block, you get structured tier inputs — not a raw HTML table you have to style manually."}
+      ]
+    },
+    {
+      "topic_title": "Plugin Marketplace",
+      "screenshot": "06-plugin-marketplace.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "Twenty-one plugins ship with Sigil. The marketplace shows each plugin's description, category, and activation status. Plugins are environment-gated — set the Stripe secret key and the Store plugin activates. Remove it and the plugin skips gracefully. No configuration files to edit, no server restart."},
+        {"speaker": "GUEST", "text": "The plugin categories cover content, commerce, scheduling, analytics, integrations, and the Netrun product ecosystem. SEO, Artist content, Mailing List, Contact forms, Docs and Knowledge Base, Booking, Store with Stripe, Printful merch, PayPal, Resonance analytics, Community forum, Charlotte AI assistant, KAMERA 3D scanning, KOG CRM, Intirkast broadcasting, Migration from WordPress and Shopify, Webhooks, and the Support panel."}
+      ]
+    },
+    {
+      "topic_title": "Commerce",
+      "screenshot": "07-commerce.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "The Store plugin syncs products with Stripe. Create a product in Sigil, it creates the Stripe Product and Price automatically. The checkout endpoint generates a Stripe Checkout Session — customers pay on Stripe's hosted page. Webhooks handle order completion and update the orders table. Transaction fee is Stripe's standard two point nine percent — Sigil adds zero platform fee."},
+        {"speaker": "GUEST", "text": "PayPal is a separate plugin — same products, different payment method. Printful handles print-on-demand merch. Sync your Printful catalog, set retail prices, and the products appear on the site with mockup images. No inventory management needed — Printful prints and ships on demand."}
+      ]
+    },
+    {
+      "topic_title": "Booking System",
+      "screenshot": "08-booking.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "The Booking plugin provides appointment scheduling for service businesses. Define services with duration, price, buffer time, and advance notice rules. Set weekly availability per day of week. The public API returns available slots by cross-referencing your rules, existing appointments, and optionally your Google Calendar free-busy data."},
+        {"speaker": "GUEST", "text": "The booking flow is email-confirmed. Customer picks a slot, enters their info, receives a confirmation link. Clicking it creates the appointment and optionally adds a Google Calendar event. Cancellation works the same way — click the cancel link, the calendar event is removed, and the slot reopens. ACS handles email delivery when configured, but the plugin works without it."}
+      ]
+    },
+    {
+      "topic_title": "Community Forum",
+      "screenshot": "09-community.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "The Community plugin adds a gated forum to any Sigil site. Members register with email and authenticate via magic link — no passwords. Posts support discussion, question, article, and announcement types. Questions have a solved-answer workflow. Voting affects both post score and author reputation. The leaderboard tracks top contributors across six reputation tiers from Newcomer to Legend."},
+        {"speaker": "GUEST", "text": "Content is gated for scraping prevention. Non-members see truncated post bodies — two hundred characters. Full content requires email verification. The search uses PostgreSQL's GIN full-text index across post titles and bodies. Tags, categories, bookmarks, and moderation tools — pin, lock, close, ban — are all built in."}
+      ]
+    },
+    {
+      "topic_title": "Resonance Analytics",
+      "screenshot": "10-analytics.png",
+      "dialogue": [
+        {"speaker": "HOST", "text": "Resonance is block-level content analytics. Most analytics tools measure pages. Resonance measures how visitors interact with each individual content block. The tracking snippet — two kilobytes, no cookies, no PII — uses Intersection Observer to track viewport time, scroll depth, clicks, and bounce points per block. The dashboard shows a heatmap overlay: green blocks have high engagement, red blocks lose visitors."},
+        {"speaker": "GUEST", "text": "The scoring algorithm weights forty percent viewport time, thirty percent click-through rate, twenty percent scroll continuation, and ten percent bounce avoidance. Blocks scoring below forty trigger AI suggestions from Gemini — rewrite this CTA, shorten this section, move this block higher. A-B testing lets you clone a block as a variant, split traffic, and the system evaluates the winner with a ninety-percent confidence z-test. No external tracking scripts, no cookies, fully GDPR compliant."}
+      ]
+    }
+  ]
+}

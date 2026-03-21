@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Design Playground</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; flex-shrink: 0; }
+  .topbar h2 { font-size: 20px; font-weight: 600; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid #1e1e1e; padding: 0 40px; flex-shrink: 0; }
+  .tab { padding: 14px 24px; font-size: 13px; font-weight: 500; color: #666; cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab.active { color: #90b9ab; border-bottom-color: #90b9ab; }
+  .tab:hover { color: #e5e5e5; }
+
+  /* Editor + Preview */
+  .editor-area { flex: 1; display: grid; grid-template-columns: 420px 1fr; overflow: hidden; }
+
+  /* Controls panel */
+  .controls { padding: 28px 32px; overflow-y: auto; border-right: 1px solid #1e1e1e; }
+  .control-group { margin-bottom: 28px; }
+  .control-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 12px; font-weight: 600; }
+  .control-sublabel { font-size: 12px; color: #888; margin-bottom: 8px; }
+
+  /* Color pickers */
+  .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .color-swatch { width: 36px; height: 36px; border-radius: 8px; border: 2px solid #333; cursor: pointer; }
+  .color-input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 8px 12px; color: #e5e5e5; font-size: 13px; font-family: 'SF Mono', monospace; width: 120px; }
+  .color-name { font-size: 13px; color: #999; }
+
+  /* Shape picker */
+  .shape-picker { display: flex; gap: 10px; }
+  .shape-option { width: 56px; height: 36px; background: #90b9ab; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .shape-option:nth-child(1) { border-radius: 0; }
+  .shape-option:nth-child(2) { border-radius: 4px; }
+  .shape-option:nth-child(3) { border-radius: 8px; }
+  .shape-option:nth-child(4) { border-radius: 14px; }
+  .shape-option:nth-child(5) { border-radius: 18px; }
+  .shape-option.selected { border-color: #fff; box-shadow: 0 0 0 2px #90b9ab44; }
+
+  /* Slider */
+  .slider-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .slider-track { flex: 1; height: 4px; background: #2a2a2a; border-radius: 2px; position: relative; }
+  .slider-fill { height: 100%; background: #90b9ab; border-radius: 2px; }
+  .slider-thumb { width: 14px; height: 14px; background: #90b9ab; border-radius: 50%; position: absolute; top: -5px; border: 2px solid #0a0a0a; }
+  .slider-value { font-size: 13px; color: #999; font-family: 'SF Mono', monospace; min-width: 40px; text-align: right; }
+
+  /* Preview panel */
+  .preview-panel { background: #0e0e0e; padding: 32px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+  .preview-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-bottom: 20px; align-self: flex-start; }
+  .preview-frame { width: 100%; max-width: 800px; background: #0a0a0a; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .preview-browser-bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #141414; border-bottom: 1px solid #1e1e1e; }
+  .browser-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-dot.red { background: #ff5f57; }
+  .browser-dot.yellow { background: #febc2e; }
+  .browser-dot.green { background: #28c840; }
+  .browser-url { margin-left: 12px; background: #1a1a1a; border-radius: 4px; padding: 4px 12px; font-size: 11px; color: #666; flex: 1; }
+
+  .preview-content { padding: 0; }
+  .preview-hero { background: linear-gradient(135deg, #0f1a17, #1a2a22); padding: 60px 40px; text-align: center; }
+  .preview-hero h3 { font-size: 28px; font-weight: 700; color: #e5e5e5; margin-bottom: 12px; }
+  .preview-hero p { font-size: 14px; color: #999; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .preview-cta { display: inline-block; background: #90b9ab; color: #0a0a0a; padding: 10px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+  .preview-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 32px 40px; }
+  .preview-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 20px; }
+  .preview-card h4 { font-size: 14px; margin-bottom: 6px; color: #e5e5e5; }
+  .preview-card p { font-size: 12px; color: #777; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item"><span class="nav-icon">&#9998;</span> Pages</div>
+      <div class="nav-item active"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item"><span class="nav-icon">&#9733;</span> Marketplace</div>
+      <div class="nav-item"><span class="nav-icon">&#9878;</span> Store</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Community</div>
+      <div class="nav-item"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <h2>Design Playground</h2>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-outline">Reset</button>
+        <button class="btn btn-primary">Save Theme</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab">Presets</div>
+      <div class="tab active">Colors</div>
+      <div class="tab">Type</div>
+      <div class="tab">Shapes</div>
+      <div class="tab">Effects</div>
+      <div class="tab">Spacing</div>
+    </div>
+    <div class="editor-area">
+      <div class="controls">
+        <div class="control-group">
+          <div class="control-label">Primary Colors</div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#90b9ab;"></div>
+            <input class="color-input" value="#90b9ab" readonly>
+            <span class="color-name">Sage Green</span>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#6a9a8a;"></div>
+            <input class="color-input" value="#6a9a8a" readonly>
+            <span class="color-name">Deep Sage</span>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#b8d4ca;"></div>
+            <input class="color-input" value="#b8d4ca" readonly>
+            <span class="color-name">Light Sage</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">Background Colors</div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#0a0a0a;"></div>
+            <input class="color-input" value="#0a0a0a" readonly>
+            <span class="color-name">Base</span>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#141414;"></div>
+            <input class="color-input" value="#141414" readonly>
+            <span class="color-name">Surface</span>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#1e1e1e;"></div>
+            <input class="color-input" value="#1e1e1e" readonly>
+            <span class="color-name">Border</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">Button Shape</div>
+          <div class="control-sublabel">Choose corner radius for buttons and cards</div>
+          <div class="shape-picker">
+            <div class="shape-option"></div>
+            <div class="shape-option"></div>
+            <div class="shape-option selected"></div>
+            <div class="shape-option"></div>
+            <div class="shape-option"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;">
+            <span style="font-size:10px;color:#555;">Square</span>
+            <span style="font-size:10px;color:#555;">Pill</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">Border Radius</div>
+          <div class="slider-row">
+            <div class="slider-track">
+              <div class="slider-fill" style="width:40%;"></div>
+              <div class="slider-thumb" style="left:38%;"></div>
+            </div>
+            <span class="slider-value">8px</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">Shadow Intensity</div>
+          <div class="slider-row">
+            <div class="slider-track">
+              <div class="slider-fill" style="width:25%;"></div>
+              <div class="slider-thumb" style="left:23%;"></div>
+            </div>
+            <span class="slider-value">Low</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="preview-label">Live Preview</div>
+        <div class="preview-frame">
+          <div class="preview-browser-bar">
+            <div class="browser-dot red"></div>
+            <div class="browser-dot yellow"></div>
+            <div class="browser-dot green"></div>
+            <div class="browser-url">frost.example.com</div>
+          </div>
+          <div class="preview-content">
+            <div class="preview-hero">
+              <h3>Welcome to Frost Music</h3>
+              <p>Discover emerging artists, live sessions, and exclusive releases from the underground.</p>
+              <div class="preview-cta">Explore Now</div>
+            </div>
+            <div class="preview-cards">
+              <div class="preview-card">
+                <h4>Latest Releases</h4>
+                <p>Stream new tracks and albums from featured artists.</p>
+              </div>
+              <div class="preview-card">
+                <h4>Live Sessions</h4>
+                <p>Watch intimate performances recorded in our studio.</p>
+              </div>
+              <div class="preview-card">
+                <h4>Tour Dates</h4>
+                <p>Find upcoming shows and get tickets before they sell out.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

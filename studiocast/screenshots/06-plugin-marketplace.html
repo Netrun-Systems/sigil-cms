@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Plugin Marketplace</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; }
+  .topbar h2 { font-size: 20px; font-weight: 600; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+  .btn-active { background: #0f1a17; border: 1px solid #90b9ab44; color: #90b9ab; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .content { padding: 32px 40px; }
+
+  .search-bar { display: flex; gap: 12px; margin-bottom: 28px; }
+  .search-input { flex: 1; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; color: #e5e5e5; font-size: 14px; outline: none; }
+  .search-input::placeholder { color: #555; }
+  .filter-pills { display: flex; gap: 8px; }
+  .pill { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; background: #1a1a1a; border: 1px solid #2a2a2a; color: #999; cursor: pointer; }
+  .pill.active { background: #0f1a17; border-color: #90b9ab44; color: #90b9ab; }
+
+  .plugins-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .plugin-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 14px; padding: 28px; transition: border-color 0.2s; position: relative; }
+  .plugin-card:hover { border-color: #333; }
+  .plugin-card.installed { border-color: #90b9ab33; }
+
+  .plugin-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 18px; }
+  .plugin-icon.seo { background: linear-gradient(135deg, #4ade8022, #22c55e22); color: #4ade80; }
+  .plugin-icon.artist { background: linear-gradient(135deg, #a78bfa22, #8b5cf622); color: #a78bfa; }
+  .plugin-icon.store { background: linear-gradient(135deg, #f59e0b22, #d9770622); color: #f59e0b; }
+  .plugin-icon.booking { background: linear-gradient(135deg, #5b9bd522, #3b82f622); color: #5b9bd5; }
+  .plugin-icon.docs { background: linear-gradient(135deg, #06b6d422, #0891b222); color: #06b6d4; }
+  .plugin-icon.resonance { background: linear-gradient(135deg, #ec489922, #db277722); color: #ec4899; }
+  .plugin-icon.community { background: linear-gradient(135deg, #90b9ab22, #6a9a8a22); color: #90b9ab; }
+  .plugin-icon.charlotte { background: linear-gradient(135deg, #e5e5e522, #a3a3a322); color: #e5e5e5; }
+
+  .plugin-name { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .plugin-category { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 12px; }
+  .cat-seo { background: #4ade8011; color: #4ade80; }
+  .cat-creative { background: #a78bfa11; color: #a78bfa; }
+  .cat-commerce { background: #f59e0b11; color: #f59e0b; }
+  .cat-utility { background: #5b9bd511; color: #5b9bd5; }
+  .cat-analytics { background: #ec489911; color: #ec4899; }
+  .cat-social { background: #90b9ab11; color: #90b9ab; }
+  .cat-ai { background: #e5e5e511; color: #999; }
+
+  .plugin-desc { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 20px; min-height: 60px; }
+  .plugin-footer { display: flex; align-items: center; justify-content: space-between; }
+  .plugin-version { font-size: 11px; color: #555; }
+  .active-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #90b9ab; font-weight: 500; }
+  .active-dot { width: 8px; height: 8px; border-radius: 50%; background: #90b9ab; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item"><span class="nav-icon">&#9998;</span> Pages</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item active"><span class="nav-icon">&#9733;</span> Marketplace <span class="nav-badge">14</span></div>
+      <div class="nav-item"><span class="nav-icon">&#9878;</span> Store</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Community</div>
+      <div class="nav-item"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <h2>Plugin Marketplace</h2>
+      <span style="font-size:13px;color:#666;">14 of 16 plugins active</span>
+    </div>
+    <div class="content">
+      <div class="search-bar">
+        <input class="search-input" placeholder="Search plugins...">
+        <div class="filter-pills">
+          <span class="pill active">All</span>
+          <span class="pill">Installed</span>
+          <span class="pill">Commerce</span>
+          <span class="pill">Creative</span>
+          <span class="pill">Analytics</span>
+        </div>
+      </div>
+
+      <div class="plugins-grid">
+        <div class="plugin-card installed">
+          <div class="plugin-icon seo">&#128269;</div>
+          <div class="plugin-name">SEO</div>
+          <span class="plugin-category cat-seo">SEO</span>
+          <div class="plugin-desc">Meta tags, Open Graph, sitemaps, robots.txt, and structured data for every page. Automatic SEO scoring.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v2.1.0</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card installed">
+          <div class="plugin-icon artist">&#127925;</div>
+          <div class="plugin-name">Artist</div>
+          <span class="plugin-category cat-creative">Creative</span>
+          <div class="plugin-desc">Music pages with Spotify/YouTube embeds, discography management, EPK generator, and tour date integration.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v1.4.2</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card installed">
+          <div class="plugin-icon store">&#128722;</div>
+          <div class="plugin-name">Store</div>
+          <span class="plugin-category cat-commerce">Commerce</span>
+          <div class="plugin-desc">Stripe-powered storefront with product catalog, checkout flow, order management, and inventory tracking.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v2.0.1</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card installed">
+          <div class="plugin-icon booking">&#128197;</div>
+          <div class="plugin-name">Booking</div>
+          <span class="plugin-category cat-utility">Utility</span>
+          <div class="plugin-desc">Service scheduling with Calendly-style availability, Stripe payments, email confirmations, and calendar sync.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v1.2.0</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card installed">
+          <div class="plugin-icon docs">&#128214;</div>
+          <div class="plugin-name">Docs</div>
+          <span class="plugin-category cat-utility">Utility</span>
+          <div class="plugin-desc">Documentation portal with versioning, search, nested navigation, code blocks, and API reference generation.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v1.1.3</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card installed">
+          <div class="plugin-icon resonance">&#128200;</div>
+          <div class="plugin-name">Resonance</div>
+          <span class="plugin-category cat-analytics">Analytics</span>
+          <div class="plugin-desc">Block-level engagement heatmaps, A/B testing, AI-powered content suggestions, and conversion funnels.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v1.0.0</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card installed">
+          <div class="plugin-icon community">&#128101;</div>
+          <div class="plugin-name">Community</div>
+          <span class="plugin-category cat-social">Social</span>
+          <div class="plugin-desc">Forums, Q&A threads, reputation system, moderation tools, and member profiles for building community.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v1.3.1</span>
+            <span class="active-badge"><span class="active-dot"></span> Active</span>
+          </div>
+        </div>
+
+        <div class="plugin-card">
+          <div class="plugin-icon charlotte">&#9672;</div>
+          <div class="plugin-name">Charlotte AI</div>
+          <span class="plugin-category cat-ai">AI</span>
+          <div class="plugin-desc">AI content assistant powered by Charlotte. Draft copy, optimize headlines, and generate alt text automatically.</div>
+          <div class="plugin-footer">
+            <span class="plugin-version">v0.9.0</span>
+            <button class="btn btn-primary btn-sm">Install</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

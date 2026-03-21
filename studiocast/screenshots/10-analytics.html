@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Resonance Analytics</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; }
+  .topbar h2 { font-size: 20px; font-weight: 600; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+  .content { padding: 32px 40px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
+  .mini-stat { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 18px 20px; }
+  .mini-stat .val { font-size: 24px; font-weight: 700; }
+  .mini-stat .lbl { font-size: 11px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .mini-stat .change { font-size: 11px; margin-top: 4px; }
+  .change-up { color: #90b9ab; }
+  .change-down { color: #e57373; }
+
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 380px; gap: 24px; }
+
+  .panel { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
+  .panel-header { padding: 20px 24px; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; }
+  .panel-header h3 { font-size: 15px; font-weight: 600; }
+  .panel-body { padding: 24px; }
+
+  /* Heatmap */
+  .heatmap-item { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .heatmap-item:last-child { margin-bottom: 0; }
+  .heatmap-label { font-size: 13px; width: 140px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .heatmap-bar-container { flex: 1; height: 28px; background: #1a1a1a; border-radius: 6px; overflow: hidden; position: relative; }
+  .heatmap-bar { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 600; color: rgba(0,0,0,0.7); }
+  .heatmap-bar.hot { background: linear-gradient(90deg, #4ade80, #22c55e); }
+  .heatmap-bar.warm { background: linear-gradient(90deg, #90b9ab, #6a9a8a); }
+  .heatmap-bar.medium { background: linear-gradient(90deg, #e5a84b, #d9770a); }
+  .heatmap-bar.cool { background: linear-gradient(90deg, #5b9bd5, #3b82f6); }
+  .heatmap-bar.cold { background: linear-gradient(90deg, #e57373, #ef4444); }
+  .heatmap-value { font-size: 12px; color: #888; width: 50px; text-align: right; }
+  .heatmap-legend { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px solid #1e1e1e; }
+  .legend-label { font-size: 10px; color: #555; display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 16px; height: 8px; border-radius: 2px; }
+
+  /* A/B test */
+  .ab-test { margin-bottom: 24px; }
+  .ab-test:last-child { margin-bottom: 0; }
+  .ab-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .ab-status { font-size: 11px; padding: 3px 8px; border-radius: 4px; }
+  .ab-running { background: #90b9ab22; color: #90b9ab; }
+  .ab-completed { background: #4ade8022; color: #4ade80; }
+
+  .ab-variants { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ab-variant { background: #1a1a1a; border-radius: 8px; padding: 16px; position: relative; }
+  .ab-variant.winner { border: 1px solid #4ade8044; }
+  .ab-variant-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .winner-badge { font-size: 10px; background: #4ade8022; color: #4ade80; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+  .ab-metric { font-size: 28px; font-weight: 700; margin-bottom: 2px; }
+  .ab-metric-label { font-size: 11px; color: #666; }
+  .ab-bar { height: 4px; background: #2a2a2a; border-radius: 2px; margin-top: 10px; }
+  .ab-bar-fill { height: 100%; border-radius: 2px; }
+  .ab-bar-fill.a { background: #5b9bd5; }
+  .ab-bar-fill.b { background: #90b9ab; }
+
+  /* AI suggestions */
+  .suggestion-item { padding: 16px; background: #1a1a1a; border-radius: 10px; margin-bottom: 12px; border-left: 3px solid; }
+  .suggestion-item:last-child { margin-bottom: 0; }
+  .suggestion-item.high { border-left-color: #4ade80; }
+  .suggestion-item.medium { border-left-color: #e5a84b; }
+  .suggestion-item.low { border-left-color: #5b9bd5; }
+  .suggestion-priority { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .suggestion-priority.high { color: #4ade80; }
+  .suggestion-priority.medium { color: #e5a84b; }
+  .suggestion-priority.low { color: #5b9bd5; }
+  .suggestion-text { font-size: 13px; color: #ccc; line-height: 1.5; margin-bottom: 10px; }
+  .suggestion-impact { font-size: 11px; color: #666; }
+  .suggestion-impact strong { color: #999; }
+  .suggestion-action { display: flex; gap: 8px; margin-top: 10px; }
+  .suggestion-btn { font-size: 11px; padding: 4px 12px; border-radius: 4px; border: none; cursor: pointer; }
+  .suggestion-btn.apply { background: #90b9ab22; color: #90b9ab; }
+  .suggestion-btn.dismiss { background: #1e1e1e; color: #666; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item"><span class="nav-icon">&#9998;</span> Pages</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item"><span class="nav-icon">&#9733;</span> Marketplace</div>
+      <div class="nav-item"><span class="nav-icon">&#9878;</span> Store</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Community</div>
+      <div class="nav-item active"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <h2>Resonance Analytics</h2>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="font-size:13px;color:#666;">Frost Music &middot; Homepage</span>
+        <button class="btn btn-outline">Export</button>
+        <button class="btn btn-primary">New Experiment</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-row">
+        <div class="mini-stat"><div class="val">2,847</div><div class="lbl">Page Views (7d)</div><div class="change change-up">+14% vs prev</div></div>
+        <div class="mini-stat"><div class="val">68%</div><div class="lbl">Avg Scroll Depth</div><div class="change change-up">+5%</div></div>
+        <div class="mini-stat"><div class="val">4.2s</div><div class="lbl">Avg Block Dwell</div><div class="change change-up">+0.8s</div></div>
+        <div class="mini-stat"><div class="val">12.4%</div><div class="lbl">CTA Click Rate</div><div class="change change-up">+2.1%</div></div>
+        <div class="mini-stat"><div class="val">2</div><div class="lbl">Active Experiments</div></div>
+      </div>
+
+      <div class="three-col">
+        <!-- Heatmap -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Block Engagement Heatmap</h3>
+            <span style="font-size:12px;color:#666;">Homepage &middot; 7 days</span>
+          </div>
+          <div class="panel-body">
+            <div class="heatmap-item">
+              <span class="heatmap-label">Hero Banner</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar hot" style="width:92%;">92%</div></div>
+              <span class="heatmap-value">2,620</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Latest Releases</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar hot" style="width:84%;">84%</div></div>
+              <span class="heatmap-value">2,392</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Artist Bio</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar warm" style="width:71%;">71%</div></div>
+              <span class="heatmap-value">2,022</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Tour Dates</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar warm" style="width:65%;">65%</div></div>
+              <span class="heatmap-value">1,851</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Gallery</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar medium" style="width:52%;">52%</div></div>
+              <span class="heatmap-value">1,480</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Merch Store</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar cool" style="width:38%;">38%</div></div>
+              <span class="heatmap-value">1,082</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Newsletter</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar cold" style="width:22%;">22%</div></div>
+              <span class="heatmap-value">626</span>
+            </div>
+            <div class="heatmap-item">
+              <span class="heatmap-label">Footer</span>
+              <div class="heatmap-bar-container"><div class="heatmap-bar cold" style="width:14%;">14%</div></div>
+              <span class="heatmap-value">399</span>
+            </div>
+            <div class="heatmap-legend">
+              <span class="legend-label"><span class="legend-swatch" style="background:#4ade80;"></span>High</span>
+              <span class="legend-label"><span class="legend-swatch" style="background:#90b9ab;"></span>Good</span>
+              <span class="legend-label"><span class="legend-swatch" style="background:#e5a84b;"></span>Medium</span>
+              <span class="legend-label"><span class="legend-swatch" style="background:#5b9bd5;"></span>Low</span>
+              <span class="legend-label"><span class="legend-swatch" style="background:#e57373;"></span>Cold</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- A/B Tests -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>A/B Experiments</h3>
+            <span style="font-size:12px;color:#90b9ab;">2 active</span>
+          </div>
+          <div class="panel-body">
+            <div class="ab-test">
+              <div class="ab-title">
+                Hero CTA Button Text
+                <span class="ab-status ab-completed">Completed</span>
+              </div>
+              <div class="ab-variants">
+                <div class="ab-variant">
+                  <div class="ab-variant-label">Variant A <span style="font-size:10px;color:#555;">Control</span></div>
+                  <div class="ab-metric">8.2%</div>
+                  <div class="ab-metric-label">Click-through rate</div>
+                  <div style="font-size:11px;color:#666;margin-top:4px;">"Learn More"</div>
+                  <div class="ab-bar"><div class="ab-bar-fill a" style="width:65%;"></div></div>
+                  <div style="font-size:10px;color:#555;margin-top:4px;">1,240 impressions</div>
+                </div>
+                <div class="ab-variant winner">
+                  <div class="ab-variant-label">Variant B <span class="winner-badge">Winner</span></div>
+                  <div class="ab-metric" style="color:#4ade80;">12.4%</div>
+                  <div class="ab-metric-label">Click-through rate</div>
+                  <div style="font-size:11px;color:#666;margin-top:4px;">"Get Tickets"</div>
+                  <div class="ab-bar"><div class="ab-bar-fill b" style="width:82%;"></div></div>
+                  <div style="font-size:10px;color:#555;margin-top:4px;">1,238 impressions &middot; +51% lift</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ab-test">
+              <div class="ab-title">
+                Gallery Layout: Grid vs Masonry
+                <span class="ab-status ab-running">Running</span>
+              </div>
+              <div class="ab-variants">
+                <div class="ab-variant">
+                  <div class="ab-variant-label">Variant A <span style="font-size:10px;color:#555;">Grid</span></div>
+                  <div class="ab-metric">3.8s</div>
+                  <div class="ab-metric-label">Avg dwell time</div>
+                  <div class="ab-bar"><div class="ab-bar-fill a" style="width:48%;"></div></div>
+                  <div style="font-size:10px;color:#555;margin-top:4px;">420 impressions</div>
+                </div>
+                <div class="ab-variant">
+                  <div class="ab-variant-label">Variant B <span style="font-size:10px;color:#555;">Masonry</span></div>
+                  <div class="ab-metric">5.1s</div>
+                  <div class="ab-metric-label">Avg dwell time</div>
+                  <div class="ab-bar"><div class="ab-bar-fill b" style="width:64%;"></div></div>
+                  <div style="font-size:10px;color:#555;margin-top:4px;">418 impressions &middot; Trending +34%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Suggestions -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>AI Suggestions</h3>
+            <span style="font-size:12px;color:#666;">3 new</span>
+          </div>
+          <div class="panel-body">
+            <div class="suggestion-item high">
+              <div class="suggestion-priority high">High Impact</div>
+              <div class="suggestion-text">Move the <strong>Merch Store</strong> block above <strong>Gallery</strong>. Data shows 38% engagement vs 52% — placing commerce earlier in the page flow could increase conversions by ~15%.</div>
+              <div class="suggestion-impact"><strong>Est. impact:</strong> +$640/mo revenue</div>
+              <div class="suggestion-action">
+                <button class="suggestion-btn apply">Apply</button>
+                <button class="suggestion-btn dismiss">Dismiss</button>
+              </div>
+            </div>
+            <div class="suggestion-item medium">
+              <div class="suggestion-priority medium">Medium Impact</div>
+              <div class="suggestion-text">The <strong>Newsletter</strong> block has 22% engagement. Consider adding a lead magnet (free download) to improve signup rates. Similar sites see 3-5x improvement.</div>
+              <div class="suggestion-impact"><strong>Est. impact:</strong> +120 subscribers/mo</div>
+              <div class="suggestion-action">
+                <button class="suggestion-btn apply">Apply</button>
+                <button class="suggestion-btn dismiss">Dismiss</button>
+              </div>
+            </div>
+            <div class="suggestion-item low">
+              <div class="suggestion-priority low">Optimization</div>
+              <div class="suggestion-text">Your Hero Banner achieves 92% engagement but the <strong>CTA button</strong> contrasts poorly on mobile. Consider increasing button size by 20% for mobile viewports.</div>
+              <div class="suggestion-impact"><strong>Est. impact:</strong> +3% mobile CTR</div>
+              <div class="suggestion-action">
+                <button class="suggestion-btn apply">Apply</button>
+                <button class="suggestion-btn dismiss">Dismiss</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

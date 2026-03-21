@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Store</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; }
+  .topbar h2 { font-size: 20px; font-weight: 600; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+  .content { padding: 32px 40px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .mini-stat { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; }
+  .mini-stat .val { font-size: 28px; font-weight: 700; }
+  .mini-stat .lbl { font-size: 12px; color: #666; margin-top: 4px; }
+  .mini-stat .change { font-size: 11px; color: #90b9ab; margin-top: 4px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 440px; gap: 24px; }
+
+  .panel { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; }
+  .panel-header { padding: 20px 24px; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; }
+  .panel-header h3 { font-size: 15px; font-weight: 600; }
+  .panel-body { padding: 0; }
+
+  /* Products table */
+  .product-row { display: grid; grid-template-columns: 60px 1fr 100px 120px 100px 80px; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid #1a1a1a; }
+  .product-row:last-child { border-bottom: none; }
+  .product-thumb { width: 48px; height: 48px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; }
+  .product-thumb.t1 { background: linear-gradient(135deg, #1a2530, #202838); }
+  .product-thumb.t2 { background: linear-gradient(135deg, #2a1a28, #382030); }
+  .product-thumb.t3 { background: linear-gradient(135deg, #1a2a20, #203828); }
+  .product-thumb.t4 { background: linear-gradient(135deg, #2a2a1a, #383820); }
+  .product-thumb.t5 { background: linear-gradient(135deg, #1a1a2a, #202038); }
+  .product-name { font-size: 14px; font-weight: 500; }
+  .product-sku { font-size: 11px; color: #555; margin-top: 2px; }
+  .product-price { font-size: 14px; font-weight: 600; color: #e5e5e5; }
+  .product-stock { font-size: 13px; }
+  .stock-good { color: #90b9ab; }
+  .stock-low { color: #e5a84b; }
+  .stock-out { color: #e57373; }
+
+  .stripe-status { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .stripe-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .stripe-dot.synced { background: #4ade80; }
+  .stripe-dot.pending { background: #e5a84b; }
+  .stripe-label { color: #888; }
+
+  .product-actions { font-size: 18px; color: #555; cursor: pointer; }
+
+  /* Checkout preview */
+  .checkout-preview { background: #0e0e0e; border-radius: 12px; margin: 24px; border: 1px solid #2a2a2a; overflow: hidden; }
+  .checkout-bar { padding: 12px 16px; background: #141414; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 8px; }
+  .checkout-bar .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .checkout-bar .dot.r { background: #ff5f57; }
+  .checkout-bar .dot.y { background: #febc2e; }
+  .checkout-bar .dot.g { background: #28c840; }
+  .checkout-bar span { margin-left: 12px; font-size: 11px; color: #555; }
+  .checkout-body { padding: 28px; }
+  .checkout-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+  .checkout-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+  .checkout-item:last-child { border-bottom: none; }
+  .ci-name { font-size: 13px; color: #ccc; }
+  .ci-qty { font-size: 12px; color: #666; }
+  .ci-price { font-size: 13px; font-weight: 600; }
+  .checkout-total { display: flex; justify-content: space-between; padding: 16px 0 0; margin-top: 12px; border-top: 1px solid #2a2a2a; }
+  .checkout-total span { font-size: 15px; font-weight: 700; }
+  .checkout-total .amount { color: #90b9ab; }
+  .checkout-btn { width: 100%; padding: 12px; background: #90b9ab; color: #0a0a0a; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; margin-top: 16px; cursor: pointer; }
+  .stripe-badge { text-align: center; margin-top: 12px; font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item"><span class="nav-icon">&#9998;</span> Pages</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item"><span class="nav-icon">&#9733;</span> Marketplace</div>
+      <div class="nav-item active"><span class="nav-icon">&#9878;</span> Store <span class="nav-badge">42</span></div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Community</div>
+      <div class="nav-item"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <h2>Store &mdash; Products</h2>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-outline">Stripe Dashboard</button>
+        <button class="btn btn-primary">+ Add Product</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-row">
+        <div class="mini-stat"><div class="val" style="color:#90b9ab">$4,280</div><div class="lbl">Revenue (30d)</div><div class="change">+18% vs last month</div></div>
+        <div class="mini-stat"><div class="val">42</div><div class="lbl">Orders (30d)</div><div class="change">+12 this week</div></div>
+        <div class="mini-stat"><div class="val">8</div><div class="lbl">Products</div></div>
+        <div class="mini-stat"><div class="val" style="color:#4ade80">$101.90</div><div class="lbl">Avg Order Value</div><div class="change">+$8.50 vs avg</div></div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Products</h3>
+            <span style="font-size:12px;color:#666;">8 products &middot; All synced with Stripe</span>
+          </div>
+          <div class="panel-body">
+            <div class="product-row" style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.5px;padding:10px 24px;">
+              <span></span><span>Product</span><span>Price</span><span>Stripe</span><span>Stock</span><span></span>
+            </div>
+            <div class="product-row">
+              <div class="product-thumb t1"></div>
+              <div><div class="product-name">Summer Tour Tee</div><div class="product-sku">SKU: FRO-TEE-001</div></div>
+              <div class="product-price">$35.00</div>
+              <div class="stripe-status"><span class="stripe-dot synced"></span><span class="stripe-label">Synced</span></div>
+              <div class="product-stock stock-good">124 units</div>
+              <div class="product-actions">&#8942;</div>
+            </div>
+            <div class="product-row">
+              <div class="product-thumb t2"></div>
+              <div><div class="product-name">Limited Vinyl LP</div><div class="product-sku">SKU: FRO-VNL-002</div></div>
+              <div class="product-price">$49.99</div>
+              <div class="stripe-status"><span class="stripe-dot synced"></span><span class="stripe-label">Synced</span></div>
+              <div class="product-stock stock-low">8 units</div>
+              <div class="product-actions">&#8942;</div>
+            </div>
+            <div class="product-row">
+              <div class="product-thumb t3"></div>
+              <div><div class="product-name">Poster Pack (3x)</div><div class="product-sku">SKU: FRO-PST-003</div></div>
+              <div class="product-price">$24.00</div>
+              <div class="stripe-status"><span class="stripe-dot synced"></span><span class="stripe-label">Synced</span></div>
+              <div class="product-stock stock-good">200 units</div>
+              <div class="product-actions">&#8942;</div>
+            </div>
+            <div class="product-row">
+              <div class="product-thumb t4"></div>
+              <div><div class="product-name">Digital Album Download</div><div class="product-sku">SKU: FRO-DIG-004</div></div>
+              <div class="product-price">$12.99</div>
+              <div class="stripe-status"><span class="stripe-dot synced"></span><span class="stripe-label">Synced</span></div>
+              <div class="product-stock stock-good">Unlimited</div>
+              <div class="product-actions">&#8942;</div>
+            </div>
+            <div class="product-row">
+              <div class="product-thumb t5"></div>
+              <div><div class="product-name">Enamel Pin Set</div><div class="product-sku">SKU: FRO-PIN-005</div></div>
+              <div class="product-price">$18.00</div>
+              <div class="stripe-status"><span class="stripe-dot synced"></span><span class="stripe-label">Synced</span></div>
+              <div class="product-stock stock-out">Out of stock</div>
+              <div class="product-actions">&#8942;</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="background:transparent;border:none;">
+          <div class="panel-header" style="border:none;padding:0 0 16px;">
+            <h3>Checkout Preview</h3>
+          </div>
+          <div class="checkout-preview">
+            <div class="checkout-bar">
+              <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+              <span>frost.example.com/checkout</span>
+            </div>
+            <div class="checkout-body">
+              <div class="checkout-title">Order Summary</div>
+              <div class="checkout-item">
+                <div><div class="ci-name">Summer Tour Tee</div><div class="ci-qty">Size: L &middot; Qty: 1</div></div>
+                <span class="ci-price">$35.00</span>
+              </div>
+              <div class="checkout-item">
+                <div><div class="ci-name">Limited Vinyl LP</div><div class="ci-qty">Qty: 1</div></div>
+                <span class="ci-price">$49.99</span>
+              </div>
+              <div class="checkout-item">
+                <div><div class="ci-name">Poster Pack (3x)</div><div class="ci-qty">Qty: 2</div></div>
+                <span class="ci-price">$48.00</span>
+              </div>
+              <div class="checkout-total">
+                <span>Total</span>
+                <span class="amount">$132.99</span>
+              </div>
+              <button class="checkout-btn">Pay with Stripe</button>
+              <div class="stripe-badge">Powered by Stripe &middot; SSL Secured</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

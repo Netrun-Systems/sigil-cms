@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sigil CMS — Block Editor</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; display: flex; height: 1080px; width: 1920px; overflow: hidden; }
+  .sidebar { width: 260px; background: #111111; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 28px 24px; border-bottom: 1px solid #1e1e1e; }
+  .sidebar-logo h1 { font-size: 22px; font-weight: 700; color: #90b9ab; letter-spacing: 2px; }
+  .sidebar-logo span { font-size: 11px; color: #666; display: block; margin-top: 2px; letter-spacing: 1px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: #999; border-left: 3px solid transparent; }
+  .nav-item.active { color: #90b9ab; background: #0f1a17; border-left-color: #90b9ab; }
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: #90b9ab22; color: #90b9ab; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .nav-section { padding: 8px 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 16px; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #90b9ab, #6a9a8a); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0a; }
+  .user-info { font-size: 13px; color: #999; }
+  .user-info strong { color: #e5e5e5; display: block; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; flex-shrink: 0; }
+  .topbar h2 { font-size: 18px; font-weight: 600; }
+  .topbar .page-path { font-size: 13px; color: #666; margin-left: 12px; }
+  .btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+  .btn-primary { background: #90b9ab; color: #0a0a0a; }
+  .btn-outline { background: transparent; border: 1px solid #333; color: #e5e5e5; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-ghost { background: none; border: none; color: #666; cursor: pointer; font-size: 13px; }
+
+  .editor-layout { flex: 1; display: grid; grid-template-columns: 280px 1fr; overflow: hidden; }
+
+  /* Block list sidebar */
+  .block-list { background: #111; border-right: 1px solid #1e1e1e; padding: 20px 0; overflow-y: auto; }
+  .block-list-header { padding: 0 20px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; margin-bottom: 12px; }
+  .block-list-header h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #999; }
+  .add-block-btn { background: #90b9ab22; color: #90b9ab; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+
+  .block-item { display: flex; align-items: center; gap: 10px; padding: 12px 20px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.1s; }
+  .block-item:hover { background: #1a1a1a; }
+  .block-item.active { background: #0f1a17; border-left-color: #90b9ab; }
+  .drag-handle { color: #333; font-size: 16px; cursor: grab; }
+  .block-item-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .block-item-icon.hero { background: #90b9ab22; color: #90b9ab; }
+  .block-item-icon.text { background: #5b9bd522; color: #5b9bd5; }
+  .block-item-icon.gallery { background: #a78bfa22; color: #a78bfa; }
+  .block-item-icon.cta { background: #e5a84b22; color: #e5a84b; }
+  .block-item-icon.faq { background: #e5737322; color: #e57373; }
+  .block-item-name { font-size: 13px; font-weight: 500; }
+  .block-item-type { font-size: 11px; color: #555; }
+  .block-visibility { margin-left: auto; color: #444; font-size: 14px; }
+
+  /* Editor canvas */
+  .editor-canvas { padding: 32px 48px; overflow-y: auto; background: #0e0e0e; }
+
+  /* Hero block editing */
+  .block-editor-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+  .block-editor-card.active { border-color: #90b9ab44; }
+  .block-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #181818; border-bottom: 1px solid #1e1e1e; }
+  .block-header-left { display: flex; align-items: center; gap: 10px; }
+  .block-type-badge { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 4px; font-weight: 600; }
+  .block-type-badge.hero { background: #90b9ab22; color: #90b9ab; }
+  .block-type-badge.text { background: #5b9bd522; color: #5b9bd5; }
+  .block-type-badge.gallery { background: #a78bfa22; color: #a78bfa; }
+  .block-header-actions { display: flex; gap: 8px; }
+
+  .block-body { padding: 24px; }
+  .field-group { margin-bottom: 20px; }
+  .field-label { font-size: 12px; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-input { width: 100%; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; color: #e5e5e5; font-size: 14px; outline: none; }
+  .field-input:focus { border-color: #90b9ab; }
+  .field-input.large { font-size: 24px; font-weight: 700; padding: 16px; }
+  .field-input.textarea { height: 80px; resize: none; font-size: 14px; line-height: 1.6; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .cta-config { display: flex; gap: 12px; align-items: flex-end; }
+  .cta-config .field-group { flex: 1; margin-bottom: 0; }
+
+  /* Inline preview for hero */
+  .hero-preview { background: linear-gradient(135deg, #0f1a17, #1a2a22); border-radius: 8px; padding: 40px; margin-top: 16px; text-align: center; }
+  .hero-preview h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .hero-preview p { font-size: 15px; color: #999; margin-bottom: 20px; }
+  .hero-preview .cta-btn { display: inline-block; background: #90b9ab; color: #0a0a0a; padding: 10px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+
+  /* Text block */
+  .text-block-content { font-size: 15px; color: #ccc; line-height: 1.8; }
+  .text-toolbar { display: flex; gap: 4px; margin-bottom: 12px; padding: 8px; background: #1a1a1a; border-radius: 6px; }
+  .toolbar-btn { width: 32px; height: 28px; display: flex; align-items: center; justify-content: center; background: none; border: 1px solid transparent; border-radius: 4px; color: #999; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .toolbar-btn:hover { background: #222; color: #e5e5e5; }
+  .toolbar-btn.active { background: #90b9ab22; color: #90b9ab; border-color: #90b9ab44; }
+  .toolbar-sep { width: 1px; background: #2a2a2a; margin: 0 4px; }
+
+  /* Gallery block */
+  .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .gallery-thumb { aspect-ratio: 1; background: #1a1a1a; border-radius: 8px; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; color: #333; font-size: 24px; position: relative; overflow: hidden; }
+  .gallery-thumb.has-image { background: linear-gradient(135deg, #1a2530, #202838); }
+  .gallery-thumb.has-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(90,155,213,0.1), rgba(167,139,250,0.1)); }
+  .gallery-add { border: 2px dashed #2a2a2a; background: none; cursor: pointer; }
+  .gallery-add:hover { border-color: #90b9ab; color: #90b9ab; }
+</style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>SIGIL</h1><span>by Netrun</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item"><span class="nav-icon">&#9633;</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">&#9673;</span> Sites & Domains</div>
+      <div class="nav-item active"><span class="nav-icon">&#9998;</span> Pages <span class="nav-badge">24</span></div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Design Playground</div>
+      <div class="nav-item"><span class="nav-icon">&#9654;</span> Media Library</div>
+      <div class="nav-section">Plugins</div>
+      <div class="nav-item"><span class="nav-icon">&#9733;</span> Marketplace</div>
+      <div class="nav-item"><span class="nav-icon">&#9878;</span> Store</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> Booking</div>
+      <div class="nav-item"><span class="nav-icon">&#128101;</span> Community</div>
+      <div class="nav-item"><span class="nav-icon">&#128200;</span> Analytics</div>
+      <div class="nav-section">System</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> Settings</div>
+    </div>
+    <div class="sidebar-footer"><div class="avatar">DG</div><div class="user-info"><strong>Daniel Garza</strong>Admin</div></div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;">
+        <h2>Summer Tour 2026</h2>
+        <span class="page-path">/ Frost Music / Pages</span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="font-size:12px;color:#555;">Draft &middot; Last saved 2 min ago</span>
+        <button class="btn btn-outline">Preview</button>
+        <button class="btn btn-primary">Publish</button>
+      </div>
+    </div>
+    <div class="editor-layout">
+      <div class="block-list">
+        <div class="block-list-header">
+          <h3>Blocks</h3>
+          <button class="add-block-btn">+ Add</button>
+        </div>
+        <div class="block-item active">
+          <span class="drag-handle">&#8942;&#8942;</span>
+          <div class="block-item-icon hero">H</div>
+          <div>
+            <div class="block-item-name">Hero</div>
+            <div class="block-item-type">Hero Banner</div>
+          </div>
+          <span class="block-visibility">&#128065;</span>
+        </div>
+        <div class="block-item">
+          <span class="drag-handle">&#8942;&#8942;</span>
+          <div class="block-item-icon text">T</div>
+          <div>
+            <div class="block-item-name">Introduction</div>
+            <div class="block-item-type">Rich Text</div>
+          </div>
+          <span class="block-visibility">&#128065;</span>
+        </div>
+        <div class="block-item">
+          <span class="drag-handle">&#8942;&#8942;</span>
+          <div class="block-item-icon gallery">G</div>
+          <div>
+            <div class="block-item-name">Tour Photos</div>
+            <div class="block-item-type">Gallery</div>
+          </div>
+          <span class="block-visibility">&#128065;</span>
+        </div>
+        <div class="block-item">
+          <span class="drag-handle">&#8942;&#8942;</span>
+          <div class="block-item-icon cta">C</div>
+          <div>
+            <div class="block-item-name">Get Tickets</div>
+            <div class="block-item-type">Call to Action</div>
+          </div>
+          <span class="block-visibility">&#128065;</span>
+        </div>
+        <div class="block-item">
+          <span class="drag-handle">&#8942;&#8942;</span>
+          <div class="block-item-icon faq">F</div>
+          <div>
+            <div class="block-item-name">FAQ</div>
+            <div class="block-item-type">FAQ Accordion</div>
+          </div>
+          <span class="block-visibility">&#128065;</span>
+        </div>
+      </div>
+
+      <div class="editor-canvas">
+        <!-- Hero Block - Active/Expanded -->
+        <div class="block-editor-card active">
+          <div class="block-header">
+            <div class="block-header-left">
+              <span class="block-type-badge hero">Hero</span>
+              <span style="font-size:13px;color:#999;">Hero Banner Block</span>
+            </div>
+            <div class="block-header-actions">
+              <button class="btn-ghost">&#8593;</button>
+              <button class="btn-ghost">&#8595;</button>
+              <button class="btn-ghost">&#8942;</button>
+            </div>
+          </div>
+          <div class="block-body">
+            <div class="field-group">
+              <div class="field-label">Headline</div>
+              <input class="field-input large" value="Summer Tour 2026">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Subheadline</div>
+              <textarea class="field-input textarea">Join us on the road this summer. 12 cities, 12 nights of unforgettable music.</textarea>
+            </div>
+            <div class="cta-config">
+              <div class="field-group">
+                <div class="field-label">CTA Text</div>
+                <input class="field-input" value="Get Tickets">
+              </div>
+              <div class="field-group">
+                <div class="field-label">CTA Link</div>
+                <input class="field-input" value="/tickets">
+              </div>
+            </div>
+            <div class="hero-preview">
+              <h2>Summer Tour 2026</h2>
+              <p>Join us on the road this summer. 12 cities, 12 nights of unforgettable music.</p>
+              <span class="cta-btn">Get Tickets</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Block - Collapsed -->
+        <div class="block-editor-card">
+          <div class="block-header">
+            <div class="block-header-left">
+              <span class="block-type-badge text">Text</span>
+              <span style="font-size:13px;color:#999;">Introduction</span>
+            </div>
+            <div class="block-header-actions">
+              <button class="btn-ghost">&#8593;</button>
+              <button class="btn-ghost">&#8595;</button>
+              <button class="btn-ghost">&#8942;</button>
+            </div>
+          </div>
+          <div class="block-body">
+            <div class="text-toolbar">
+              <button class="toolbar-btn active"><b>B</b></button>
+              <button class="toolbar-btn"><i>I</i></button>
+              <button class="toolbar-btn"><u>U</u></button>
+              <span class="toolbar-sep"></span>
+              <button class="toolbar-btn">H1</button>
+              <button class="toolbar-btn">H2</button>
+              <button class="toolbar-btn">H3</button>
+              <span class="toolbar-sep"></span>
+              <button class="toolbar-btn">&#8801;</button>
+              <button class="toolbar-btn">&#8866;</button>
+              <button class="toolbar-btn">&#8867;</button>
+              <span class="toolbar-sep"></span>
+              <button class="toolbar-btn">&#128279;</button>
+              <button class="toolbar-btn">&#128247;</button>
+            </div>
+            <div class="text-block-content">
+              After three years of studio work and intimate shows, we're hitting the road for our biggest tour yet. From Portland to Miami, each show features a unique setlist curated for the city...
+            </div>
+          </div>
+        </div>
+
+        <!-- Gallery Block -->
+        <div class="block-editor-card">
+          <div class="block-header">
+            <div class="block-header-left">
+              <span class="block-type-badge gallery">Gallery</span>
+              <span style="font-size:13px;color:#999;">Tour Photos &middot; 7 images</span>
+            </div>
+            <div class="block-header-actions">
+              <button class="btn-ghost">&#8593;</button>
+              <button class="btn-ghost">&#8595;</button>
+              <button class="btn-ghost">&#8942;</button>
+            </div>
+          </div>
+          <div class="block-body">
+            <div class="gallery-grid">
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb has-image"></div>
+              <div class="gallery-thumb gallery-add">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

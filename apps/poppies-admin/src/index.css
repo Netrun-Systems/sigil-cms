@@ -1,0 +1,60 @@
+/**
+ * Poppies Admin — Global styles and CSS variables.
+ * Warm earth tones reflecting the Ojai art cooperative brand.
+ */
+
+:root {
+  /* Poppies warm earth palette */
+  --poppies-terracotta: #c67a4b;
+  --poppies-clay: #a86038;
+  --poppies-sage: #8a9a7b;
+  --poppies-sand: #d4c4a8;
+  --poppies-cream: #f5f0e8;
+  --poppies-bark: #5c3d2e;
+  --poppies-moss: #6b7a5e;
+  --poppies-linen: #faf7f2;
+
+  /* Admin shell variables — warm light theme */
+  --bg-base: #faf7f2;
+  --bg-panel: #ffffff;
+  --bg-input: #f5f0e8;
+  --bg-hover: #ede6d8;
+  --border-primary: #d4c4a8;
+  --border-subtle: #e8dfd0;
+  --text-primary: #3d2b1f;
+  --text-secondary: #6b5744;
+  --text-muted: #9a8b7a;
+  --accent: #c67a4b;
+  --accent-hover: #a86038;
+  --success: #6b7a5e;
+  --warning: #d4a44b;
+  --error: #c44b4b;
+  --info: #5b8a9a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: 'DM Serif Display', serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Tailwind utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

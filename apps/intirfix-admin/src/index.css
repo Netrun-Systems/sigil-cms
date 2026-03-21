@@ -1,0 +1,37 @@
+/**
+ * Intirfix Admin — Global styles and CSS variables.
+ * Green/teal theme matching Intirfix brand identity.
+ */
+
+:root {
+  /* Intirfix teal palette */
+  --netrun-black: #0a0a0a;
+  --netrun-green: #2dd4bf;
+  --bg-base: #0a0a0a;
+  --bg-surface: #111111;
+  --bg-elevated: #1a1a1a;
+  --bg-hover: #222222;
+  --border-primary: #2a2a2a;
+  --border-secondary: #333333;
+  --text-primary: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #707070;
+  --accent: #2dd4bf;
+  --accent-hover: #14b8a6;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --info: #60a5fa;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
