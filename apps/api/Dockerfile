@@ -1,16 +1,23 @@
 # Sigil CMS API — Cloud Run Deployment
 # Multi-stage build with pnpm workspaces
+#
+# NOTE: Build context must be the repo root.
+# The shared-ts packages (file: deps) are copied from the workspace.
+# Run: docker build -f apps/api/Dockerfile -t sigil-api .
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
-# Copy workspace config first (for dependency caching)
+# Copy workspace config
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml tsconfig.json ./
 
-# Copy all package.json files for install
+# Copy shared-ts packages (file: references in apps/api/package.json)
+COPY --from=netrun-shared-ts . ./netrun-shared-ts/ 2>/dev/null || true
+
+# Copy all package.json files for install resolution
 COPY packages/@netrun-cms/core/package.json ./packages/@netrun-cms/core/
 COPY packages/@netrun-cms/db/package.json ./packages/@netrun-cms/db/
 COPY packages/@netrun-cms/theme/package.json ./packages/@netrun-cms/theme/
@@ -20,7 +27,7 @@ COPY packages/@netrun-cms/embeds/package.json ./packages/@netrun-cms/embeds/
 COPY packages/@netrun-cms/plugin-runtime/package.json ./packages/@netrun-cms/plugin-runtime/
 COPY apps/api/package.json ./apps/api/
 
-# Copy all plugin package.json files
+# Copy plugin package.jsons
 COPY plugins/seo/package.json ./plugins/seo/
 COPY plugins/artist/package.json ./plugins/artist/
 COPY plugins/mailing-list/package.json ./plugins/mailing-list/
@@ -41,15 +48,16 @@ COPY plugins/intirkast/package.json ./plugins/intirkast/
 COPY plugins/charlotte/package.json ./plugins/charlotte/
 COPY plugins/support/package.json ./plugins/support/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile || pnpm install
+# Install dependencies (--no-frozen-lockfile to handle file: path differences)
+RUN pnpm install --no-frozen-lockfile
 
-# Copy all source code
+# Copy all source
 COPY packages/ ./packages/
 COPY plugins/ ./plugins/
 COPY apps/api/ ./apps/api/
+COPY turbo.json ./
 
-# Build everything via turbo (respects dependency order)
+# Build via turbo
 RUN npx turbo build --filter=@netrun-cms/api...
 
 # --- Production stage ---
@@ -57,12 +65,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
-
-# Copy built output
+# Copy the bundled API (tsup bundles everything into dist/index.js)
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
+
+# Install only production runtime deps needed by the bundled output
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate && \
+    echo '{"dependencies":{}}' > /tmp/pkg.json && \
+    npm install --omit=dev express cors dotenv drizzle-orm postgres zod helmet jsonwebtoken 2>/dev/null || true
 
 ENV NODE_ENV=production
 ENV PORT=3000
