@@ -51,6 +51,9 @@ import { useState, useEffect } from 'react';
 import type { BlockType } from '@netrun-cms/core';
 import { api } from '../../lib/api';
 import { BlockContentEditor } from '../../components/BlockContentEditor';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { RevisionHistory } from '../../components/RevisionHistory';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface ContentBlock {
   id: string;
@@ -236,6 +239,7 @@ export function PageEditor() {
   const { siteId, pageId } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(pageId);
+  const { canEdit, canDelete, canPublish } = usePermissions();
 
   const [formData, setFormData] = useState<PageFormData>(defaultFormData);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
@@ -243,6 +247,7 @@ export function PageEditor() {
   const [activeTab, setActiveTab] = useState('content');
   const [error, setError] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [pageLanguage, setPageLanguage] = useState<string>('en');
 
   const handleBlockContentChange = (blockId: string, content: Record<string, unknown>) => {
     setBlocks((prev) =>
@@ -266,6 +271,7 @@ export function PageEditor() {
         metaDescription: seo.metaDescription || (p.metaDescription as string) || '',
         ogImageUrl: seo.ogImageUrl || (p.ogImageUrl as string) || '',
       });
+      setPageLanguage((p.language as string) || 'en');
     }).catch((err) => setError(err.message));
 
     // Load blocks
@@ -418,19 +424,26 @@ export function PageEditor() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {!canEdit && (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+              View Only
+            </span>
+          )}
           {isEditing && (
             <>
               <Button variant="outline">
                 <Eye className="mr-2 h-4 w-4" />
                 Preview
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
+              {canDelete && (
+                <Button variant="destructive" onClick={handleDelete}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              )}
             </>
           )}
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || !canEdit}>
             <Save className="mr-2 h-4 w-4" />
             {isSaving ? 'Saving...' : 'Save'}
           </Button>
@@ -632,6 +645,7 @@ export function PageEditor() {
                   onValueChange={(value) =>
                     handleChange('status', value as PageFormData['status'])
                   }
+                  disabled={!canPublish}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -643,6 +657,11 @@ export function PageEditor() {
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
+                {!canPublish && (
+                  <p className="text-xs text-muted-foreground">
+                    Only admins and editors can change publish status
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -712,6 +731,34 @@ export function PageEditor() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Language / Translations */}
+          {isEditing && siteId && pageId && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Languages</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LanguageSelector
+                  siteId={siteId}
+                  pageId={pageId}
+                  currentLanguage={pageLanguage}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Revision History */}
+          {isEditing && siteId && pageId && (
+            <RevisionHistory
+              siteId={siteId}
+              pageId={pageId}
+              onReverted={() => {
+                // Reload page data after revert
+                window.location.reload();
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

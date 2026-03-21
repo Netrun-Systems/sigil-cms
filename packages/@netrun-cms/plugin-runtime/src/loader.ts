@@ -10,6 +10,22 @@ import type { Router } from 'express';
 import type { CmsPlugin, PluginContext, PluginLogger, DrizzleClient } from './types.js';
 import * as registry from './registry.js';
 
+// ── Module-level event bridge ────────────────────────────────────────────────
+// Allows the webhooks plugin to wire in the real emit implementation
+// so that all plugins' ctx.emitEvent() calls route through the event bus.
+
+let _emitEventImpl: PluginContext['emitEvent'] = () => {
+  // No-op until webhooks plugin registers its emit function
+};
+
+/**
+ * Set the global emitEvent implementation.
+ * Called by the webhooks plugin during registration.
+ */
+export function setEmitEvent(fn: PluginContext['emitEvent']): void {
+  _emitEventImpl = fn;
+}
+
 interface LoadPluginsOptions {
   /** Express app instance */
   app: { use: (...args: unknown[]) => void };
@@ -93,6 +109,10 @@ export async function loadPlugins(
 
       getConfig(key: string) {
         return process.env[key];
+      },
+
+      emitEvent(event) {
+        _emitEventImpl(event);
       },
     };
 

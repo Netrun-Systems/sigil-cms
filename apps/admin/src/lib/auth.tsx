@@ -1,11 +1,37 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+
+export type UserRole = 'admin' | 'editor' | 'author' | 'viewer';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  tenantId: string;
+}
 
 interface AuthContextValue {
   token: string | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
   login: (token: string) => void;
   logout: () => void;
+}
+
+function decodeJwtPayload(token: string): AuthUser | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return {
+      id: payload.sub || payload.id || '',
+      email: payload.email || '',
+      role: payload.role || 'viewer',
+      tenantId: payload.tenantId || '',
+    };
+  } catch {
+    return null;
+  }
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -14,6 +40,8 @@ const TOKEN_KEY = 'netrun_cms_token';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
+
+  const user = useMemo(() => (token ? decodeJwtPayload(token) : null), [token]);
 
   const login = (newToken: string) => {
     localStorage.setItem(TOKEN_KEY, newToken);
@@ -34,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated: !!token, login, logout }}>
+    <AuthContext.Provider value={{ token, user, isAuthenticated: !!token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

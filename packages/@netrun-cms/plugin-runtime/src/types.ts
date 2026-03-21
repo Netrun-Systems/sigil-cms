@@ -50,6 +50,14 @@ export interface PluginContext {
   runMigration(sql: string): Promise<void>;
   /** Read an environment variable */
   getConfig(key: string): string | undefined;
+  /** Emit a CMS event through the event bus (provided by the webhooks plugin) */
+  emitEvent(event: {
+    type: string;
+    siteId: string;
+    resourceType: string;
+    resourceId: string;
+    data: Record<string, unknown>;
+  }): void;
 }
 
 /**

@@ -5,7 +5,7 @@
  * Provides the loader, registry, and type contracts for plugins.
  */
 
-export { loadPlugins } from './loader.js';
+export { loadPlugins, setEmitEvent } from './loader.js';
 
 export {
   getManifest,

@@ -70,4 +70,37 @@ router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor', 'auth
  */
 router.delete('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), PagesController.delete);
 
+/**
+ * GET /api/v1/sites/:siteId/pages/:id/translations
+ * List all translations of a page (pages sharing same slug but different language)
+ */
+router.get('/:id/translations', validateUuidParam('id'), PagesController.listTranslations);
+
+/**
+ * POST /api/v1/sites/:siteId/pages/:id/translate
+ * Create a translation of a page into a target language
+ *
+ * Body: { language: string }
+ * Clones the page and all content blocks with the new language code
+ */
+router.post('/:id/translate', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), PagesController.createTranslation);
+
+/**
+ * GET /api/v1/sites/:siteId/pages/:pageId/revisions
+ * List all revisions for a page (newest first)
+ */
+router.get('/:pageId/revisions', validateUuidParam('pageId'), PagesController.listRevisions);
+
+/**
+ * GET /api/v1/sites/:siteId/pages/:pageId/revisions/:revisionId
+ * Get a specific revision with its content snapshot
+ */
+router.get('/:pageId/revisions/:revisionId', validateUuidParam('pageId'), PagesController.getRevision);
+
+/**
+ * POST /api/v1/sites/:siteId/pages/:pageId/revisions/:revisionId/revert
+ * Revert page to a specific revision
+ */
+router.post('/:pageId/revisions/:revisionId/revert', validateUuidParam('pageId'), requireRole('admin', 'editor'), PagesController.revertToRevision);
+
 export default router;

@@ -10,10 +10,11 @@ import {
   HelpCircle,
   ChevronRight,
 } from 'lucide-react';
-import { Button, cn } from '@netrun-cms/ui';
+import { Button, Badge, cn } from '@netrun-cms/ui';
 import { useTheme } from '@netrun-cms/theme';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../lib/auth';
+import type { UserRole } from '../../lib/auth';
 
 interface BreadcrumbItem {
   label: string;
@@ -50,9 +51,16 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   return breadcrumbs;
 }
 
+const roleBadgeStyles: Record<UserRole, string> = {
+  admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  editor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  author: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  viewer: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+};
+
 export function Header() {
   const { mode, toggleMode, isDark } = useTheme();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const breadcrumbs = getBreadcrumbs(location.pathname);
@@ -140,11 +148,13 @@ export function Header() {
             className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-sm font-medium text-primary">
-              DG
+              {user?.email ? user.email.substring(0, 2).toUpperCase() : 'U'}
             </div>
             <div className="hidden text-left md:block">
-              <p className="text-sm font-medium">Daniel Garza</p>
-              <p className="text-xs text-muted-foreground">Admin</p>
+              <p className="text-sm font-medium">{user?.email || 'User'}</p>
+              <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize', roleBadgeStyles[user?.role || 'viewer'])}>
+                {user?.role || 'viewer'}
+              </span>
             </div>
           </button>
 
@@ -152,8 +162,10 @@ export function Header() {
           {userMenuOpen && (
             <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-popover p-1 shadow-lg">
               <div className="px-3 py-2">
-                <p className="text-sm font-medium">Daniel Garza</p>
-                <p className="text-xs text-muted-foreground">admin@netrunsystems.com</p>
+                <p className="text-sm font-medium">{user?.email || 'User'}</p>
+                <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize', roleBadgeStyles[user?.role || 'viewer'])}>
+                  {user?.role || 'viewer'}
+                </span>
               </div>
               <div className="my-1 h-px bg-border" />
               <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent">

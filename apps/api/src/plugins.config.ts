@@ -28,6 +28,7 @@ export async function loadEnabledPlugins(): Promise<CmsPlugin[]> {
     () => import('@netrun-cms/plugin-docs'),
     () => import('@netrun-cms/plugin-resonance'),
     () => import('@netrun-cms/plugin-migrate'),
+    () => import('@netrun-cms/plugin-webhooks'),
   ];
 
   for (const loader of loaders) {

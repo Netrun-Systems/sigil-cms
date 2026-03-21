@@ -46,6 +46,7 @@ import type { ThemeTokens, ColorTokens, TypographyTokens, EffectTokens, SpacingT
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
 import { FontBrowser, type CustomFont, generateFontFaceCss } from '../../components/FontBrowser';
+import { usePermissions } from '../../hooks/usePermissions';
 
 // ============================================================================
 // CONTROLS
@@ -511,6 +512,7 @@ function LivePreview({ tokens }: { tokens: ThemeTokens }) {
 export function ThemeEditor() {
   const { siteId } = useParams();
   const { tokens, setMode, setSiteTheme, applyTokenOverrides } = useTheme();
+  const { canEdit } = usePermissions();
 
   const [selectedPreset, setSelectedPreset] = useState<string>('netrun-dark');
   const [customTokens, setCustomTokens] = useState<ThemeTokens>(tokens);
@@ -626,18 +628,31 @@ export function ThemeEditor() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {hasChanges && (
+          {!canEdit && (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+              View Only
+            </span>
+          )}
+          {hasChanges && canEdit && (
             <Button variant="outline" onClick={handleReset}>
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
             </Button>
           )}
-          <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
-            <Save className="mr-2 h-4 w-4" />
-            {isSaving ? 'Saving...' : 'Save Theme'}
-          </Button>
+          {canEdit && (
+            <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
+              <Save className="mr-2 h-4 w-4" />
+              {isSaving ? 'Saving...' : 'Save Theme'}
+            </Button>
+          )}
         </div>
       </div>
+
+      {!canEdit && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+          You are viewing this theme in read-only mode. Only admins and editors can save changes.
+        </div>
+      )}
 
       {error && (
         <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">

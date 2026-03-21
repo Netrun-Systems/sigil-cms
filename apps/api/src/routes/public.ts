@@ -10,7 +10,7 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { eq, and, asc } from 'drizzle-orm';
+import { eq, and, asc, sql } from 'drizzle-orm';
 import { sites, pages, contentBlocks, themes } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 
@@ -20,19 +20,47 @@ const router: RouterType = Router();
 /**
  * GET /api/v1/public/sites/:siteSlug/pages/:pageSlug
  * Public page content with blocks
+ *
+ * Query params:
+ * - lang: string (e.g., 'es') — fetch the page in a specific language.
+ *   Falls back to the site's defaultLanguage if not found.
  */
 router.get('/sites/:siteSlug/pages/:pageSlug', async (req: Request, res: Response) => {
   const db = getDb();
   const siteSlug = req.params.siteSlug as string;
   const pageSlug = req.params.pageSlug as string;
+  const lang = req.query.lang as string | undefined;
 
-  const [site] = await db.select({ id: sites.id }).from(sites)
+  const [site] = await db.select({ id: sites.id, defaultLanguage: sites.defaultLanguage }).from(sites)
     .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
   if (!site) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Site not found' } }); return; }
 
-  const [page] = await db.select().from(pages)
-    .where(and(eq(pages.siteId, site.id), eq(pages.slug, pageSlug), eq(pages.status, 'published')))
-    .limit(1);
+  let page;
+
+  // If a specific language is requested, try to find it first
+  if (lang) {
+    const [langPage] = await db.select().from(pages)
+      .where(and(eq(pages.siteId, site.id), eq(pages.slug, pageSlug), eq(pages.status, 'published'), eq(pages.language, lang)))
+      .limit(1);
+    page = langPage;
+  }
+
+  // Fall back to the site's default language if not found
+  if (!page) {
+    const [defaultPage] = await db.select().from(pages)
+      .where(and(eq(pages.siteId, site.id), eq(pages.slug, pageSlug), eq(pages.status, 'published'), eq(pages.language, site.defaultLanguage)))
+      .limit(1);
+    page = defaultPage;
+  }
+
+  // Last resort: any published page with that slug
+  if (!page) {
+    const [anyPage] = await db.select().from(pages)
+      .where(and(eq(pages.siteId, site.id), eq(pages.slug, pageSlug), eq(pages.status, 'published')))
+      .limit(1);
+    page = anyPage;
+  }
+
   if (!page) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Page not found' } }); return; }
 
   const blocks = await db.select().from(contentBlocks)
@@ -88,6 +116,56 @@ router.get('/sites/:siteSlug/pages', async (req: Request, res: Response) => {
     .orderBy(asc(pages.sortOrder));
 
   res.json({ success: true, data: publishedPages });
+});
+
+/**
+ * GET /api/v1/public/sites/:siteSlug/languages
+ * List available languages for a site (distinct languages from published pages)
+ */
+router.get('/sites/:siteSlug/languages', async (req: Request, res: Response) => {
+  const db = getDb();
+  const siteSlug = req.params.siteSlug as string;
+
+  const [site] = await db.select({ id: sites.id, defaultLanguage: sites.defaultLanguage }).from(sites)
+    .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
+  if (!site) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Site not found' } }); return; }
+
+  const result = await db
+    .selectDistinct({ language: pages.language })
+    .from(pages)
+    .where(and(eq(pages.siteId, site.id), eq(pages.status, 'published')))
+    .orderBy(asc(pages.language));
+
+  const languages = result.map((r) => r.language);
+
+  res.json({ success: true, data: { defaultLanguage: site.defaultLanguage, languages } });
+});
+
+/**
+ * GET /api/v1/public/sites/by-domain/:domain
+ * Resolve a site by its custom domain (used by the renderer for multi-site routing)
+ */
+router.get('/sites/by-domain/:domain', async (req: Request, res: Response) => {
+  const db = getDb();
+  const domain = (req.params.domain as string).toLowerCase().trim();
+
+  const [site] = await db.select({
+    id: sites.id,
+    name: sites.name,
+    slug: sites.slug,
+    domain: sites.domain,
+    defaultLanguage: sites.defaultLanguage,
+    status: sites.status,
+  }).from(sites)
+    .where(and(eq(sites.domain, domain), eq(sites.status, 'published')))
+    .limit(1);
+
+  if (!site) {
+    res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'No site found for this domain' } });
+    return;
+  }
+
+  res.json({ success: true, data: site });
 });
 
 export default router;

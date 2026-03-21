@@ -4,6 +4,7 @@ import { LayoutDashboard, Globe, FileText, Image, Palette, Settings, ChevronDown
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
 import { usePluginManifest } from '../../hooks/usePluginManifest';
+import { usePermissions } from '../../hooks/usePermissions';
 import { getIcon } from '../../lib/iconRegistry';
 const mainNavItems = [
     {
@@ -39,13 +40,19 @@ function NavItemComponent({ item }) {
 export function Sidebar() {
     const { siteId } = useParams();
     const { manifest } = usePluginManifest();
+    const { canManageSettings, canViewAnalytics } = usePermissions();
     // Collect global (non-site-scoped) plugin nav items for the main nav
     const globalPluginNav = [];
     // Collect site-scoped plugin nav sections
     const sitePluginSections = [];
     if (manifest) {
+        // Plugin IDs that require canViewAnalytics permission
+        const analyticsPluginIds = new Set(['advisor']);
         for (const plugin of manifest.plugins) {
             if (!plugin.enabled)
+                continue;
+            // Hide analytics-gated plugins (e.g. AI Advisor) for non-privileged roles
+            if (analyticsPluginIds.has(plugin.id) && !canViewAnalytics)
                 continue;
             for (const section of plugin.nav) {
                 if (section.siteScoped) {
@@ -79,6 +86,6 @@ export function Sidebar() {
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                             : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Palette, { className: "h-5 w-5" }), _jsx("span", { children: "Theme" })] })] }), sitePluginSections.map((section) => (_jsxs("div", { children: [_jsx("div", { className: "mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50", children: section.title }), _jsx("div", { className: "space-y-1", children: section.items.map((item) => (_jsxs(NavLink, { to: item.href, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
                                                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(item.icon, { className: "h-5 w-5" }), _jsx("span", { children: item.label })] }, item.href))) })] }, section.title)))] }))] }), _jsx("div", { className: "border-t border-sidebar-border p-4", children: _jsxs(NavLink, { to: "/settings", className: "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", children: [_jsx(Settings, { className: "h-5 w-5" }), _jsx("span", { children: "Settings" })] }) })] }));
+                                                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(item.icon, { className: "h-5 w-5" }), _jsx("span", { children: item.label })] }, item.href))) })] }, section.title)))] }))] }), canManageSettings && (_jsx("div", { className: "border-t border-sidebar-border p-4", children: _jsxs(NavLink, { to: "/settings", className: "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", children: [_jsx(Settings, { className: "h-5 w-5" }), _jsx("span", { children: "Settings" })] }) }))] }));
 }
 //# sourceMappingURL=Sidebar.js.map

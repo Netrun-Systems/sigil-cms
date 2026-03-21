@@ -35,6 +35,9 @@ import {
   Activity,
   FlaskConical,
   Upload,
+  Webhook,
+  Languages,
+  History,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -68,6 +71,9 @@ const icons: Record<string, LucideIcon> = {
   Activity,
   FlaskConical,
   Upload,
+  Webhook,
+  Languages,
+  History,
 };
 
 /**

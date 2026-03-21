@@ -19,6 +19,54 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 const SITE_SLUG = process.env.SITE_SLUG || 'default';
 const SITE_NAME = process.env.SITE_NAME || '';
+const API_BASE = process.env.API_URL || 'http://localhost:3001/api/v1/public';
+
+// --- Domain → Site Slug Cache ---
+// Maps custom domains to site slugs with a 5-minute TTL.
+
+interface DomainCacheEntry {
+  siteSlug: string;
+  fetchedAt: number;
+}
+
+const DOMAIN_CACHE_TTL = 5 * 60_000; // 5 minutes
+const domainCache = new Map<string, DomainCacheEntry>();
+
+async function resolveSiteSlug(host: string): Promise<string> {
+  // Strip port from host header
+  const domain = host.split(':')[0].toLowerCase();
+
+  // Skip lookup for localhost / IP addresses
+  if (domain === 'localhost' || domain === '127.0.0.1' || domain.startsWith('192.168.')) {
+    return SITE_SLUG;
+  }
+
+  // Check cache
+  const cached = domainCache.get(domain);
+  if (cached && Date.now() - cached.fetchedAt < DOMAIN_CACHE_TTL) {
+    return cached.siteSlug;
+  }
+
+  // Look up domain via public API
+  try {
+    const res = await fetch(`${API_BASE}/sites/by-domain/${encodeURIComponent(domain)}`, {
+      headers: { 'Accept': 'application/json' },
+    });
+
+    if (res.ok) {
+      const json = await res.json() as { success: boolean; data: { slug: string } };
+      if (json.success && json.data?.slug) {
+        domainCache.set(domain, { siteSlug: json.data.slug, fetchedAt: Date.now() });
+        return json.data.slug;
+      }
+    }
+  } catch (err) {
+    console.error(`Domain lookup failed for ${domain}:`, err);
+  }
+
+  // Fall back to env var
+  return SITE_SLUG;
+}
 
 // --- Theme Cache ---
 // Theme is fetched once and cached until TTL expires or server restarts.
@@ -108,17 +156,18 @@ app.get('/favicon.ico', (_req, res) => {
 // --- Page Routes ---
 
 // Homepage
-app.get('/', async (_req, res) => {
+app.get('/', async (req, res) => {
   try {
+    const siteSlug = await resolveSiteSlug(req.headers.host || '');
     const [theme, navigation] = await Promise.all([getTheme(), getNavigation()]);
 
     // Try 'home' slug first, then fall back to first published page
-    let page = await fetchPage(SITE_SLUG, 'home');
+    let page = await fetchPage(siteSlug, 'home');
 
     if (!page && navigation.length > 0) {
       const firstSlug = navigation[0].href === '/' ? 'home' : navigation[0].href.replace('/', '');
       if (firstSlug !== 'home') {
-        page = await fetchPage(SITE_SLUG, firstSlug);
+        page = await fetchPage(siteSlug, firstSlug);
       }
     }
 
@@ -126,7 +175,7 @@ app.get('/', async (_req, res) => {
       res.status(404).send(render404({
         cssVariables: theme.cssVariables,
         fontLinks: theme.fontLinks,
-        siteSlug: SITE_SLUG,
+        siteSlug,
         siteName: SITE_NAME,
         navigation,
         customCss: theme.customCss,
@@ -134,7 +183,7 @@ app.get('/', async (_req, res) => {
       return;
     }
 
-    const blocksHtml = renderBlocks(page.blocks || [], SITE_SLUG);
+    const blocksHtml = renderBlocks(page.blocks || [], siteSlug);
     const html = renderLayout({
       title: page.metaTitle || page.title,
       description: page.metaDescription || '',
@@ -142,7 +191,7 @@ app.get('/', async (_req, res) => {
       cssVariables: theme.cssVariables,
       fontLinks: theme.fontLinks,
       body: blocksHtml,
-      siteSlug: SITE_SLUG,
+      siteSlug,
       siteName: SITE_NAME,
       navigation,
       currentPath: '/',
@@ -168,14 +217,15 @@ app.get('/:pageSlug', async (req, res) => {
   }
 
   try {
+    const siteSlug = await resolveSiteSlug(req.headers.host || '');
     const [theme, navigation] = await Promise.all([getTheme(), getNavigation()]);
-    const page = await fetchPage(SITE_SLUG, pageSlug);
+    const page = await fetchPage(siteSlug, pageSlug);
 
     if (!page) {
       res.status(404).send(render404({
         cssVariables: theme.cssVariables,
         fontLinks: theme.fontLinks,
-        siteSlug: SITE_SLUG,
+        siteSlug,
         siteName: SITE_NAME,
         navigation,
         customCss: theme.customCss,
@@ -183,7 +233,7 @@ app.get('/:pageSlug', async (req, res) => {
       return;
     }
 
-    const blocksHtml = renderBlocks(page.blocks || [], SITE_SLUG);
+    const blocksHtml = renderBlocks(page.blocks || [], siteSlug);
     const html = renderLayout({
       title: page.metaTitle || page.title,
       description: page.metaDescription || '',
@@ -191,7 +241,7 @@ app.get('/:pageSlug', async (req, res) => {
       cssVariables: theme.cssVariables,
       fontLinks: theme.fontLinks,
       body: blocksHtml,
-      siteSlug: SITE_SLUG,
+      siteSlug,
       siteName: SITE_NAME,
       navigation,
       currentPath: `/${pageSlug}`,

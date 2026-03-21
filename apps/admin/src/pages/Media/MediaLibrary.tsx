@@ -42,6 +42,7 @@ import {
 } from '@netrun-cms/ui';
 import { useState, useEffect, useRef } from 'react';
 import { api, ApiError } from '../../lib/api';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface MediaFile {
   id: string;
@@ -78,12 +79,14 @@ function MediaCard({
   onSelect,
   onDelete,
   viewMode,
+  showDelete = true,
 }: {
   file: MediaFile;
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
   viewMode: 'grid' | 'list';
+  showDelete?: boolean;
 }) {
   const [showPreview, setShowPreview] = useState(false);
   const Icon = getFileIcon(file.mimeType);
@@ -149,14 +152,16 @@ function MediaCard({
           >
             <Copy className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={onDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {showDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -222,7 +227,7 @@ function MediaCard({
           >
             <Copy className="h-3 w-3" />
           </Button>
-          <Button
+          {showDelete && <Button
             variant="destructive"
             size="icon"
             className="h-7 w-7"
@@ -232,7 +237,7 @@ function MediaCard({
             }}
           >
             <Trash2 className="h-3 w-3" />
-          </Button>
+          </Button>}
         </div>
       </div>
 
@@ -281,6 +286,7 @@ function MediaCard({
 
 export function MediaLibrary() {
   const { siteId } = useParams();
+  const { canCreate, canDelete } = usePermissions();
   const [media, setMedia] = useState<MediaFile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -419,16 +425,18 @@ export function MediaLibrary() {
           {error && (
             <span className="text-sm text-destructive">{error}</span>
           )}
-          {selectedFiles.size > 0 && (
+          {selectedFiles.size > 0 && canDelete && (
             <Button variant="destructive" onClick={handleDeleteSelected}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete ({selectedFiles.size})
             </Button>
           )}
-          <Button onClick={() => setShowUploadDialog(true)}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Files
-          </Button>
+          {canCreate && (
+            <Button onClick={() => setShowUploadDialog(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              Upload Files
+            </Button>
+          )}
         </div>
       </div>
 
@@ -509,6 +517,7 @@ export function MediaLibrary() {
                 onSelect={() => handleSelect(file.id)}
                 onDelete={() => handleDelete(file.id)}
                 viewMode={viewMode}
+                showDelete={canDelete}
               />
             ))}
           </div>
@@ -523,6 +532,7 @@ export function MediaLibrary() {
                   onSelect={() => handleSelect(file.id)}
                   onDelete={() => handleDelete(file.id)}
                   viewMode={viewMode}
+                  showDelete={canDelete}
                 />
               ))}
             </CardContent>
@@ -540,7 +550,7 @@ export function MediaLibrary() {
                 ? 'Try adjusting your search or filter criteria.'
                 : 'Upload your first file to get started.'}
             </p>
-            {!searchQuery && !selectedFolder && !selectedType && (
+            {!searchQuery && !selectedFolder && !selectedType && canCreate && (
               <Button className="mt-4" onClick={() => setShowUploadDialog(true)}>
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Files

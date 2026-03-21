@@ -61,4 +61,24 @@ router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), Site
  */
 router.delete('/:id', validateUuidParam('id'), requireRole('admin'), SitesController.delete);
 
+/**
+ * PUT /api/v1/sites/:siteId/domain
+ * Set or update the custom domain for a site
+ *
+ * Body: { domain: string }
+ */
+router.put('/:id/domain', validateUuidParam('id'), requireRole('admin', 'editor'), SitesController.updateDomain);
+
+/**
+ * DELETE /api/v1/sites/:siteId/domain
+ * Remove the custom domain from a site
+ */
+router.delete('/:id/domain', validateUuidParam('id'), requireRole('admin', 'editor'), SitesController.removeDomain);
+
+/**
+ * GET /api/v1/sites/:siteId/domain/verify
+ * Verify DNS configuration for the site's custom domain
+ */
+router.get('/:id/domain/verify', validateUuidParam('id'), requireRole('admin', 'editor'), SitesController.verifyDomain);
+
 export default router;

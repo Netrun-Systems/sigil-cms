@@ -35,6 +35,8 @@ import {
 } from '@netrun-cms/ui';
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
+import { usePermissions } from '../../hooks/usePermissions';
+import { DomainManager } from '../../components/DomainManager';
 
 interface SiteFormData {
   name: string;
@@ -70,6 +72,7 @@ export function SiteEditor() {
   const { siteId } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(siteId);
+  const { canEdit, canDelete } = usePermissions();
 
   const [formData, setFormData] = useState<SiteFormData>(defaultFormData);
   const [isSaving, setIsSaving] = useState(false);
@@ -177,13 +180,18 @@ export function SiteEditor() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing && (
+          {!canEdit && (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+              View Only
+            </span>
+          )}
+          {isEditing && canDelete && (
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </Button>
           )}
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || !canEdit}>
             <Save className="mr-2 h-4 w-4" />
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -239,6 +247,7 @@ export function SiteEditor() {
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          {isEditing && <TabsTrigger value="domain">Domain</TabsTrigger>}
         </TabsList>
 
         {/* General Tab */}
@@ -513,6 +522,17 @@ export function SiteEditor() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Domain Tab */}
+        {isEditing && siteId && (
+          <TabsContent value="domain" className="space-y-6">
+            <DomainManager
+              siteId={siteId}
+              currentDomain={formData.domain}
+              onDomainChange={(d) => setFormData((prev) => ({ ...prev, domain: d }))}
+            />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

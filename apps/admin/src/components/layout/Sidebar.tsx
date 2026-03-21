@@ -11,6 +11,7 @@ import {
 import { cn } from '@netrun-cms/ui';
 import { useState } from 'react';
 import { usePluginManifest } from '../../hooks/usePluginManifest';
+import { usePermissions } from '../../hooks/usePermissions';
 import { getIcon } from '../../lib/iconRegistry';
 
 interface NavItem {
@@ -115,6 +116,7 @@ function NavItemComponent({ item }: { item: NavItem }) {
 export function Sidebar() {
   const { siteId } = useParams();
   const { manifest } = usePluginManifest();
+  const { canManageSettings, canViewAnalytics } = usePermissions();
 
   // Collect global (non-site-scoped) plugin nav items for the main nav
   const globalPluginNav: NavItem[] = [];
@@ -122,8 +124,14 @@ export function Sidebar() {
   const sitePluginSections: Array<{ title: string; items: NavItem[] }> = [];
 
   if (manifest) {
+    // Plugin IDs that require canViewAnalytics permission
+    const analyticsPluginIds = new Set(['advisor']);
+
     for (const plugin of manifest.plugins) {
       if (!plugin.enabled) continue;
+      // Hide analytics-gated plugins (e.g. AI Advisor) for non-privileged roles
+      if (analyticsPluginIds.has(plugin.id) && !canViewAnalytics) continue;
+
       for (const section of plugin.nav) {
         if (section.siteScoped) {
           sitePluginSections.push({
@@ -253,15 +261,17 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-sidebar-border p-4">
-        <NavLink
-          to="/settings"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <Settings className="h-5 w-5" />
-          <span>Settings</span>
-        </NavLink>
-      </div>
+      {canManageSettings && (
+        <div className="border-t border-sidebar-border p-4">
+          <NavLink
+            to="/settings"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <Settings className="h-5 w-5" />
+            <span>Settings</span>
+          </NavLink>
+        </div>
+      )}
     </aside>
   );
 }

@@ -154,6 +154,24 @@ export const pages = pgTable('cms_pages', {
 }));
 
 // ============================================================================
+// PAGE REVISIONS TABLE - Revision history for pages
+// ============================================================================
+export const pageRevisions = pgTable('cms_page_revisions', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  pageId: uuid('page_id').notNull().references(() => pages.id, { onDelete: 'cascade' }),
+  version: integer('version').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull(),
+  contentSnapshot: jsonb('content_snapshot').$type<Record<string, unknown>[]>().notNull().default([]),
+  settingsSnapshot: jsonb('settings_snapshot').$type<Record<string, unknown>>().default({}),
+  changedBy: varchar('changed_by', { length: 255 }),
+  changeNote: text('change_note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  pageVersionIdx: index('idx_cms_page_revisions_page').on(table.pageId, table.version),
+}));
+
+// ============================================================================
 // CONTENT BLOCKS TABLE - Composable page content
 // ============================================================================
 export const contentBlocks = pgTable('cms_content_blocks', {
@@ -373,6 +391,14 @@ export const pagesRelations = relations(pages, ({ one, many }) => ({
   }),
   children: many(pages),
   blocks: many(contentBlocks),
+  revisions: many(pageRevisions),
+}));
+
+export const pageRevisionsRelations = relations(pageRevisions, ({ one }) => ({
+  page: one(pages, {
+    fields: [pageRevisions.pageId],
+    references: [pages.id],
+  }),
 }));
 
 export const contentBlocksRelations = relations(contentBlocks, ({ one }) => ({
@@ -468,6 +494,13 @@ export const insertPageSchema = createInsertSchema(pages).omit({
 });
 export const selectPageSchema = createSelectSchema(pages);
 
+// Page revision schemas
+export const insertPageRevisionSchema = createInsertSchema(pageRevisions).omit({
+  id: true,
+  createdAt: true,
+});
+export const selectPageRevisionSchema = createSelectSchema(pageRevisions);
+
 // Content block schemas
 export const insertContentBlockSchema = createInsertSchema(contentBlocks).omit({
   id: true,
@@ -508,6 +541,9 @@ export type InsertTheme = z.infer<typeof insertThemeSchema>;
 
 export type Page = typeof pages.$inferSelect;
 export type InsertPage = z.infer<typeof insertPageSchema>;
+
+export type PageRevision = typeof pageRevisions.$inferSelect;
+export type InsertPageRevision = z.infer<typeof insertPageRevisionSchema>;
 
 export type ContentBlock = typeof contentBlocks.$inferSelect;
 export type InsertContentBlock = z.infer<typeof insertContentBlockSchema>;

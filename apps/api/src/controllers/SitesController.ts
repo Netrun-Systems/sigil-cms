@@ -4,12 +4,16 @@
  * CRUD operations for CMS sites
  */
 
+import dns from 'dns';
 import type { Response } from 'express';
-import { eq, and, desc, asc, count } from 'drizzle-orm';
+import { eq, and, desc, asc, count, ne } from 'drizzle-orm';
 import { sites, insertSiteSchema, type Site } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 import { parsePagination } from '../middleware/validation.js';
 import type { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types/index.js';
+
+const DOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/;
+const EXPECTED_DOMAIN_TARGET = process.env.DOMAIN_TARGET || 'sigil.netrunsystems.com';
 
 export class SitesController {
   /**
@@ -264,5 +268,205 @@ export class SitesController {
     };
 
     res.json(response);
+  }
+
+  /**
+   * Update domain for a site
+   *
+   * PUT /api/v1/sites/:id/domain
+   */
+  static async updateDomain(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { id } = req.params;
+    const { domain } = req.body as { domain?: string };
+
+    if (!domain || typeof domain !== 'string') {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Domain is required' },
+      };
+      res.status(400).json(response);
+      return;
+    }
+
+    const normalizedDomain = domain.toLowerCase().trim();
+
+    if (!DOMAIN_REGEX.test(normalizedDomain)) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Invalid domain format. Use a valid domain like example.com' },
+      };
+      res.status(400).json(response);
+      return;
+    }
+
+    // Check site exists and belongs to tenant
+    const [existing] = await db
+      .select()
+      .from(sites)
+      .where(and(eq(sites.id, id), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!existing) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Site with ID ${id} not found` },
+      };
+      res.status(404).json(response);
+      return;
+    }
+
+    // Check uniqueness — no other site should use this domain
+    const [conflict] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.domain, normalizedDomain), ne(sites.id, id)))
+      .limit(1);
+
+    if (conflict) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'DOMAIN_TAKEN', message: `Domain "${normalizedDomain}" is already in use by another site` },
+      };
+      res.status(409).json(response);
+      return;
+    }
+
+    const [site] = await db
+      .update(sites)
+      .set({ domain: normalizedDomain, updatedAt: new Date() })
+      .where(eq(sites.id, id))
+      .returning();
+
+    const response: ApiResponse<Site> = {
+      success: true,
+      data: site,
+    };
+
+    res.json(response);
+  }
+
+  /**
+   * Remove domain from a site
+   *
+   * DELETE /api/v1/sites/:id/domain
+   */
+  static async removeDomain(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { id } = req.params;
+
+    // Check site exists and belongs to tenant
+    const [existing] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.id, id), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!existing) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Site with ID ${id} not found` },
+      };
+      res.status(404).json(response);
+      return;
+    }
+
+    const [site] = await db
+      .update(sites)
+      .set({ domain: null, updatedAt: new Date() })
+      .where(eq(sites.id, id))
+      .returning();
+
+    const response: ApiResponse<Site> = {
+      success: true,
+      data: site,
+    };
+
+    res.json(response);
+  }
+
+  /**
+   * Verify domain DNS configuration
+   *
+   * GET /api/v1/sites/:id/domain/verify
+   */
+  static async verifyDomain(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { id } = req.params;
+
+    // Check site exists and belongs to tenant
+    const [existing] = await db
+      .select({ id: sites.id, domain: sites.domain })
+      .from(sites)
+      .where(and(eq(sites.id, id), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!existing) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Site with ID ${id} not found` },
+      };
+      res.status(404).json(response);
+      return;
+    }
+
+    if (!existing.domain) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { code: 'NO_DOMAIN', message: 'No domain configured for this site' },
+      };
+      res.status(400).json(response);
+      return;
+    }
+
+    const records: string[] = [];
+    let verified = false;
+
+    // Resolve expected target IP for comparison
+    let expectedIps: string[] = [];
+    try {
+      expectedIps = await dns.promises.resolve4(EXPECTED_DOMAIN_TARGET);
+    } catch {
+      // Target may not have A records if it's behind a load balancer
+    }
+
+    // Check CNAME records
+    try {
+      const cnames = await dns.promises.resolveCname(existing.domain);
+      for (const cname of cnames) {
+        records.push(`CNAME ${cname}`);
+        if (cname.replace(/\.$/, '') === EXPECTED_DOMAIN_TARGET) {
+          verified = true;
+        }
+      }
+    } catch {
+      // No CNAME records — that's fine, check A records
+    }
+
+    // Check A records
+    try {
+      const aRecords = await dns.promises.resolve4(existing.domain);
+      for (const ip of aRecords) {
+        records.push(`A ${ip}`);
+        if (expectedIps.includes(ip)) {
+          verified = true;
+        }
+      }
+    } catch {
+      // No A records found
+    }
+
+    res.json({
+      success: true,
+      data: {
+        domain: existing.domain,
+        verified,
+        records,
+        expected: EXPECTED_DOMAIN_TARGET,
+      },
+    });
   }
 }
