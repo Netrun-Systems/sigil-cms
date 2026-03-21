@@ -11,6 +11,7 @@ import blocksRouter from './blocks.js';
 import blockTypesRouter from './block-types.js';
 import mediaRouter from './media.js';
 import themesRouter from './themes.js';
+import designAiRouter from './design-ai.js';
 import publicRouter from './public.js';
 import seedRouter from './seed.js';
 import { validateUuidParam } from '../middleware/index.js';
@@ -47,6 +48,9 @@ router.use('/sites/:siteId/media', validateUuidParam('siteId'), mediaRouter);
 
 // Themes: /api/v1/sites/:siteId/themes
 router.use('/sites/:siteId/themes', validateUuidParam('siteId'), themesRouter);
+
+// Design AI: /api/v1/sites/:siteId/design (Stitch generation + Charlotte advisor)
+router.use('/sites/:siteId/design', validateUuidParam('siteId'), designAiRouter);
 
 // NOTE: The following routes have been moved to plugins:
 // - releases, events, artist-profiles → @netrun-cms/plugin-artist

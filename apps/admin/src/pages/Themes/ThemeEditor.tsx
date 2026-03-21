@@ -46,6 +46,8 @@ import type { ThemeTokens, ColorTokens, TypographyTokens, EffectTokens, SpacingT
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/api';
 import { FontBrowser, type CustomFont, generateFontFaceCss } from '../../components/FontBrowser';
+import { AIDesignPanel } from '../../components/AIDesignPanel';
+import { DesignAdvisor } from '../../components/DesignAdvisor';
 import { usePermissions } from '../../hooks/usePermissions';
 
 // ============================================================================
@@ -691,6 +693,18 @@ export function ThemeEditor() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Design Tools — collapsible panels above the editor */}
+      {siteId && canEdit && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AIDesignPanel siteId={siteId} />
+          <DesignAdvisor
+            siteId={siteId}
+            themeTokens={customTokens}
+            siteName={siteId}
+          />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Editor Panel */}
