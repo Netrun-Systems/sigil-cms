@@ -44,6 +44,7 @@ import {
   Bot,
   Megaphone,
   HelpCircle,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -86,6 +87,7 @@ const icons: Record<string, LucideIcon> = {
   Bot,
   Megaphone,
   HelpCircle,
+  Users,
 };
 
 /**
