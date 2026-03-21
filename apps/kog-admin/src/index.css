@@ -1,0 +1,50 @@
+/**
+ * KOG Admin — Global styles and CSS variables.
+ * Matches the Netrun Systems dark theme from KOG frontend.
+ */
+
+:root {
+  /* Netrun dark palette */
+  --netrun-black: #0a0a0a;
+  --netrun-green: #90b9ab;
+  --bg-base: #0a0a0a;
+  --bg-panel: #111111;
+  --bg-input: #1a1a1a;
+  --bg-hover: #222222;
+  --border-primary: #222222;
+  --border-subtle: #1a1a1a;
+  --text-primary: #f0f0f0;
+  --text-secondary: #aaaaaa;
+  --text-muted: #666666;
+  --success: #22c55e;
+  --warning: #fbbf24;
+  --error: #ef4444;
+  --info: #3b82f6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Tailwind utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

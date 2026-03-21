@@ -3,6 +3,10 @@
  *
  * Multi-tenant CMS with PostgreSQL Row-Level Security (RLS)
  * Using Drizzle ORM for type-safe database operations
+ *
+ * Platform tables (tenants, users, subscriptions) are imported from
+ * @netrun/platform-db. CMS-specific tables (sites, pages, blocks, etc.)
+ * are defined here.
  */
 
 import { sql } from 'drizzle-orm';
@@ -26,24 +30,80 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
 // ============================================================================
-// TENANTS TABLE - Multi-tenant support
+// RE-EXPORT PLATFORM TABLES from @netrun/platform-db
 // ============================================================================
-export const tenants = pgTable('cms_tenants', {
-  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar('name', { length: 100 }).notNull(),
-  slug: varchar('slug', { length: 50 }).notNull().unique(),
-  plan: varchar('plan', { length: 20 }).notNull().default('free'),
-  settings: jsonb('settings').$type<Record<string, unknown>>().default({}),
-  isActive: boolean('is_active').notNull().default(true),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
-  slugIdx: index('idx_cms_tenants_slug').on(table.slug),
-  planIdx: index('idx_cms_tenants_plan').on(table.plan),
-  planCheck: check('cms_tenants_plan_check',
-    sql`${table.plan} IN ('free', 'starter', 'pro', 'business', 'enterprise')`
-  ),
-}));
+// These were previously defined in this file. They now live in
+// @netrun/platform-db but are re-exported here so all existing imports
+// from '@netrun-cms/db' continue to work.
+export {
+  // Tables
+  platformTenants,
+  platformUsers,
+  platformSubscriptions,
+  tenants,
+  users,
+  subscriptions,
+  // Relations
+  platformTenantsRelations,
+  platformUsersRelations,
+  platformSubscriptionsRelations,
+  // Zod schemas
+  insertPlatformTenantSchema,
+  selectPlatformTenantSchema,
+  insertPlatformUserSchema,
+  selectPlatformUserSchema,
+  insertPlatformSubscriptionSchema,
+  selectPlatformSubscriptionSchema,
+  insertTenantSchema,
+  selectTenantSchema,
+  insertUserSchema,
+  selectUserSchema,
+  insertSubscriptionSchema,
+  selectSubscriptionSchema,
+  // CRM tables (new)
+  crmContacts,
+  crmOrganizations,
+  crmOpportunities,
+  crmActivities,
+  crmContactsRelations,
+  crmOrganizationsRelations,
+  crmOpportunitiesRelations,
+  crmActivitiesRelations,
+  insertCrmContactSchema,
+  selectCrmContactSchema,
+  insertCrmOrganizationSchema,
+  selectCrmOrganizationSchema,
+  insertCrmOpportunitySchema,
+  selectCrmOpportunitySchema,
+  insertCrmActivitySchema,
+  selectCrmActivitySchema,
+} from '@netrun/platform-db';
+
+export type {
+  PlatformTenant,
+  InsertPlatformTenant,
+  PlatformUser,
+  InsertPlatformUser,
+  PlatformSubscription,
+  InsertPlatformSubscription,
+  Tenant,
+  InsertTenant,
+  User,
+  InsertUser,
+  Subscription,
+  InsertSubscription,
+  CrmContact,
+  InsertCrmContact,
+  CrmOrganization,
+  InsertCrmOrganization,
+  CrmOpportunity,
+  InsertCrmOpportunity,
+  CrmActivity,
+  InsertCrmActivity,
+} from '@netrun/platform-db';
+
+// Import the table references we need for FK constraints in CMS tables
+import { platformTenants as tenants } from '@netrun/platform-db';
 
 // ============================================================================
 // SITES TABLE - Individual websites/projects
@@ -75,7 +135,6 @@ export const sites = pgTable('cms_sites', {
   statusCheck: check('cms_sites_status_check',
     sql`${table.status} IN ('draft', 'published', 'archived')`
   ),
-  // templateCheck removed — templates are now plugin-defined
 }));
 
 // ============================================================================
@@ -199,7 +258,6 @@ export const contentBlocks = pgTable('cms_content_blocks', {
   pageIdIdx: index('idx_cms_content_blocks_page_id').on(table.pageId),
   blockTypeIdx: index('idx_cms_content_blocks_type').on(table.blockType),
   sortOrderIdx: index('idx_cms_content_blocks_sort').on(table.pageId, table.sortOrder),
-  // blockTypeCheck removed — validation moved to plugin registry
 }));
 
 // ============================================================================
@@ -251,34 +309,6 @@ export const media = pgTable('cms_media', {
   createdAtIdx: index('idx_cms_media_created_at').on(table.createdAt),
   fileSizeCheck: check('cms_media_file_size_check',
     sql`${table.fileSize} > 0`
-  ),
-}));
-
-// ============================================================================
-// USERS TABLE - CMS users (extends base user concept)
-// ============================================================================
-export const users = pgTable('cms_users', {
-  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
-  email: varchar('email', { length: 255 }).notNull(),
-  username: varchar('username', { length: 50 }).notNull(),
-  passwordHash: text('password_hash').notNull(),
-  role: varchar('role', { length: 20 }).notNull().default('editor'),
-  isActive: boolean('is_active').notNull().default(true),
-  sitePermissions: jsonb('site_permissions').$type<Record<string, string[]>>().default({}),
-  lastLogin: timestamp('last_login'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
-  tenantEmailUnique: unique('cms_users_tenant_email_unique').on(table.tenantId, table.email),
-  tenantIdIdx: index('idx_cms_users_tenant_id').on(table.tenantId),
-  emailIdx: index('idx_cms_users_email').on(table.email),
-  roleIdx: index('idx_cms_users_role').on(table.role),
-  roleCheck: check('cms_users_role_check',
-    sql`${table.role} IN ('admin', 'editor', 'author', 'viewer')`
-  ),
-  emailFormatCheck: check('cms_users_email_format_check',
-    sql`${table.email} ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'`
   ),
 }));
 
@@ -356,14 +386,62 @@ export const artistProfiles = pgTable('cms_artist_profiles', {
 }));
 
 // ============================================================================
+// SUBSCRIBERS TABLE - Per-site mailing list
+// ============================================================================
+export const subscribers = pgTable('cms_subscribers', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+  email: varchar('email', { length: 320 }).notNull(),
+  name: varchar('name', { length: 200 }),
+  unsubscribeToken: uuid('unsubscribe_token').notNull().default(sql`gen_random_uuid()`),
+  status: varchar('status', { length: 20 }).notNull().default('active'),
+  subscribedAt: timestamp('subscribed_at').notNull().defaultNow(),
+  unsubscribedAt: timestamp('unsubscribed_at'),
+}, (table) => ({
+  siteEmailUnique: unique('cms_subscribers_site_email_unique').on(table.siteId, table.email),
+  siteIdIdx: index('idx_cms_subscribers_site_id').on(table.siteId),
+  statusIdx: index('idx_cms_subscribers_status').on(table.siteId, table.status),
+  tokenIdx: index('idx_cms_subscribers_token').on(table.unsubscribeToken),
+  statusCheck: check('cms_subscribers_status_check',
+    sql`${table.status} IN ('active', 'unsubscribed')`
+  ),
+}));
+
+// ============================================================================
+// CONTACT SUBMISSIONS TABLE - Per-site contact form entries
+// ============================================================================
+export const contactSubmissions = pgTable('cms_contact_submissions', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 200 }).notNull(),
+  email: varchar('email', { length: 320 }).notNull(),
+  subject: varchar('subject', { length: 500 }),
+  message: text('message').notNull(),
+  type: varchar('type', { length: 20 }).notNull().default('general'),
+  status: varchar('status', { length: 20 }).notNull().default('new'),
+  notes: text('notes'),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  siteIdIdx: index('idx_cms_contact_submissions_site_id').on(table.siteId),
+  statusIdx: index('idx_cms_contact_submissions_status').on(table.siteId, table.status),
+  typeIdx: index('idx_cms_contact_submissions_type').on(table.siteId, table.type),
+  createdAtIdx: index('idx_cms_contact_submissions_created_at').on(table.createdAt),
+  statusCheck: check('cms_contact_submissions_status_check',
+    sql`${table.status} IN ('new', 'responded', 'booked', 'declined', 'archived')`
+  ),
+  typeCheck: check('cms_contact_submissions_type_check',
+    sql`${table.type} IN ('general', 'booking', 'press', 'collaboration')`
+  ),
+}));
+
+// ============================================================================
 // RELATIONS
 // ============================================================================
 
-export const tenantsRelations = relations(tenants, ({ one, many }) => ({
-  sites: many(sites),
-  users: many(users),
-  subscription: one(subscriptions),
-}));
+// NOTE: tenantsRelations, usersRelations, subscriptionsRelations are
+// re-exported from @netrun/platform-db above.
 
 export const sitesRelations = relations(sites, ({ one, many }) => ({
   tenant: one(tenants, {
@@ -374,8 +452,6 @@ export const sitesRelations = relations(sites, ({ one, many }) => ({
   pages: many(pages),
   media: many(media),
   blockTemplates: many(blockTemplates),
-  // Plugin table relations (releases, events, artistProfiles, subscribers,
-  // contactSubmissions) are defined in their respective plugin schemas.
 }));
 
 export const themesRelations = relations(themes, ({ one }) => ({
@@ -427,13 +503,6 @@ export const mediaRelations = relations(media, ({ one }) => ({
   }),
 }));
 
-export const usersRelations = relations(users, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [users.tenantId],
-    references: [tenants.id],
-  }),
-}));
-
 export const releasesRelations = relations(releases, ({ one }) => ({
   site: one(sites, {
     fields: [releases.siteId],
@@ -455,17 +524,23 @@ export const artistProfilesRelations = relations(artistProfiles, ({ one }) => ({
   }),
 }));
 
+export const subscribersRelations = relations(subscribers, ({ one }) => ({
+  site: one(sites, {
+    fields: [subscribers.siteId],
+    references: [sites.id],
+  }),
+}));
+
+export const contactSubmissionsRelations = relations(contactSubmissions, ({ one }) => ({
+  site: one(sites, {
+    fields: [contactSubmissions.siteId],
+    references: [sites.id],
+  }),
+}));
+
 // ============================================================================
 // ZOD SCHEMAS
 // ============================================================================
-
-// Tenant schemas
-export const insertTenantSchema = createInsertSchema(tenants).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-export const selectTenantSchema = createSelectSchema(tenants);
 
 // Site schemas
 export const insertSiteSchema = createInsertSchema(sites).omit({
@@ -522,45 +597,6 @@ export const insertMediaSchema = createInsertSchema(media).omit({
 });
 export const selectMediaSchema = createSelectSchema(media);
 
-// User schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  lastLogin: true,
-});
-export const selectUserSchema = createSelectSchema(users);
-
-// ============================================================================
-// TYPESCRIPT TYPES
-// ============================================================================
-
-export type Tenant = typeof tenants.$inferSelect;
-export type InsertTenant = z.infer<typeof insertTenantSchema>;
-
-export type Site = typeof sites.$inferSelect;
-export type InsertSite = z.infer<typeof insertSiteSchema>;
-
-export type Theme = typeof themes.$inferSelect;
-export type InsertTheme = z.infer<typeof insertThemeSchema>;
-
-export type Page = typeof pages.$inferSelect;
-export type InsertPage = z.infer<typeof insertPageSchema>;
-
-export type PageRevision = typeof pageRevisions.$inferSelect;
-export type InsertPageRevision = z.infer<typeof insertPageRevisionSchema>;
-
-export type ContentBlock = typeof contentBlocks.$inferSelect;
-export type InsertContentBlock = z.infer<typeof insertContentBlockSchema>;
-
-export type BlockTemplate = typeof blockTemplates.$inferSelect;
-
-export type Media = typeof media.$inferSelect;
-export type InsertMedia = z.infer<typeof insertMediaSchema>;
-
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-
 // Release schemas
 export const insertReleaseSchema = createInsertSchema(releases).omit({
   id: true,
@@ -595,88 +631,7 @@ export const insertArtistProfileSchema = createInsertSchema(artistProfiles).omit
 });
 export const selectArtistProfileSchema = createSelectSchema(artistProfiles);
 
-export type Release = typeof releases.$inferSelect;
-export type InsertRelease = z.infer<typeof insertReleaseSchema>;
-
-export type Event = typeof events.$inferSelect;
-export type InsertEvent = z.infer<typeof insertEventSchema>;
-
-export type ArtistProfile = typeof artistProfiles.$inferSelect;
-export type InsertArtistProfile = z.infer<typeof insertArtistProfileSchema>;
-
-// ============================================================================
-// SUBSCRIBERS TABLE - Per-site mailing list
-// ============================================================================
-export const subscribers = pgTable('cms_subscribers', {
-  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
-  email: varchar('email', { length: 320 }).notNull(),
-  name: varchar('name', { length: 200 }),
-  unsubscribeToken: uuid('unsubscribe_token').notNull().default(sql`gen_random_uuid()`),
-  status: varchar('status', { length: 20 }).notNull().default('active'),
-  subscribedAt: timestamp('subscribed_at').notNull().defaultNow(),
-  unsubscribedAt: timestamp('unsubscribed_at'),
-}, (table) => ({
-  siteEmailUnique: unique('cms_subscribers_site_email_unique').on(table.siteId, table.email),
-  siteIdIdx: index('idx_cms_subscribers_site_id').on(table.siteId),
-  statusIdx: index('idx_cms_subscribers_status').on(table.siteId, table.status),
-  tokenIdx: index('idx_cms_subscribers_token').on(table.unsubscribeToken),
-  statusCheck: check('cms_subscribers_status_check',
-    sql`${table.status} IN ('active', 'unsubscribed')`
-  ),
-}));
-
-// ============================================================================
-// CONTACT SUBMISSIONS TABLE - Per-site contact form entries
-// ============================================================================
-export const contactSubmissions = pgTable('cms_contact_submissions', {
-  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
-  name: varchar('name', { length: 200 }).notNull(),
-  email: varchar('email', { length: 320 }).notNull(),
-  subject: varchar('subject', { length: 500 }),
-  message: text('message').notNull(),
-  type: varchar('type', { length: 20 }).notNull().default('general'),
-  status: varchar('status', { length: 20 }).notNull().default('new'),
-  notes: text('notes'),
-  metadata: jsonb('metadata').$type<Record<string, unknown>>().default({}),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
-  siteIdIdx: index('idx_cms_contact_submissions_site_id').on(table.siteId),
-  statusIdx: index('idx_cms_contact_submissions_status').on(table.siteId, table.status),
-  typeIdx: index('idx_cms_contact_submissions_type').on(table.siteId, table.type),
-  createdAtIdx: index('idx_cms_contact_submissions_created_at').on(table.createdAt),
-  statusCheck: check('cms_contact_submissions_status_check',
-    sql`${table.status} IN ('new', 'responded', 'booked', 'declined', 'archived')`
-  ),
-  typeCheck: check('cms_contact_submissions_type_check',
-    sql`${table.type} IN ('general', 'booking', 'press', 'collaboration')`
-  ),
-}));
-
-// ============================================================================
-// RELATIONS (Subscribers + Contact)
-// ============================================================================
-
-export const subscribersRelations = relations(subscribers, ({ one }) => ({
-  site: one(sites, {
-    fields: [subscribers.siteId],
-    references: [sites.id],
-  }),
-}));
-
-export const contactSubmissionsRelations = relations(contactSubmissions, ({ one }) => ({
-  site: one(sites, {
-    fields: [contactSubmissions.siteId],
-    references: [sites.id],
-  }),
-}));
-
-// ============================================================================
-// ZOD SCHEMAS (Subscribers + Contact)
-// ============================================================================
-
+// Subscriber schemas
 export const insertSubscriberSchema = createInsertSchema(subscribers).omit({
   id: true,
   unsubscribeToken: true,
@@ -688,6 +643,7 @@ export const insertSubscriberSchema = createInsertSchema(subscribers).omit({
 });
 export const selectSubscriberSchema = createSelectSchema(subscribers);
 
+// Contact submission schemas
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
   id: true,
   createdAt: true,
@@ -699,63 +655,44 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
 });
 export const selectContactSubmissionSchema = createSelectSchema(contactSubmissions);
 
+// ============================================================================
+// TYPESCRIPT TYPES
+// ============================================================================
+
+export type Site = typeof sites.$inferSelect;
+export type InsertSite = z.infer<typeof insertSiteSchema>;
+
+export type Theme = typeof themes.$inferSelect;
+export type InsertTheme = z.infer<typeof insertThemeSchema>;
+
+export type Page = typeof pages.$inferSelect;
+export type InsertPage = z.infer<typeof insertPageSchema>;
+
+export type PageRevision = typeof pageRevisions.$inferSelect;
+export type InsertPageRevision = z.infer<typeof insertPageRevisionSchema>;
+
+export type ContentBlock = typeof contentBlocks.$inferSelect;
+export type InsertContentBlock = z.infer<typeof insertContentBlockSchema>;
+
+export type BlockTemplate = typeof blockTemplates.$inferSelect;
+
+export type Media = typeof media.$inferSelect;
+export type InsertMedia = z.infer<typeof insertMediaSchema>;
+
+export type Release = typeof releases.$inferSelect;
+export type InsertRelease = z.infer<typeof insertReleaseSchema>;
+
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+export type ArtistProfile = typeof artistProfiles.$inferSelect;
+export type InsertArtistProfile = z.infer<typeof insertArtistProfileSchema>;
+
 export type Subscriber = typeof subscribers.$inferSelect;
 export type InsertSubscriber = z.infer<typeof insertSubscriberSchema>;
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
-
-// ============================================================================
-// SUBSCRIPTIONS TABLE - Stripe billing integration
-// ============================================================================
-export const subscriptions = pgTable('cms_subscriptions', {
-  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }).unique(),
-  stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
-  stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }),
-  plan: varchar('plan', { length: 20 }).notNull().default('free'),
-  billingInterval: varchar('billing_interval', { length: 10 }).default('monthly'),
-  status: varchar('status', { length: 20 }).notNull().default('active'),
-  currentPeriodStart: timestamp('current_period_start'),
-  currentPeriodEnd: timestamp('current_period_end'),
-  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
-  trialEnd: timestamp('trial_end'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
-  tenantIdIdx: index('idx_cms_subscriptions_tenant_id').on(table.tenantId),
-  stripeCustomerIdx: index('idx_cms_subscriptions_stripe_customer').on(table.stripeCustomerId),
-  stripeSubIdx: index('idx_cms_subscriptions_stripe_sub').on(table.stripeSubscriptionId),
-  statusIdx: index('idx_cms_subscriptions_status').on(table.status),
-  planCheck: check('cms_subscriptions_plan_check',
-    sql`${table.plan} IN ('free', 'starter', 'pro', 'business', 'enterprise')`
-  ),
-  statusCheck: check('cms_subscriptions_status_check',
-    sql`${table.status} IN ('active', 'past_due', 'canceled', 'trialing', 'incomplete')`
-  ),
-  intervalCheck: check('cms_subscriptions_interval_check',
-    sql`${table.billingInterval} IN ('monthly', 'yearly')`
-  ),
-}));
-
-// Subscription relations
-export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [subscriptions.tenantId],
-    references: [tenants.id],
-  }),
-}));
-
-// Subscription Zod schemas
-export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-export const selectSubscriptionSchema = createSelectSchema(subscriptions);
-
-export type Subscription = typeof subscriptions.$inferSelect;
-export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 // Extended types
 export type PageWithBlocks = Page & {
