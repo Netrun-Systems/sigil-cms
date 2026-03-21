@@ -38,6 +38,12 @@ import {
   Webhook,
   Languages,
   History,
+  ScanLine,
+  UserPlus,
+  Radio,
+  Bot,
+  Megaphone,
+  HelpCircle,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -74,6 +80,12 @@ const icons: Record<string, LucideIcon> = {
   Webhook,
   Languages,
   History,
+  ScanLine,
+  UserPlus,
+  Radio,
+  Bot,
+  Megaphone,
+  HelpCircle,
 };
 
 /**

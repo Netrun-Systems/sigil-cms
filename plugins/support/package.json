@@ -1,0 +1,34 @@
+{
+  "name": "@netrun-cms/plugin-support",
+  "version": "1.0.0",
+  "description": "Support Panel plugin for NetrunCMS — unified help widget with docs search, contact form, AI chat, and status announcements",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@netrun-cms/plugin-runtime": "workspace:*",
+    "@netrun-cms/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "peerDependencies": {
+    "express": "^4.21.0",
+    "drizzle-orm": "^0.39.0"
+  }
+}

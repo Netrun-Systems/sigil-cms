@@ -3,19 +3,14 @@ import {
   Globe,
   Plus,
   Search,
-  MoreHorizontal,
   ExternalLink,
   FileText,
   Settings,
   Trash2,
-  Filter,
 } from 'lucide-react';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Button,
   Input,
   Table,
@@ -27,7 +22,9 @@ import {
   Badge,
   cn,
 } from '@netrun-cms/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface Site {
   id: string;
@@ -35,53 +32,10 @@ interface Site {
   slug: string;
   domain: string | null;
   status: 'draft' | 'published' | 'archived';
-  pageCount: number;
-  lastUpdated: string;
+  pageCount?: number;
+  updatedAt: string;
   createdAt: string;
 }
-
-const mockSites: Site[] = [
-  {
-    id: '1',
-    name: 'Netrun Systems',
-    slug: 'netrun-systems',
-    domain: 'netrunsystems.com',
-    status: 'published',
-    pageCount: 12,
-    lastUpdated: '2 hours ago',
-    createdAt: 'Jan 15, 2026',
-  },
-  {
-    id: '2',
-    name: 'Client Portal',
-    slug: 'client-portal',
-    domain: 'portal.netrunsystems.com',
-    status: 'draft',
-    pageCount: 8,
-    lastUpdated: 'Yesterday',
-    createdAt: 'Jan 10, 2026',
-  },
-  {
-    id: '3',
-    name: 'Documentation',
-    slug: 'documentation',
-    domain: 'docs.netrunsystems.com',
-    status: 'published',
-    pageCount: 24,
-    lastUpdated: '3 days ago',
-    createdAt: 'Dec 20, 2025',
-  },
-  {
-    id: '4',
-    name: 'Blog',
-    slug: 'blog',
-    domain: null,
-    status: 'archived',
-    pageCount: 45,
-    lastUpdated: '1 week ago',
-    createdAt: 'Nov 1, 2025',
-  },
-];
 
 function StatusBadge({ status }: { status: Site['status'] }) {
   return (
@@ -99,20 +53,63 @@ function StatusBadge({ status }: { status: Site['status'] }) {
   );
 }
 
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+
 export function SitesList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [sites, setSites] = useState<Site[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { canDelete } = usePermissions();
 
-  const filteredSites = mockSites.filter((site) => {
-    const matchesSearch =
-      site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      site.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      site.domain?.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    const params = new URLSearchParams({ limit: '100' });
+    if (selectedStatus) params.set('status', selectedStatus);
+    api
+      .get<{ data: Site[] }>('/sites?' + params.toString())
+      .then((res) => {
+        setSites(res.data || []);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to load sites');
+      })
+      .finally(() => setIsLoading(false));
+  }, [selectedStatus]);
 
-    const matchesStatus = !selectedStatus || site.status === selectedStatus;
-
-    return matchesSearch && matchesStatus;
+  const filteredSites = sites.filter((site) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      site.name.toLowerCase().includes(q) ||
+      site.slug.toLowerCase().includes(q) ||
+      site.domain?.toLowerCase().includes(q)
+    );
   });
+
+  const handleDelete = async (siteId: string, siteName: string) => {
+    if (!confirm(`Are you sure you want to delete "${siteName}"? This cannot be undone.`)) return;
+    try {
+      await api.delete('/sites/' + siteId);
+      setSites((prev) => prev.filter((s) => s.id !== siteId));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Delete failed');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -131,6 +128,12 @@ export function SitesList() {
           </Link>
         </Button>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* Filters */}
       <Card>
@@ -179,94 +182,108 @@ export function SitesList() {
         </CardContent>
       </Card>
 
+      {/* Loading State */}
+      {isLoading && (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Sites Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Site</TableHead>
-                <TableHead>Domain</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Pages</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead className="w-[70px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSites.map((site) => (
-                <TableRow key={site.id} className="group">
-                  <TableCell>
-                    <Link
-                      to={`/sites/${site.id}`}
-                      className="flex items-center gap-3"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Globe className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium group-hover:text-primary">
-                          {site.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">/{site.slug}</p>
-                      </div>
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {site.domain ? (
-                      <a
-                        href={`https://${site.domain}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-                      >
-                        {site.domain}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Not set</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={site.status} />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Link
-                      to={`/sites/${site.id}/pages`}
-                      className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-                    >
-                      <FileText className="h-4 w-4" />
-                      {site.pageCount}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {site.lastUpdated}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/sites/${site.id}`}>
-                          <Settings className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+      {!isLoading && filteredSites.length > 0 && (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[300px]">Site</TableHead>
+                  <TableHead>Domain</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Pages</TableHead>
+                  <TableHead>Last Updated</TableHead>
+                  <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filteredSites.map((site) => (
+                  <TableRow key={site.id} className="group">
+                    <TableCell>
+                      <Link
+                        to={`/sites/${site.id}`}
+                        className="flex items-center gap-3"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Globe className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium group-hover:text-primary">
+                            {site.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">/{site.slug}</p>
+                        </div>
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      {site.domain ? (
+                        <a
+                          href={`https://${site.domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+                        >
+                          {site.domain}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not set</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={site.status} />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Link
+                        to={`/sites/${site.id}/pages`}
+                        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+                      >
+                        <FileText className="h-4 w-4" />
+                        {site.pageCount ?? '-'}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {timeAgo(site.updatedAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                          <Link to={`/sites/${site.id}`}>
+                            <Settings className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        {canDelete && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(site.id, site.name)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Empty State */}
-      {filteredSites.length === 0 && (
+      {!isLoading && filteredSites.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">

@@ -6,7 +6,7 @@
 
 import type { Response } from 'express';
 import { eq, and, desc, asc, count, isNull, ne, max } from 'drizzle-orm';
-import { pages, sites, contentBlocks, pageRevisions, insertPageSchema, type Page, type PageWithBlocks } from '@netrun-cms/db';
+import { pages, sites, contentBlocks, pageRevisions, insertPageSchema, type Page, type PageWithBlocks, type ContentBlock } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 import { parsePagination } from '../middleware/validation.js';
 import type { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types/index.js';
@@ -646,7 +646,7 @@ export class PagesController {
       .where(eq(contentBlocks.pageId, id))
       .orderBy(asc(contentBlocks.sortOrder));
 
-    const clonedBlocks = [];
+    const clonedBlocks: ContentBlock[] = [];
     for (const block of sourceBlocks) {
       const [cloned] = await db
         .insert(contentBlocks)
@@ -854,7 +854,7 @@ export class PagesController {
     await db.delete(contentBlocks).where(eq(contentBlocks.pageId, pageId));
 
     const snapshot = (revision.contentSnapshot ?? []) as Array<Record<string, unknown>>;
-    const restoredBlocks = [];
+    const restoredBlocks: ContentBlock[] = [];
     for (const block of snapshot) {
       const [created] = await db
         .insert(contentBlocks)

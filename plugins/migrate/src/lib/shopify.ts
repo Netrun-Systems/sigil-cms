@@ -185,7 +185,7 @@ async function shopifyPaginateAll<T>(
   let url: string | null = `https://${domain}/admin/api/${API_VERSION}/${path}?limit=${limit}`;
 
   while (url) {
-    const response = await fetch(url, {
+    const response: Response = await fetch(url, {
       headers: {
         'X-Shopify-Access-Token': token,
         'Content-Type': 'application/json',
@@ -203,9 +203,9 @@ async function shopifyPaginateAll<T>(
 
     // Parse Link header for next page
     url = null;
-    const linkHeader = response.headers.get('link');
+    const linkHeader: string | null = response.headers.get('link');
     if (linkHeader) {
-      const nextMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+      const nextMatch: RegExpMatchArray | null = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
       if (nextMatch) {
         url = nextMatch[1];
       }

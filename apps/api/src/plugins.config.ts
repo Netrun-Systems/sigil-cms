@@ -29,6 +29,11 @@ export async function loadEnabledPlugins(): Promise<CmsPlugin[]> {
     () => import('@netrun-cms/plugin-resonance'),
     () => import('@netrun-cms/plugin-migrate'),
     () => import('@netrun-cms/plugin-webhooks'),
+    () => import('@netrun-cms/plugin-kamera'),
+    () => import('@netrun-cms/plugin-kog'),
+    () => import('@netrun-cms/plugin-intirkast'),
+    () => import('@netrun-cms/plugin-charlotte'),
+    () => import('@netrun-cms/plugin-support'),
   ];
 
   for (const loader of loaders) {
