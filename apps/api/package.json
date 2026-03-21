@@ -40,6 +40,7 @@
     "@netrun-cms/plugin-store": "workspace:*",
     "@netrun-cms/plugin-support": "workspace:*",
     "@netrun-cms/plugin-community": "workspace:*",
+    "@netrun-cms/plugin-marketplace": "workspace:*",
     "@netrun-cms/plugin-webhooks": "workspace:*",
     "@netrun-cms/theme": "workspace:*",
     "@netrun/error-handling": "file:../../../netrun-shared-ts/packages/error-handling",

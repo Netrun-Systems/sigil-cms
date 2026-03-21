@@ -35,6 +35,7 @@ export async function loadEnabledPlugins(): Promise<CmsPlugin[]> {
     () => import('@netrun-cms/plugin-charlotte'),
     () => import('@netrun-cms/plugin-support'),
     () => import('@netrun-cms/plugin-community'),
+    () => import('@netrun-cms/plugin-marketplace'),
   ];
 
   for (const loader of loaders) {

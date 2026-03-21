@@ -59,6 +59,9 @@ const knownPluginPages: Record<string, () => Promise<{ default: React.ComponentT
   // Resonance plugin
   'sites/:siteId/resonance': () => import('../pages/Resonance/ResonanceDashboard').then(m => ({ default: m.ResonanceDashboard as React.ComponentType })),
   'sites/:siteId/resonance/experiments': () => import('../pages/Resonance/ExperimentsList').then(m => ({ default: m.ExperimentsList as React.ComponentType })),
+  // Marketplace plugin
+  'marketplace': () => import('../pages/Marketplace/MarketplacePage').then(m => ({ default: m.MarketplacePage as React.ComponentType })),
+  'marketplace/installed': () => import('../pages/Marketplace/MarketplacePage').then(m => ({ default: m.MarketplacePage as React.ComponentType })),
 };
 
 // Create lazy components for known pages

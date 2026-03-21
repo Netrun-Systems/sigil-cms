@@ -52,6 +52,9 @@ const knownPluginPages = {
     // Resonance plugin
     'sites/:siteId/resonance': () => import('../pages/Resonance/ResonanceDashboard').then(m => ({ default: m.ResonanceDashboard })),
     'sites/:siteId/resonance/experiments': () => import('../pages/Resonance/ExperimentsList').then(m => ({ default: m.ExperimentsList })),
+    // Marketplace plugin
+    'marketplace': () => import('../pages/Marketplace/MarketplacePage').then(m => ({ default: m.MarketplacePage })),
+    'marketplace/installed': () => import('../pages/Marketplace/MarketplacePage').then(m => ({ default: m.MarketplacePage })),
 };
 // Create lazy components for known pages
 const lazyComponents = new Map();

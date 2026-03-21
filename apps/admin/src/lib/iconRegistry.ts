@@ -45,6 +45,7 @@ import {
   Megaphone,
   HelpCircle,
   Users,
+  Package,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -88,6 +89,7 @@ const icons: Record<string, LucideIcon> = {
   Megaphone,
   HelpCircle,
   Users,
+  Package,
 };
 
 /**
