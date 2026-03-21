@@ -20,6 +20,12 @@ export type { HeroBlockProps } from './blocks/HeroBlock';
 export { TextBlock } from './blocks/TextBlock';
 export type { TextBlockProps } from './blocks/TextBlock';
 
+export { ImageBlock } from './blocks/ImageBlock';
+export type { ImageBlockProps } from './blocks/ImageBlock';
+
+export { VideoBlock } from './blocks/VideoBlock';
+export type { VideoBlockProps, VideoBlockContent } from './blocks/VideoBlock';
+
 export { FeatureGridBlock } from './blocks/FeatureGridBlock';
 export type { FeatureGridBlockProps } from './blocks/FeatureGridBlock';
 

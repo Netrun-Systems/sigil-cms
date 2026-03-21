@@ -8,6 +8,7 @@ import { Router } from 'express';
 import sitesRouter from './sites.js';
 import pagesRouter from './pages.js';
 import blocksRouter from './blocks.js';
+import blockTypesRouter from './block-types.js';
 import mediaRouter from './media.js';
 import themesRouter from './themes.js';
 import publicRouter from './public.js';
@@ -37,6 +38,9 @@ router.use(
   validateUuidParam('pageId'),
   blocksRouter
 );
+
+// Block types catalog: /api/v1/blocks/types
+router.use('/blocks/types', blockTypesRouter);
 
 // Media: /api/v1/sites/:siteId/media
 router.use('/sites/:siteId/media', validateUuidParam('siteId'), mediaRouter);
