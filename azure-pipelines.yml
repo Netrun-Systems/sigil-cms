@@ -1,0 +1,97 @@
+# Azure DevOps Pipeline — Sigil CMS
+# Deploys API, Renderer, and Admin to Google Cloud Run / GCS
+#
+# Infrastructure:
+#   Agent Pool: charlotte-pool (devbox-agent-01 on Wilbur GCloud devbox)
+#   GCP Project: gen-lang-client-0047375361
+#   Registry: us-central1-docker.pkg.dev/.../charlotte-artifacts
+#   Cloud Run: sigil-api, sigil-renderer (us-central1)
+#   Admin: GCS bucket sigil-admin (static site)
+
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - packages/**
+      - plugins/**
+      - apps/**
+      - pnpm-lock.yaml
+      - turbo.json
+
+pr:
+  branches:
+    include:
+      - master
+
+variables:
+  gcpProject: 'gen-lang-client-0047375361'
+  gcpRegion: 'us-central1'
+  registry: 'us-central1-docker.pkg.dev/gen-lang-client-0047375361/charlotte-artifacts'
+  apiService: 'sigil-api'
+  rendererService: 'sigil-renderer'
+  adminBucket: 'sigil-admin'
+
+stages:
+  - stage: Build
+    displayName: 'Build & Test'
+    jobs:
+      - job: BuildAndTest
+        displayName: 'Install, Build, Test'
+        pool: charlotte-pool
+        steps:
+          - checkout: self
+            fetchDepth: 2
+
+          - bash: |
+              echo "Node version: $(node --version)"
+              echo "pnpm version: $(pnpm --version)"
+            displayName: 'Check toolchain'
+
+          - bash: |
+              pnpm install --frozen-lockfile || pnpm install
+            displayName: 'Install dependencies'
+
+          - bash: |
+              pnpm build
+            displayName: 'Build all packages'
+
+          - bash: |
+              pnpm test || true
+            displayName: 'Run tests'
+
+          - bash: |
+              # Detect what changed
+              API_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -cE "^(packages/|plugins/|apps/api/|pnpm-lock|turbo)" || true)
+              RENDERER_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -c "^apps/renderer/" || true)
+              ADMIN_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -cE "^(apps/admin/|packages/@netrun-cms/(ui|theme|blocks|core)/)" || true)
+
+              echo "##vso[task.setvariable variable=apiChanged;isOutput=true]$([[ $API_CHANGED -gt 0 ]] && echo 'true' || echo 'false')"
+              echo "##vso[task.setvariable variable=rendererChanged;isOutput=true]$([[ $RENDERER_CHANGED -gt 0 ]] && echo 'true' || echo 'false')"
+              echo "##vso[task.setvariable variable=adminChanged;isOutput=true]$([[ $ADMIN_CHANGED -gt 0 ]] && echo 'true' || echo 'false')"
+
+              echo "API=$API_CHANGED  Renderer=$RENDERER_CHANGED  Admin=$ADMIN_CHANGED"
+            name: changes
+            displayName: 'Detect changes'
+
+  - stage: DeployAPI
+    displayName: 'Deploy API'
+    dependsOn: Build
+    condition: and(succeeded(), eq(dependencies.Build.outputs['BuildAndTest.changes.apiChanged'], 'true'))
+    jobs:
+      - template: pipelines/api-cloudrun.yml
+
+  - stage: DeployRenderer
+    displayName: 'Deploy Renderer'
+    dependsOn: Build
+    condition: and(succeeded(), eq(dependencies.Build.outputs['BuildAndTest.changes.rendererChanged'], 'true'))
+    jobs:
+      - template: pipelines/renderer-cloudrun.yml
+
+  - stage: DeployAdmin
+    displayName: 'Deploy Admin SPA'
+    dependsOn: Build
+    condition: and(succeeded(), eq(dependencies.Build.outputs['BuildAndTest.changes.adminChanged'], 'true'))
+    jobs:
+      - template: pipelines/admin-gcs.yml

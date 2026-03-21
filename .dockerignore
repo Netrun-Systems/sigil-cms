@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Dependencies (reinstalled in Docker)
+node_modules
+**/node_modules
+
+# Build artifacts (rebuilt in Docker)
+**/dist
+**/.turbo
+
+# Development files
+.env*
+!.env.example
+*.md
+!README.md
+docs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+**/__tests__
+**/*.test.ts
+**/*.spec.ts
+coverage/
+
+# CI/CD
+.github/
+azure-pipelines.yml
+pipelines/
+deploy/

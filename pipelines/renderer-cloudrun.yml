@@ -1,0 +1,61 @@
+# Sigil CMS Renderer — Cloud Run Deployment Template
+jobs:
+  - job: DeployRenderer
+    displayName: 'Build and Deploy Renderer to Cloud Run'
+    pool: charlotte-pool
+
+    variables:
+      imageName: '$(registry)/$(rendererService)'
+
+    steps:
+      - checkout: self
+        displayName: 'Checkout repository'
+
+      - bash: |
+          VERSION="v$(date +%Y%m%d)-$(Build.BuildId)"
+          echo "##vso[task.setvariable variable=imageTag]${VERSION}"
+        displayName: 'Generate version tag'
+
+      - bash: |
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
+        displayName: 'Authenticate Docker with GCP'
+
+      - bash: |
+          echo "Building Sigil Renderer Docker image..."
+          docker build -f apps/renderer/Dockerfile -t $(imageName):$(imageTag) -t $(imageName):latest apps/renderer/
+
+          echo "Image size:"
+          docker images $(imageName):$(imageTag) --format "{{.Size}}"
+        displayName: 'Build Docker image'
+
+      - bash: |
+          docker push $(imageName):$(imageTag)
+          docker push $(imageName):latest
+        displayName: 'Push to Artifact Registry'
+
+      - bash: |
+          echo "Deploying Sigil Renderer to Cloud Run..."
+          gcloud run deploy $(rendererService) \
+            --image $(imageName):$(imageTag) \
+            --region $(gcpRegion) \
+            --project $(gcpProject) \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 256Mi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars "NODE_ENV=production" \
+            --quiet
+        displayName: 'Deploy to Cloud Run'
+
+      - bash: |
+          sleep 10
+          SERVICE_URL=$(gcloud run services describe $(rendererService) --region $(gcpRegion) --project $(gcpProject) --format="value(status.url)")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/health" --max-time 10)
+          echo "Renderer health: HTTP $HTTP_CODE at $SERVICE_URL"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "##vso[task.logissue type=warning]Renderer health check returned HTTP $HTTP_CODE"
+          fi
+        displayName: 'Verify deployment'

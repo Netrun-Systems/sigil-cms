@@ -1,0 +1,69 @@
+# Sigil CMS Admin SPA — GCS Static Site Deployment Template
+jobs:
+  - job: DeployAdmin
+    displayName: 'Build and Deploy Admin SPA to GCS'
+    pool: charlotte-pool
+
+    steps:
+      - checkout: self
+        displayName: 'Checkout repository'
+
+      - bash: |
+          pnpm install --frozen-lockfile || pnpm install
+        displayName: 'Install dependencies'
+
+      - bash: |
+          pnpm build --filter=@netrun-cms/admin...
+        displayName: 'Build admin SPA'
+
+      - bash: |
+          if [ ! -d "apps/admin/dist" ]; then
+            echo "##vso[task.complete result=Failed;]Admin build output (dist/) not found"
+            exit 1
+          fi
+          echo "Admin build size:"
+          du -sh apps/admin/dist/
+          echo "Files:"
+          ls -la apps/admin/dist/
+        displayName: 'Validate build output'
+
+      - bash: |
+          # Create bucket if it doesn't exist
+          gsutil ls -b gs://$(adminBucket) 2>/dev/null || \
+            gsutil mb -p $(gcpProject) -l $(gcpRegion) gs://$(adminBucket)
+
+          # Enable static website serving
+          gsutil web set -m index.html -e index.html gs://$(adminBucket)
+
+          # Make bucket public
+          gsutil iam ch allUsers:objectViewer gs://$(adminBucket) 2>/dev/null || true
+        displayName: 'Ensure GCS bucket exists'
+
+      - bash: |
+          echo "Uploading admin SPA to gs://$(adminBucket)..."
+
+          # Sync with cache headers
+          # HTML files: no-cache (always fresh)
+          gsutil -m -h "Cache-Control:no-cache,max-age=0" cp apps/admin/dist/index.html gs://$(adminBucket)/
+
+          # JS/CSS assets: immutable (hashed filenames)
+          gsutil -m -h "Cache-Control:public,max-age=31536000,immutable" \
+            rsync -r -d apps/admin/dist/assets/ gs://$(adminBucket)/assets/
+
+          # Other static files
+          gsutil -m rsync -r -d -x "index.html|assets/" apps/admin/dist/ gs://$(adminBucket)/
+
+          echo "Upload complete"
+        displayName: 'Deploy to GCS'
+
+      - bash: |
+          ADMIN_URL="https://storage.googleapis.com/$(adminBucket)/index.html"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ADMIN_URL" --max-time 10)
+          echo "Admin SPA: HTTP $HTTP_CODE at $ADMIN_URL"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Admin deployment verified"
+          else
+            echo "##vso[task.logissue type=warning]Admin returned HTTP $HTTP_CODE"
+          fi
+        displayName: 'Verify deployment'

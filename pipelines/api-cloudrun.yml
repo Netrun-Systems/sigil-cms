@@ -1,0 +1,72 @@
+# Sigil CMS API — Cloud Run Deployment Template
+jobs:
+  - job: DeployAPI
+    displayName: 'Build and Deploy API to Cloud Run'
+    pool: charlotte-pool
+
+    variables:
+      imageName: '$(registry)/$(apiService)'
+
+    steps:
+      - checkout: self
+        displayName: 'Checkout repository'
+
+      - bash: |
+          VERSION="v$(date +%Y%m%d)-$(Build.BuildId)"
+          echo "##vso[task.setvariable variable=imageTag]${VERSION}"
+          echo "Image tag: ${VERSION}"
+        displayName: 'Generate version tag'
+
+      - bash: |
+          echo "Authenticating Docker with GCP Artifact Registry..."
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
+        displayName: 'Authenticate Docker with GCP'
+
+      - bash: |
+          echo "Building Sigil API Docker image..."
+          docker build -f apps/api/Dockerfile -t $(imageName):$(imageTag) -t $(imageName):latest .
+
+          echo "Build complete. Image size:"
+          docker images $(imageName):$(imageTag) --format "{{.Size}}"
+        displayName: 'Build Docker image'
+
+      - bash: |
+          echo "Pushing $(imageName):$(imageTag)..."
+          docker push $(imageName):$(imageTag)
+          docker push $(imageName):latest
+        displayName: 'Push to Artifact Registry'
+
+      - bash: |
+          echo "Deploying Sigil API to Cloud Run..."
+          gcloud run deploy $(apiService) \
+            --image $(imageName):$(imageTag) \
+            --region $(gcpRegion) \
+            --project $(gcpProject) \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 512Mi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars "NODE_ENV=production" \
+            --quiet
+
+          echo "Deployment complete"
+        displayName: 'Deploy to Cloud Run'
+
+      - bash: |
+          echo "Waiting for deployment to stabilize..."
+          sleep 15
+
+          SERVICE_URL=$(gcloud run services describe $(apiService) --region $(gcpRegion) --project $(gcpProject) --format="value(status.url)")
+          echo "Service URL: $SERVICE_URL"
+
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/health" --max-time 10)
+          echo "Health check: HTTP $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "##vso[task.logissue type=warning]Health check returned HTTP $HTTP_CODE"
+          else
+            echo "Health check passed"
+          fi
+        displayName: 'Verify deployment'
