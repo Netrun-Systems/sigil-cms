@@ -9,3 +9,4 @@ packages:
   - "plugins/@kog/*"
   - "plugins/@intirfix/*"
   - "plugins/@poppies/*"
+  - "plugins/@meridian/*"

@@ -1,6 +1,6 @@
 # Sigil CMS: The Multi-Tenant Headless CMS Built for Agencies, Developers, and the AI Era
 
-**Version**: 1.0
+**Version**: 2.0
 **Published**: March 2026
 **Author**: Netrun Systems
 **Status**: Public
@@ -28,14 +28,16 @@
 
 Sigil is a multi-tenant headless CMS built for the way agencies and developers actually work: managing multiple client sites from a single deployment, giving designers visual control without requiring developer intervention, and connecting content to AI systems through a fully documented API.
 
-Built as a pnpm monorepo with Turborepo orchestration, Sigil runs on Express.js + PostgreSQL + React 18. It ships 19 vertical-specific plugins (e-commerce, booking, artist content, analytics, documentation, AI advisor), a Design Playground with 1,400+ CSS variables and 70+ Google Fonts, a TypeScript SDK, a CLI with 5 starter templates, a GraphQL API, Next.js App Router integration, and AI-powered design generation via Google Stitch. Every feature has a REST and GraphQL endpoint, making every CMS capability accessible to both human editors and AI agents.
+Built as a pnpm monorepo with Turborepo orchestration, Sigil runs on Express.js + PostgreSQL + React 18. It ships 21 vertical-specific plugins (e-commerce, booking, artist content, analytics, documentation, AI advisor), a Design Playground with 1,400+ CSS variables and 70+ Google Fonts, a TypeScript SDK, a CLI with 5 starter templates, a GraphQL API, Next.js App Router integration, and AI-powered design generation via Google Stitch. Every feature has a REST and GraphQL endpoint, making every CMS capability accessible to both human editors and AI agents.
 
 **Five reasons senior developers choose Sigil:**
 
 - **Native multi-tenancy**: One deployment serves unlimited client tenants with Row-Level Security. No separate deployments, no manual middleware, no per-tenant billing surprises.
 - **Design Playground**: 1,400+ CSS theme variables, 70+ Google Fonts, and 7 presets give non-technical designers full visual control — without touching code or asking a developer.
-- **19 vertical plugins shipped**: Music artist, e-commerce (Stripe + Printful + PayPal), appointment booking (Google Calendar), documentation/knowledge base, mailing list, Resonance analytics, and more — baked into the framework, not bolted on from a marketplace.
+- **21 vertical plugins shipped**: Music artist, e-commerce (Stripe + Printful + PayPal), appointment booking (Google Calendar), documentation/knowledge base, mailing list, Resonance analytics, community forum, plugin marketplace, and more — baked into the framework, not bolted on from a marketplace.
 - **AI design generation**: Google Stitch integration generates full-page HTML from a text prompt, then a Stitch-to-blocks converter imports that design as structured Sigil content blocks. Charlotte AI (Gemini 2.0 Flash) provides context-aware design advice with access to the current page's blocks and theme tokens.
+- **Community-driven support**: Built-in gated forum with reputation system, magic-link authentication, and solved-answer workflows — replacing Discourse or Circle as a separate SaaS.
+- **Platform ecosystem**: Sigil integrates with the full Netrun Systems product suite — KOG CRM for lead capture, Charlotte AI for conversational support, KAMERA for 3D scan visualization, and Intirkast for broadcast content.
 - **Radical self-hosting**: Runs on any PostgreSQL host for ~$0-5/month on scale-to-zero infrastructure. The same codebase powers the free self-hosted tier and the paid cloud offering — no feature gating, no watermarking, no betrayal.
 
 **Who should read this:**
