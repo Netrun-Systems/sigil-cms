@@ -19,3 +19,4 @@ export { runMigrations } from './migrate';
 
 // Seed utilities
 export { seedArtistTemplate } from './seeds/artist-template';
+export { seedSigilLanding } from './seeds/sigil-landing';

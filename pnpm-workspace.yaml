@@ -10,3 +10,4 @@ packages:
   - "plugins/@intirfix/*"
   - "plugins/@poppies/*"
   - "plugins/@meridian/*"
+  - "plugins/@netrun/*"

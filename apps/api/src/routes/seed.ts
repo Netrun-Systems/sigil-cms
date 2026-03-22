@@ -18,6 +18,7 @@ import {
   themes,
   pages,
   seedArtistTemplate,
+  seedSigilLanding,
 } from '@netrun-cms/db';
 import { getPresetById } from '@netrun-cms/theme/presets';
 import { getDb } from '../db.js';
@@ -292,6 +293,108 @@ router.post(
         pages: Number(pageCount),
         releases: insertedReleases.length,
         artistProfile: profile ? { id: profile.id } : null,
+        theme: themeRecord
+          ? { id: themeRecord.id, isActive: themeRecord.isActive }
+          : null,
+      },
+    });
+  }
+);
+
+// ============================================================================
+// POST /landing-site - Seed the Sigil CMS marketing site
+// Auth: JWT Bearer token (admin role required)
+// ============================================================================
+router.post(
+  '/landing-site',
+  authenticate,
+  requireRole('admin'),
+  async (req: AuthenticatedRequest, res) => {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+
+    const siteSlug = (req.body.siteSlug as string) || 'sigil';
+    const siteName = (req.body.siteName as string) || 'Sigil CMS';
+    const publishAll = req.body.publishAll !== false; // default true
+
+    // Check if site already exists for this tenant (409 Conflict)
+    const [existingSite] = await db
+      .select()
+      .from(sites)
+      .where(and(eq(sites.tenantId, tenantId), eq(sites.slug, siteSlug)))
+      .limit(1);
+
+    if (existingSite) {
+      res.status(409).json({
+        success: false,
+        error: {
+          code: 'SITE_EXISTS',
+          message: `Site with slug '${siteSlug}' already exists for this tenant`,
+        },
+        data: {
+          site: {
+            id: existingSite.id,
+            slug: existingSite.slug,
+            status: existingSite.status,
+          },
+        },
+      });
+      return;
+    }
+
+    // 1. Create site
+    const [site] = await db
+      .insert(sites)
+      .values({
+        tenantId,
+        name: siteName,
+        slug: siteSlug,
+        domain: (req.body.domain as string) || null,
+        template: 'landing',
+        status: publishAll ? 'published' : 'draft',
+      })
+      .returning();
+
+    // 2. Seed landing pages + blocks
+    await seedSigilLanding(db, site.id);
+
+    // 3. Create and activate netrun-dark theme
+    const preset = getPresetById('netrun-dark');
+    let themeRecord: { id: string; isActive: boolean } | null = null;
+    if (preset) {
+      const [insertedTheme] = await db
+        .insert(themes)
+        .values({
+          siteId: site.id,
+          name: preset.name,
+          isActive: true,
+          baseTheme: 'netrun-dark',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          tokens: preset.darkTokens as any,
+        })
+        .returning();
+      themeRecord = insertedTheme;
+    }
+
+    // 4. Publish all pages
+    if (publishAll) {
+      await db
+        .update(pages)
+        .set({ status: 'published', publishedAt: new Date() })
+        .where(eq(pages.siteId, site.id));
+    }
+
+    // Count seeded pages
+    const [{ value: pageCount }] = await db
+      .select({ value: count() })
+      .from(pages)
+      .where(eq(pages.siteId, site.id));
+
+    res.status(201).json({
+      success: true,
+      data: {
+        site: { id: site.id, slug: site.slug, status: site.status },
+        pages: Number(pageCount),
         theme: themeRecord
           ? { id: themeRecord.id, isActive: themeRecord.isActive }
           : null,
