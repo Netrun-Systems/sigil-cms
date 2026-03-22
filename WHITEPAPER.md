@@ -20,7 +20,8 @@
 9. [Competitive Analysis](#9-competitive-analysis)
 10. [Pricing](#10-pricing)
 11. [Roadmap](#11-roadmap)
-12. [About Netrun Systems](#12-about-netrun-systems)
+12. [The Netrun Platform](#12-the-netrun-platform)
+13. [About Netrun Systems](#13-about-netrun-systems)
 
 ---
 
@@ -383,11 +384,35 @@ The iframe is scaled down proportionally when the viewport width exceeds the ava
 
 The panel connects to the frontend site via the `VITE_PREVIEW_URL` environment variable. Frontend projects using `@sigil-cms/next` wrap their layout in `<SigilPreviewProvider>`, which handles the `postMessage` protocol for real-time content updates. When the editor modifies a block and saves, the change propagates to the iframe without a full page reload.
 
+### 4.5 Multi-Language (i18n)
+
+Pages support per-language translations with a clone-and-translate workflow. The public API accepts a `?lang=xx` query parameter, falling back to the site's default language. The admin LanguageSelector component shows existing translations with links and supports 15 languages (en, es, fr, de, pt, ja, zh, ko, ar, hi, it, nl, ru, sv, pl). Translation creates a new page with the same slug and structure but different language code, enabling parallel content editing without overwriting the original.
+
+### 4.6 Page Revision History
+
+Every page save creates an automatic revision snapshot — title, slug, and all content blocks are captured as a JSONB snapshot in the `cms_page_revisions` table. The admin shows a revision timeline with version numbers, timestamps, author, and change notes. Any revision can be previewed or reverted with one click, restoring the page and recreating all blocks from the snapshot. The revert itself creates a new revision, so the action is always reversible.
+
+### 4.7 Role-Based Access Control
+
+The admin UI adapts to four user roles: admin, editor, author, and viewer. The JWT token is decoded client-side to extract role and user info. A `usePermissions()` hook exposes boolean flags — `canEdit`, `canDelete`, `canPublish`, `canManageSettings`, `canViewAnalytics`. Delete buttons hide for non-admins. Save buttons disable for viewers with a "View Only" badge. The Settings nav item is hidden from non-admins. Publish toggles are disabled for authors.
+
+### 4.8 Webhook Event System
+
+The webhooks plugin provides an event bus with 16 typed event constants (page.created, page.published, block.updated, order.completed, appointment.booked, etc.). Any plugin can emit events via `ctx.emitEvent()`. Webhook endpoints are registered per site with a target URL, event filter, and HMAC-SHA256 signing secret. Delivery uses exponential backoff retries (1 minute, 5 minutes, 30 minutes) and auto-disables endpoints after 5 consecutive failures. The `X-Sigil-Event`, `X-Sigil-Signature`, and `X-Sigil-Timestamp` headers enable receivers to verify authenticity.
+
+### 4.9 Custom Domain Mapping
+
+Each site can have a custom domain with automatic SSL. The API validates domain format, checks uniqueness across tenants, and provides a DNS verification endpoint that queries A and CNAME records. The renderer resolves sites by `Host` header — looking up the domain in the database with a 5-minute cache. On Google Cloud Run, domain mappings provision managed SSL certificates automatically. The admin DomainManager component shows DNS setup instructions, verification status, and a one-click remove button.
+
+### 4.10 SaaS Billing and Plan Enforcement
+
+Five pricing tiers (Free, Starter $12/mo, Pro $29/mo, Business $79/mo, Enterprise custom) with per-resource limits enforced by middleware: sites, pages per site, storage, media files, custom domains, plugin access, API access, and webhooks. Stripe Checkout handles upgrades, the Billing Portal handles self-service management, and webhooks sync plan changes in real time. The admin billing page shows usage meters with color-coded progress bars and a plan comparison grid with monthly/yearly toggle.
+
 ---
 
 ## 5. Plugin Ecosystem
 
-Sigil ships 19 first-party plugins. Each plugin registers its database tables, API routes, block types, admin navigation sections, and admin UI components at startup via the `CmsPlugin` interface. Plugins are composable — a music artist site might activate `artist`, `store`, `mailing-list`, `booking`, and `resonance`. A documentation portal might activate `docs`, `seo`, and `webhooks`.
+Sigil ships 21 first-party plugins. Each plugin registers its database tables, API routes, block types, admin navigation sections, and admin UI components at startup via the `CmsPlugin` interface. Plugins are composable — a music artist site might activate `artist`, `store`, `mailing-list`, `booking`, and `resonance`. A documentation portal might activate `docs`, `seo`, and `webhooks`.
 
 ### Core Infrastructure Plugins
 
@@ -488,6 +513,31 @@ Integrates the Charlotte voice assistant (Netrun's primary AI product) as an emb
 **`support` — Support Panel Widget**
 
 Embeds a support panel widget for customer support workflows.
+
+### Community and Ecosystem Plugins
+
+**`community` — Community Forum**
+
+A gated community forum with categories, threads, and replies. Features a reputation system (points for helpful answers, thread creation, and community participation), magic-link authentication (passwordless email login), and solved-answer workflows where thread authors can mark a reply as the accepted solution. Threads support rich text, code blocks, and media attachments. Moderation tools include pin, lock, archive, and user suspension. The forum is site-scoped, enabling each tenant site to have its own community space.
+
+**`marketplace` — Plugin Marketplace**
+
+A discovery and distribution hub for third-party Sigil plugins. Plugin authors can register, version, and publish plugins with metadata (description, screenshots, category, compatibility). Site admins can browse, search, and install plugins from the marketplace UI. Installed plugins are tracked per site with version pinning and update notifications. Revenue sharing and plugin review/rating systems enable a sustainable ecosystem.
+
+### 5.X Netrun Platform Plugins
+
+Six plugins connect Sigil to the broader Netrun Systems product ecosystem:
+
+| Plugin | Product | Integration |
+|--------|---------|-------------|
+| `kamera` | Survai (KAMERA) | 3D scan viewer embeds, project dashboards, construction report generation |
+| `kog` | K0DE by Wilbur | Customer project sites managed via Sigil, activity feed embeds |
+| `intirkast` | Intirkast | Podcast player, live stream status widget, broadcast schedule embeds |
+| `charlotte` | Charlotte AI | Conversational support chat widget, knowledge base search, content recommendations |
+| `support` | Support Panel | Unified slide-out widget combining knowledge base (Docs), contact form (Contact), AI chat (Charlotte), and status announcements |
+| `marketplace` | Plugin Marketplace | Third-party plugin discovery, installation, and version management |
+
+These plugins are invisible when their respective API URLs are not configured — they skip gracefully at startup, logging a warning but not blocking initialization. For Netrun Systems customers deploying the full product suite, they provide seamless cross-product integration. For customers using only Sigil, the platform plugins add zero overhead.
 
 ### Building a Custom Plugin
 
@@ -891,6 +941,26 @@ Backups are handled at the PostgreSQL layer via `pg_dump`. For cloud deployments
 
 ---
 
+## 7.5 Site Migration
+
+### 7.5.1 Migration Plugin
+
+The migration plugin provides a complete ingestion pipeline for importing existing sites from WordPress, Shopify, and Square Online.
+
+**WordPress**: Accepts WXR (WordPress eXtended RSS) XML exports or connects via the REST API. The parser handles Gutenberg block markup (regex extraction of `<!-- wp:blockname {attrs} -->` patterns), Elementor JSON data (section→column→widget tree traversal), and classic editor HTML. Block type mapping converts WordPress blocks to Sigil equivalents: `wp:heading` → `text`, `wp:cover` → `hero`, `wp:buttons` → `cta`, `wp:gallery` → `gallery`. Yoast SEO and RankMath postmeta are extracted for page meta fields.
+
+**Shopify**: Connects via the Admin REST API for pages, products, blog articles, and URL redirects. Theme data is extracted from `settings_data.json` for design token mapping (colors, fonts, button styles). Online Store 2.0 section types map to Sigil blocks: `hero-banner` → `hero`, `rich-text` → `text`, `featured-collection` → `product_grid`. Navigation menus are fetched via the Storefront GraphQL API.
+
+**Square Online**: Products are fetched via the Catalog API. Page content requires web scraping — the plugin fetches HTML, extracts navigation from `<nav>` elements, discovers internal links, and classifies sections into block types using content analysis (hero detection via h1 + background-image, gallery detection via image count, form/map/video detection).
+
+All three sources share a media pipeline that downloads images, validates MIME types, and rewrites content URLs to point to the new storage location. Per-item error tracking with retry support ensures that one failed import doesn't block the rest.
+
+### 7.5.2 Migration Database
+
+Two tables track migration state: `cms_migrations` (job-level status, counts, configuration) and `cms_migration_items` (per-item source/target mapping with status and error tracking).
+
+---
+
 ## 8. Security and Compliance
 
 ### 8.1 Authentication
@@ -992,7 +1062,7 @@ Strapi is the closest architectural peer: open-source, self-hosted, TypeScript, 
 | Multi-tenancy | Native | No (requires separate deployments per client) |
 | Design editor | Design Playground | No |
 | Block analytics | Resonance (unique) | No |
-| Vertical plugins | 19 first-party (booking, artist, e-commerce, docs) | Marketplace (150+ community, variable quality) |
+| Vertical plugins | 21 first-party (booking, artist, e-commerce, docs, forum, marketplace) | Marketplace (150+ community, variable quality) |
 | Content scheduling | Yes (daemon in API) | Yes (built-in) |
 | AI advisor | Yes (Gemini RAG, TTS, streaming chat) | Strapi AI (schema generation from prompts only) |
 | Migration tooling | WordPress, Shopify, Square Online (first-party) | DITS (transfer format, not a crawler) |
@@ -1019,7 +1089,7 @@ The core strategic difference: **Payload is a platform for building your own CMS
 - Native multi-tenancy (`cms_tenants`, RLS, per-site permissions) — agencies can manage unlimited client sites from one deployment
 - Design Playground (1,400+ CSS variables, 70+ fonts, presets) — designers can work independently
 - Resonance analytics (block-level engagement, A/B experiments, AI suggestions) — not available in Payload
-- 19 vertical plugins (booking, artist, e-commerce with Stripe + Printful + PayPal, docs, AI advisor) vs. Payload's handful of official plugins
+- 21 vertical plugins (booking, artist, e-commerce with Stripe + Printful + PayPal, docs, AI advisor, community forum, marketplace) vs. Payload's handful of official plugins
 - WordPress/Shopify/Square Online migration tooling first-party
 - Cloud pricing (10 seats, 5 sites at $29/mo) vs. Payload Cloud ($35/mo, 1 site, 3 users)
 
@@ -1041,7 +1111,7 @@ The core strategic difference: **Payload is a platform for building your own CMS
 | CLI | Yes | Yes | Yes | Yes |
 | Next.js integration | Yes | Yes | Yes | Native (embedded) |
 | Migration tooling | WP, Shopify, Square | None built-in | DITS (transfer) | No |
-| 19 vertical plugins | Yes | No | Marketplace | No |
+| 21 vertical plugins | Yes | No | Marketplace | No |
 | Booking / appointments | Yes | No | No | No |
 | Music artist content | Yes | No | No | No |
 | Mailing list (GDPR) | Yes | No | No | No |
@@ -1078,7 +1148,7 @@ A production self-hosted deployment on Google Cloud Run (scale-to-zero) costs ap
 | **Media storage** | 1 GB | 10 GB | 100 GB | 1 TB |
 | **API calls/mo** | 50K | 500K | 5M | Unlimited |
 | **Custom domain** | No | Yes | Yes | Yes |
-| **Plugins** | Core (8) | All (19) | All (19) | All + custom |
+| **Plugins** | Core (8) | All (21) | All (21) | All + custom |
 | **GraphQL** | Yes | Yes | Yes | Yes |
 | **Content scheduling** | No | Yes | Yes | Yes |
 | **Resonance analytics** | No | No | Yes | Yes |
@@ -1090,6 +1160,8 @@ A production self-hosted deployment on Google Cloud Run (scale-to-zero) costs ap
 | **Support** | Community | Email (48h) | Email (24h) | Dedicated (4h SLA) |
 
 Annual billing: 2 months free (17% discount) on all paid plans.
+
+**Plan enforcement** is handled at the middleware layer. Every write operation checks the tenant's current plan against per-resource limits (sites, pages per site, storage, media files, custom domains, plugin access, API calls, and webhooks). Stripe Checkout handles upgrades, the Billing Portal handles self-service plan management, and Stripe webhooks sync plan changes to the `cms_tenants` table in real time. The admin billing page shows usage meters with color-coded progress bars (green under 70%, yellow 70-90%, red 90%+) and a plan comparison grid with monthly/yearly toggle.
 
 Migration from self-hosted to cloud: `sigil migrate --to-cloud` exports your database and media, provisions your cloud instance, and imports everything. Takes approximately 10 minutes.
 
@@ -1124,15 +1196,28 @@ Every feature documented in this whitepaper exists in the codebase and is verifi
 - Next.js App Router integration (`@sigil-cms/next`)
 - Live preview with viewport toggles and postMessage protocol
 - Content scheduling daemon (publishAt / unpublishAt)
-- Page revision history with unlimited revisions and revert
-- Content migration from WordPress, Shopify, Square Online
-- i18n (15 languages, page-clone model)
 - AI design generation via Google Stitch (5 REST endpoints)
 - Charlotte AI design advisor (Gemini 2.0 Flash, context-aware)
 - Resonance analytics (block-level, A/B experiments, AI suggestions)
-- Webhook delivery system with retry and delivery log
 
-### 11.2 Near-Term (Next 90 Days)
+### 11.2 Completed (Shipped in v2.0)
+
+The following features were built and shipped since v1.0:
+
+- Multi-language (i18n) — 15 languages, page-clone model, `?lang=xx` public API parameter
+- Page revision history — unlimited revisions, one-click revert, JSONB snapshots
+- Role-based admin UI — `usePermissions()` hook, role-adaptive buttons/nav/badges
+- Webhook event system — 16 event types, HMAC-SHA256 signing, exponential backoff retries
+- Custom domain mapping — DNS verification, 5-minute cache, managed SSL on Cloud Run
+- Community forum plugin — gated forum, reputation system, magic-link auth, solved-answer workflows
+- Plugin marketplace — third-party plugin discovery, installation, version management
+- SaaS billing system — 5 tiers, Stripe Checkout, middleware-level plan enforcement, usage meters
+- Site migration — WordPress (WXR + REST API), Shopify (Admin API), Square Online (scraping + Catalog API)
+- Content migration from WordPress, Shopify, Square Online (first-party migration plugin)
+- Netrun platform plugins — KAMERA, KOG, Intirkast, Charlotte, Support, Marketplace integrations
+- Plugin count expanded from 19 to 21 first-party plugins
+
+### 11.3 Near-Term (Next 90 Days)
 
 - **SSO / OIDC**: SAML 2.0 and OpenID Connect for Enterprise tier. Third-party identity providers (Okta, Azure AD, Google Workspace).
 - **Audit logs**: Structured audit trail for all content operations, stored and queryable via API.
@@ -1141,7 +1226,7 @@ Every feature documented in this whitepaper exists in the codebase and is verifi
 - **Jobs queue**: Background task processing for scheduled workflows, nightly analytics aggregation, email sequence scheduling, and AI tagging runs.
 - **Field-level ACL**: Role-based control at the field level within blocks for enterprise content governance.
 
-### 11.3 Vision: The AI-Native CMS
+### 11.4 Vision: The AI-Native CMS
 
 The long-term direction for Sigil is the API-first CMS where every feature is equally usable by a human editor and an AI agent.
 
@@ -1153,7 +1238,25 @@ The CMS that wins the next decade will be the one that is as usable by the AI sy
 
 ---
 
-## 12. About Netrun Systems
+## 12. The Netrun Platform
+
+Sigil CMS is one component of the Netrun Systems product ecosystem. When deployed together, the products form an integrated platform:
+
+| Product | Function | Sigil Integration |
+|---------|----------|-------------------|
+| **Sigil CMS** | Multi-tenant headless CMS | Core product |
+| **KOG CRM** | Customer relationship management | Lead capture → CRM contacts, activity feed embeds |
+| **Charlotte** | AI voice assistant + orchestration | Conversational support widget, knowledge base search, content recommendations |
+| **KAMERA** | 3D scan processing (Survai) | Scan viewer embeds, project dashboards, report generation |
+| **Intirkast** | Content syndication + broadcasting | Podcast player, live stream status, broadcast schedule |
+
+The Support Panel plugin unifies these integrations into a single slide-out widget: knowledge base search (from Docs plugin), contact form (from Contact plugin), AI chat (from Charlotte), and status announcements — all accessible from any page.
+
+For customers using only Sigil, the Netrun platform plugins are invisible — they skip gracefully when their API URLs aren't configured. For Netrun Systems customers, they provide a seamless experience across products.
+
+---
+
+## 13. About Netrun Systems
 
 Netrun Systems is a California C Corp incorporated May 2025. Daniel Garza, Founder and CEO, has provided cloud infrastructure and DevSecOps consulting since 2001 — a 25-year track record serving enterprise clients in financial services, media, and public sector.
 
@@ -1175,6 +1278,6 @@ Sigil is offered as both a self-hosted open-source product and a managed cloud s
 
 ---
 
-_Last reviewed: 2026-03-21_
+_Last reviewed: 2026-03-22_
 
-_Sigil CMS — WHITEPAPER v1.0 — Copyright 2026 Netrun Systems. All rights reserved._
+_Sigil CMS — WHITEPAPER v2.0 — Copyright 2026 Netrun Systems. All rights reserved._
