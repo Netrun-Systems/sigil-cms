@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blog-cream: #faf8f5;
+  --blog-warm: #f5f0ea;
+  --blog-ink: #1a1a2e;
+  --blog-muted: #6b6b80;
+  --blog-accent: #c85a2e;
+  --blog-border: #e8e2d8;
+}
+
+body {
+  background-color: var(--blog-cream);
+  color: var(--blog-ink);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
+}
