@@ -137,9 +137,9 @@ Every plugin is environment-gated -- missing env vars cause a graceful skip, nev
 | **Developer** | Resonance | Block-level analytics, A/B testing, AI suggestions |
 | **AI** | Advisor | Charlotte AI chat with pgvector RAG and TTS |
 | **AI** | Charlotte | Embeddable voice assistant widget |
-| **Integration** | KAMERA | Survai 3D scan visualization |
-| **Integration** | KOG | K0DE platform project sites |
-| **Integration** | Intirkast | Live and recorded streaming embeds |
+| **Integration** | KAMERA | B2B sales intelligence — OSINT reports, company research, risk scoring |
+| **Integration** | KOG | CRM bridge — sync contacts, organizations, and pipeline data |
+| **Integration** | Intirkast | Social media syndication — auto-publish content to 10+ platforms |
 
 ### Developer Experience
 
