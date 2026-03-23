@@ -1,0 +1,62 @@
+/**
+ * Netrun Systems Admin — Global styles and CSS variables.
+ * Dark navy technical brand consistent with netrunsystems.com identity.
+ */
+
+:root {
+  /* Netrun brand palette */
+  --netrun-navy: #1a2332;
+  --netrun-deep: #0f1720;
+  --netrun-steel: #2a3a4e;
+  --netrun-slate: #3d5068;
+  --netrun-sage: #90b9ab;
+  --netrun-mist: #b8d4ca;
+  --netrun-ice: #e8f0ed;
+  --netrun-cloud: #f4f8f6;
+  --netrun-accent: #4ca1e0;
+  --netrun-highlight: #6bb8f0;
+
+  /* Admin shell variables — dark tech theme */
+  --bg-base: #0f1720;
+  --bg-panel: #1a2332;
+  --bg-input: #2a3a4e;
+  --bg-hover: #3d5068;
+  --border-primary: #2a3a4e;
+  --border-subtle: #1e2d3d;
+  --text-primary: #e8f0ed;
+  --text-secondary: #b8d4ca;
+  --text-muted: #6b8a9e;
+  --accent: #90b9ab;
+  --accent-hover: #a8ccbf;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --info: #4ca1e0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Tailwind utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
