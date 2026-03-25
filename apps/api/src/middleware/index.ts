@@ -12,6 +12,8 @@ export {
   isValidUuid,
   validateUuidParam,
 } from './validation.js';
+export { resolveSubdomain, requireSubdomainResolution } from './subdomain.js';
+export { auditLog } from './audit.js';
 export {
   enforceSiteLimit,
   enforcePageLimit,

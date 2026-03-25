@@ -17,11 +17,18 @@ import seedRouter from './seed.js';
 import billingRouter from './billing.js';
 import authRouter from './auth.js';
 import tenantsRouter from './tenants.js';
+import auditRouter from './audit.js';
 import blockTemplatesRouter from './block-templates.js';
-import { validateUuidParam } from '../middleware/index.js';
+import { validateUuidParam, resolveSubdomain, auditLog } from '../middleware/index.js';
 
 import type { Router as RouterType } from "express";
 const router: RouterType = Router();
+
+// Subdomain resolution (sets req.tenantId from host header — runs on all routes)
+router.use(resolveSubdomain);
+
+// Audit log (records all write operations — runs on all authenticated routes)
+router.use(auditLog);
 
 // Public API routes (no auth required)
 router.use('/public', publicRouter);
@@ -69,6 +76,9 @@ router.use('/tenants', authRouter);
 
 // Block templates: /api/v1/sites/:siteId/block-templates (reusable block presets)
 router.use('/sites/:siteId/block-templates', validateUuidParam('siteId'), blockTemplatesRouter);
+
+// Audit log: /api/v1/audit (tenant activity history for compliance)
+router.use('/audit', auditRouter);
 
 // NOTE: The following routes have been moved to plugins:
 // - releases, events, artist-profiles → @netrun-cms/plugin-artist
