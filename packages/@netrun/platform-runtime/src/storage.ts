@@ -22,6 +22,8 @@ export interface StorageConfig {
   provider?: 'gcs' | 'azure' | 's3';
   /** Bucket/container name */
   bucket?: string;
+  /** Optional path prefix prepended to the stored filename (e.g., 'media/{tenantId}/{siteId}') */
+  pathPrefix?: string;
 }
 
 export interface UploadResult {
@@ -347,7 +349,11 @@ export async function uploadFile(
   const provider = getStorageProvider(config);
   const id = crypto.randomUUID();
   const ext = path.extname(originalName) || MIME_EXTENSIONS[mimeType] || '.bin';
-  const storedName = `${id}${ext}`;
+  const baseName = `${id}${ext}`;
+  // Apply optional path prefix for tenant/site isolation (e.g., 'media/tenant-uuid/site-uuid')
+  const storedName = config?.pathPrefix
+    ? `${config.pathPrefix.replace(/\/+$/, '')}/${baseName}`
+    : baseName;
 
   const url = await provider.upload(buffer, storedName, mimeType);
   return { id, storedName, url };

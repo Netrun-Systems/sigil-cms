@@ -15,6 +15,8 @@ import designAiRouter from './design-ai.js';
 import publicRouter from './public.js';
 import seedRouter from './seed.js';
 import billingRouter from './billing.js';
+import authRouter from './auth.js';
+import blockTemplatesRouter from './block-templates.js';
 import { validateUuidParam } from '../middleware/index.js';
 
 import type { Router as RouterType } from "express";
@@ -55,6 +57,15 @@ router.use('/sites/:siteId/design', validateUuidParam('siteId'), designAiRouter)
 
 // Billing: /api/v1/billing (subscription management, Stripe integration)
 router.use('/billing', billingRouter);
+
+// Auth: /api/v1/auth (tenant switching, multi-tenant auth helpers)
+router.use('/auth', authRouter);
+
+// Tenant info: /api/v1/tenants/current (current tenant from JWT)
+router.use('/tenants', authRouter);
+
+// Block templates: /api/v1/sites/:siteId/block-templates (reusable block presets)
+router.use('/sites/:siteId/block-templates', validateUuidParam('siteId'), blockTemplatesRouter);
 
 // NOTE: The following routes have been moved to plugins:
 // - releases, events, artist-profiles → @netrun-cms/plugin-artist

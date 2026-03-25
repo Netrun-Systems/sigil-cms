@@ -12,6 +12,36 @@ import { getDb } from '../db.js';
 import { parsePagination } from '../middleware/validation.js';
 import type { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types/index.js';
 
+/**
+ * Build a tenant-isolated storage path prefix.
+ *
+ * All media uploads are stored under `media/{tenantId}/{siteId}/` to prevent
+ * cross-tenant URL leakage. The prefix is prepended to the filename that the
+ * storage provider receives, producing object keys like:
+ *   `media/abc-123/def-456/uuid.jpg`
+ */
+function buildStoragePath(tenantId: string, siteId: string, filename: string): string {
+  return `media/${tenantId}/${siteId}/${filename}`;
+}
+
+/**
+ * Validate that a media URL belongs to the requesting tenant.
+ * Returns true if the URL contains the expected tenant path prefix or if the
+ * URL predates tenant-isolated storage (legacy flat paths).
+ */
+function validateMediaTenantPath(url: string, tenantId: string): boolean {
+  // Tenant-isolated URLs contain the tenant ID in the path
+  if (url.includes(`/media/${tenantId}/`)) {
+    return true;
+  }
+  // Legacy URLs without tenant prefix are accessible (backward compat)
+  if (!url.includes('/media/') || !url.match(/\/media\/[0-9a-f]{8}-/)) {
+    return true;
+  }
+  // URL has a tenant prefix but it doesn't match -- reject
+  return false;
+}
+
 export class MediaController {
   /**
    * List all media for a site
@@ -142,6 +172,19 @@ export class MediaController {
         },
       };
       res.status(404).json(response);
+      return;
+    }
+
+    // Validate the media URL belongs to the requesting tenant (cross-tenant leak prevention)
+    if (!validateMediaTenantPath(mediaItem.url, tenantId)) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Media does not belong to the current tenant',
+        },
+      };
+      res.status(403).json(response);
       return;
     }
 
@@ -443,11 +486,13 @@ export class MediaController {
       return;
     }
 
-    // Upload to storage
+    // Upload to storage with tenant-isolated path prefix: media/{tenantId}/{siteId}/{uuid.ext}
+    const storagePath = buildStoragePath(tenantId, siteId, '');
     const { id: storageId, storedName, url } = await uploadFile(
       file.buffer,
       file.originalname,
       file.mimetype,
+      { pathPrefix: storagePath },
     );
 
     // Create media record
@@ -538,12 +583,16 @@ export class MediaController {
     const created: Media[] = [];
     const errors: Array<{ filename: string; error: string }> = [];
 
+    // Build tenant-isolated storage path prefix
+    const storagePath = buildStoragePath(tenantId, siteId, '');
+
     for (const file of files) {
       try {
         const { id: storageId, storedName, url } = await uploadFile(
           file.buffer,
           file.originalname,
           file.mimetype,
+          { pathPrefix: storagePath },
         );
 
         const insertData = {

@@ -266,17 +266,31 @@ export const contentBlocks = pgTable('cms_content_blocks', {
 export const blockTemplates = pgTable('cms_block_templates', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   siteId: uuid('site_id').references(() => sites.id, { onDelete: 'cascade' }),
+  tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 100 }).notNull(),
   blockType: varchar('block_type', { length: 50 }).notNull(),
   content: jsonb('content').$type<Record<string, unknown>>().notNull().default({}),
   settings: jsonb('settings').$type<Record<string, unknown>>().default({}),
+  /** @deprecated Use scope instead. Kept for backward compatibility. */
   isGlobal: boolean('is_global').notNull().default(false),
+  /**
+   * Template visibility scope:
+   * - 'site': available only to the owning site (default, current behavior)
+   * - 'tenant': available to all sites within the owning tenant
+   * - 'global': available to all tenants (platform-wide presets)
+   */
+  scope: varchar('scope', { length: 10 }).notNull().default('site'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
   siteIdIdx: index('idx_cms_block_templates_site_id').on(table.siteId),
+  tenantIdIdx: index('idx_cms_block_templates_tenant_id').on(table.tenantId),
   blockTypeIdx: index('idx_cms_block_templates_type').on(table.blockType),
   globalIdx: index('idx_cms_block_templates_global').on(table.isGlobal),
+  scopeIdx: index('idx_cms_block_templates_scope').on(table.scope),
+  scopeCheck: check('cms_block_templates_scope_check',
+    sql`${table.scope} IN ('site', 'tenant', 'global')`
+  ),
 }));
 
 // ============================================================================
@@ -675,6 +689,16 @@ export type ContentBlock = typeof contentBlocks.$inferSelect;
 export type InsertContentBlock = z.infer<typeof insertContentBlockSchema>;
 
 export type BlockTemplate = typeof blockTemplates.$inferSelect;
+export const insertBlockTemplateSchema = createInsertSchema(blockTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1).max(100),
+  scope: z.enum(['site', 'tenant', 'global']).default('site'),
+});
+export const selectBlockTemplateSchema = createSelectSchema(blockTemplates);
+export type InsertBlockTemplate = z.infer<typeof insertBlockTemplateSchema>;
 
 export type Media = typeof media.$inferSelect;
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
