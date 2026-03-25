@@ -30,6 +30,15 @@ import supportPlugin from '@netrun-cms/plugin-support';
 import communityPlugin from '@netrun-cms/plugin-community';
 import marketplacePlugin from '@netrun-cms/plugin-marketplace';
 
+// Poppies POS plugin (stripe-based, no external deps blocking deployment)
+import posPlugin from '@poppies/pos';
+
+// Poppies plugins still blocked by external dependencies (@azure/communication-email, twilio):
+// import consignmentPlugin from '@poppies/consignment';
+// import shiftsPlugin from '@poppies/shifts';
+// import messagingPlugin from '@poppies/messaging';
+// import notificationsPlugin from '@poppies/notifications';
+
 /**
  * All enabled plugins. Each is statically imported so tsup bundles them.
  * Plugins with missing requiredEnv are automatically skipped by the loader.
@@ -57,5 +66,12 @@ export async function loadEnabledPlugins(): Promise<CmsPlugin[]> {
     supportPlugin,
     communityPlugin,
     marketplacePlugin,
+    // Poppies POS (stripe-based, no blocking external deps)
+    posPlugin,
+    // Remaining Poppies plugins blocked until external deps resolved:
+    // consignmentPlugin,
+    // shiftsPlugin,
+    // messagingPlugin,
+    // notificationsPlugin,
   ];
 }

@@ -103,8 +103,10 @@ function renderFeatureGrid(block: BlockData): string {
 
   const cards = features.map(f => {
     const link = f.link ? ` onclick="window.location='${esc(f.link as string)}'"` : '';
+    const imageHtml = f.image ? `<div class="sigil-feature-image"><img src="${esc(f.image as string)}" alt="${esc(f.title as string)}" loading="lazy"></div>` : '';
     return `<div class="sigil-feature-card"${link}>
-      ${f.icon ? `<div class="sigil-feature-icon">${esc(f.icon as string)}</div>` : ''}
+      ${imageHtml}
+      ${f.icon && !f.image ? `<div class="sigil-feature-icon">${esc(f.icon as string)}</div>` : ''}
       <h3>${esc(f.title as string)}</h3>
       <p>${esc(f.description as string)}</p>
     </div>`;

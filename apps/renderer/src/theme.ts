@@ -320,26 +320,43 @@ section[class^="sigil-"] {
   background: var(--sigil-surface, #1a1a1a);
   border: 1px solid var(--sigil-border, rgba(255,255,255,0.08));
   border-radius: var(--sigil-card-radius, var(--sigil-border-radius-lg, 12px));
-  padding: var(--sigil-space-xl, 2rem);
+  overflow: hidden;
   transition: transform 0.2s, border-color 0.2s;
 }
 .sigil-feature-card:hover {
   transform: translateY(-2px);
   border-color: var(--sigil-primary, #90b9ab);
 }
+.sigil-feature-image {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+.sigil-feature-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+.sigil-feature-card:hover .sigil-feature-image img {
+  transform: scale(1.05);
+}
 .sigil-feature-icon {
   font-size: 2rem;
   margin-bottom: var(--sigil-space-md, 1rem);
+  padding: var(--sigil-space-xl, 2rem) var(--sigil-space-xl, 2rem) 0;
 }
 .sigil-feature-card h3 {
   font-family: var(--sigil-font-family-heading, var(--sigil-font-family));
   margin-bottom: var(--sigil-space-sm, 0.5rem);
   font-size: 1.125rem;
+  padding: var(--sigil-space-md, 1rem) var(--sigil-space-xl, 2rem) 0;
 }
 .sigil-feature-card p {
   color: var(--sigil-text-secondary, #B8B8B8);
   font-size: var(--sigil-font-size-sm, 0.875rem);
   line-height: 1.6;
+  padding: 0 var(--sigil-space-xl, 2rem) var(--sigil-space-xl, 2rem);
 }
 
 /* === Gallery === */

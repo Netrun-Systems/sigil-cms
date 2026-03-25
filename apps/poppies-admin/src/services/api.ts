@@ -130,3 +130,23 @@ export function importSquarePayments(siteId: string, beginTime?: string, endTime
     body: JSON.stringify({ begin_time: beginTime, end_time: endTime }),
   });
 }
+
+// ── Generic API hook for new plugins ────────────────────────────────
+
+/**
+ * useApi() returns a generic CRUD helper scoped to the current site.
+ * Usage: const api = useApi(); api.get('/shifts/today');
+ */
+export function useApi() {
+  const siteId = localStorage.getItem('poppies_site_id') || 'default';
+
+  return {
+    get: <T = any>(path: string) => request<T>(`/sites/${siteId}${path}`),
+    post: <T = any>(path: string, body?: Record<string, unknown>) =>
+      request<T>(`/sites/${siteId}${path}`, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+    put: <T = any>(path: string, body?: Record<string, unknown>) =>
+      request<T>(`/sites/${siteId}${path}`, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
+    delete: <T = any>(path: string, body?: Record<string, unknown>) =>
+      request<T>(`/sites/${siteId}${path}`, { method: 'DELETE', body: body ? JSON.stringify(body) : undefined }),
+  };
+}

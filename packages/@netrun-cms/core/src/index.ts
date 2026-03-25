@@ -31,6 +31,15 @@ export const PAGE_TEMPLATE = {
   PRODUCT: 'product',
   CONTACT: 'contact',
   ARTIST: 'artist',
+  SMALL_BUSINESS: 'small_business',
+  ECOMMERCE: 'ecommerce',
+  RESTAURANT: 'restaurant',
+  AGENCY: 'agency',
+  SAAS: 'saas',
+  CONSULTANT: 'consultant',
+  COMMUNITY: 'community',
+  PUBLISHER: 'publisher',
+  COOPERATIVE: 'cooperative',
 } as const;
 
 export const BLOCK_TYPE = {
@@ -586,6 +595,26 @@ export interface BlockSettings {
 }
 
 // ============================================================================
+// THEME LOCK TYPES
+// ============================================================================
+
+export interface ThemeLockState {
+  colors: boolean;
+  typography: boolean;
+  spacing: boolean;
+  effects: boolean;
+  blockDefaults: boolean;
+}
+
+export const DEFAULT_THEME_LOCKS: ThemeLockState = {
+  colors: false,
+  typography: false,
+  spacing: false,
+  effects: false,
+  blockDefaults: false,
+};
+
+// ============================================================================
 // MEDIA TYPES
 // ============================================================================
 
@@ -656,7 +685,7 @@ export const createPageSchema = z.object({
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
   ogImageUrl: z.string().url().optional(),
-  template: z.enum(['default', 'landing', 'blog', 'product', 'contact', 'artist']).default('default'),
+  template: z.enum(['default', 'landing', 'blog', 'product', 'contact', 'artist', 'small_business', 'ecommerce', 'restaurant', 'agency', 'saas', 'consultant', 'community', 'publisher', 'cooperative']).default('default'),
   sortOrder: z.number().int().default(0),
 });
 
@@ -841,6 +870,20 @@ export type {
   PlanDefinition,
   PlanName,
 } from './plans.js';
+
+// ============================================================================
+// VERTICAL TEMPLATE REGISTRY
+// ============================================================================
+
+export {
+  verticalTemplates,
+  getTemplateById,
+  getTemplatesByCategory,
+} from './templates.js';
+
+export type {
+  VerticalTemplate,
+} from './templates.js';
 
 // ============================================================================
 // DEFAULT THEME TOKENS

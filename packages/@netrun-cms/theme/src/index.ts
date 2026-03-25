@@ -30,7 +30,11 @@ export {
   intirkonPreset,
   minimalPreset,
   type ThemePreset,
+  type ThemeBlockDefaults,
 } from './presets';
+
+// Block defaults
+export { getBlockDefaults } from './block-defaults';
 
 // Re-export core theme types and utilities
 export {

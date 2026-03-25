@@ -3,10 +3,7 @@
  *
  * Routes correspond to the admin nav items registered by each plugin:
  *   - Sigil plugins: artist, store, photos, booking, contact, mailing-list, seo
- *   - Poppies plugin: @poppies/consignment
- *
- * Custom pages combine data from multiple plugins (e.g., Artist Dashboard
- * shows profile + products + sales from artist + store + consignment).
+ *   - Poppies plugins: consignment, shifts, messaging, notifications
  */
 
 import type { ComponentType } from 'react';
@@ -21,6 +18,14 @@ import ConsignmentPage from './pages/ConsignmentPage';
 import SettlementsPage from './pages/SettlementsPage';
 import MailingListPage from './pages/MailingListPage';
 import ContactsPage from './pages/ContactsPage';
+import ShiftsCalendarPage from './pages/ShiftsCalendarPage';
+import ShiftsTodayPage from './pages/ShiftsTodayPage';
+import CoverageRequestsPage from './pages/CoverageRequestsPage';
+import ChatroomsPage from './pages/ChatroomsPage';
+import ChatroomPage from './pages/ChatroomPage';
+import DirectMessagesPage from './pages/DirectMessagesPage';
+import NotificationsPage from './pages/NotificationsPage';
+import NotificationSettingsPage from './pages/NotificationSettingsPage';
 
 /**
  * Maps route paths (registered by Sigil and Poppies plugins) to page components.
@@ -48,6 +53,20 @@ export const pageRegistry: Record<string, ComponentType> = {
   // Consignment tracking (from @poppies/consignment plugin)
   '/consignment': ConsignmentPage,
   '/settlements': SettlementsPage,
+
+  // Shift scheduling (from @poppies/shifts plugin)
+  '/shifts': ShiftsCalendarPage,
+  '/shifts/today': ShiftsTodayPage,
+  '/shifts/coverage': CoverageRequestsPage,
+
+  // Messaging (from @poppies/messaging plugin)
+  '/messaging': ChatroomsPage,
+  '/messaging/rooms/:roomId': ChatroomPage,
+  '/messaging/dm': DirectMessagesPage,
+
+  // Notifications (from @poppies/notifications plugin)
+  '/notifications': NotificationsPage,
+  '/notifications/settings': NotificationSettingsPage,
 
   // Mailing list (from Sigil mailing-list plugin)
   '/mailing-list': MailingListPage,

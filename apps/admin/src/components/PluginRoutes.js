@@ -47,6 +47,9 @@ const knownPluginPages = {
     'sites/:siteId/booking/availability': () => import('../pages/Booking/AvailabilityEditor').then(m => ({ default: m.AvailabilityEditor })),
     // Docs plugin
     'sites/:siteId/docs/articles': () => import('../pages/Docs/ArticlesList').then(m => ({ default: m.ArticlesList })),
+    'sites/:siteId/docs/articles/new': () => import('../pages/Docs/ArticleEditor').then(m => ({ default: m.ArticleEditor })),
+    'sites/:siteId/docs/articles/:id': () => import('../pages/Docs/ArticleEditor').then(m => ({ default: m.ArticleEditor })),
+    'sites/:siteId/docs/articles/:id/revisions': () => import('../pages/Docs/RevisionsList').then(m => ({ default: m.RevisionsList })),
     'sites/:siteId/docs/categories': () => import('../pages/Docs/CategoriesList').then(m => ({ default: m.CategoriesList })),
     'sites/:siteId/docs/feedback': () => import('../pages/Docs/FeedbackList').then(m => ({ default: m.FeedbackList })),
     // Resonance plugin
@@ -55,6 +58,29 @@ const knownPluginPages = {
     // Marketplace plugin
     'marketplace': () => import('../pages/Marketplace/MarketplacePage').then(m => ({ default: m.MarketplacePage })),
     'marketplace/installed': () => import('../pages/Marketplace/MarketplacePage').then(m => ({ default: m.MarketplacePage })),
+    // POS plugin (Poppies)
+    'sites/:siteId/pos': () => import('../pages/POS/POSRegister').then(m => ({ default: m.POSRegister })),
+    'sites/:siteId/pos/products': () => import('../pages/POS/POSProducts').then(m => ({ default: m.POSProducts })),
+    'sites/:siteId/pos/sessions': () => import('../pages/POS/POSSessions').then(m => ({ default: m.POSSessions })),
+    'sites/:siteId/pos/reports': () => import('../pages/POS/POSReports').then(m => ({ default: m.POSReports })),
+    // KOG CRM plugin
+    'sites/:siteId/kog': () => import('../pages/KOG/LeadsPage').then(m => ({ default: m.LeadsPage })),
+    // Intirkast Broadcasting plugin
+    'sites/:siteId/intirkast': () => import('../pages/Intirkast/BroadcastsPage').then(m => ({ default: m.BroadcastsPage })),
+    // Migrate plugin
+    'sites/:siteId/migrate': () => import('../pages/Migrate/MigratePage').then(m => ({ default: m.MigratePage })),
+    // Webhooks plugin
+    'sites/:siteId/webhooks': () => import('../pages/Webhooks/WebhooksPage').then(m => ({ default: m.WebhooksPage })),
+    // KAMERA plugin
+    'sites/:siteId/kamera': () => import('../pages/KAMERA/ScansPage').then(m => ({ default: m.ScansPage })),
+    // Charlotte AI plugin
+    'sites/:siteId/charlotte': () => import('../pages/Charlotte/CharlottePage').then(m => ({ default: m.CharlottePage })),
+    // Support panel plugin
+    'sites/:siteId/support/announcements': () => import('../pages/Support/AnnouncementsPage').then(m => ({ default: m.AnnouncementsPage })),
+    'sites/:siteId/support/config': () => import('../pages/Support/PanelConfigPage').then(m => ({ default: m.PanelConfigPage })),
+    // Community forum plugin
+    'sites/:siteId/community': () => import('../pages/Community/ForumPage').then(m => ({ default: m.ForumPage })),
+    'sites/:siteId/community/members': () => import('../pages/Community/MembersPage').then(m => ({ default: m.MembersPage })),
 };
 // Create lazy components for known pages
 const lazyComponents = new Map();

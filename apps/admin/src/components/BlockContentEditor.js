@@ -7,7 +7,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useState } from 'react';
 import { Input, Label, Textarea, Button, Separator, } from '@netrun-cms/ui';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, Image } from 'lucide-react';
+import { ImagePicker } from './ImagePicker';
 /** Helper: update a single field in content */
 function updateField(content, field, value, onChange) {
     onChange({ ...content, [field]: value });
@@ -20,9 +21,20 @@ function FieldInput({ label, value, onChange, placeholder, type = 'text', }) {
 function FieldTextarea({ label, value, onChange, placeholder, rows = 4, }) {
     return (_jsxs("div", { className: "space-y-1.5", children: [_jsx(Label, { className: "text-sm", children: label }), _jsx(Textarea, { value: value, onChange: (e) => onChange(e.target.value), placeholder: placeholder, rows: rows })] }));
 }
+/**
+ * ImageUrlInput — a labeled URL input with a "Browse Stock Images" button.
+ * Replaces bare FieldInput for image URL fields.
+ */
+function ImageUrlInput({ label, value, onChange, placeholder, defaultQuery, vertical, }) {
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const handleSelect = (image) => {
+        onChange(image.url);
+    };
+    return (_jsxs("div", { className: "space-y-1.5", children: [_jsx(Label, { className: "text-sm", children: label }), _jsxs("div", { className: "flex items-center gap-2", children: [_jsx(Input, { type: "text", value: value, onChange: (e) => onChange(e.target.value), placeholder: placeholder, className: "flex-1" }), _jsx(Button, { variant: "outline", size: "icon", className: "h-9 w-9 shrink-0", title: "Browse stock images", onClick: () => setPickerOpen(true), type: "button", children: _jsx(Image, { className: "h-4 w-4" }) })] }), _jsx(ImagePicker, { open: pickerOpen, onOpenChange: setPickerOpen, onSelect: handleSelect, defaultQuery: defaultQuery, vertical: vertical })] }));
+}
 /** Hero block editor */
 function HeroEditor({ content, onChange }) {
-    return (_jsxs("div", { className: "space-y-3", children: [_jsx(FieldInput, { label: "Headline", value: content.headline || '', onChange: (v) => updateField(content, 'headline', v, onChange), placeholder: "Main heading text" }), _jsx(FieldInput, { label: "Subheadline", value: content.subheadline || '', onChange: (v) => updateField(content, 'subheadline', v, onChange), placeholder: "Supporting text" }), _jsx(FieldInput, { label: "Background Image URL", value: content.backgroundImage || '', onChange: (v) => updateField(content, 'backgroundImage', v, onChange), placeholder: "https://example.com/image.jpg" }), _jsx(Separator, {}), _jsx(FieldInput, { label: "CTA Text", value: content.ctaText || '', onChange: (v) => updateField(content, 'ctaText', v, onChange), placeholder: "Get Started" }), _jsx(FieldInput, { label: "CTA Link", value: content.ctaLink || '', onChange: (v) => updateField(content, 'ctaLink', v, onChange), placeholder: "/contact" })] }));
+    return (_jsxs("div", { className: "space-y-3", children: [_jsx(FieldInput, { label: "Headline", value: content.headline || '', onChange: (v) => updateField(content, 'headline', v, onChange), placeholder: "Main heading text" }), _jsx(FieldInput, { label: "Subheadline", value: content.subheadline || '', onChange: (v) => updateField(content, 'subheadline', v, onChange), placeholder: "Supporting text" }), _jsx(ImageUrlInput, { label: "Background Image URL", value: content.backgroundImage || '', onChange: (v) => updateField(content, 'backgroundImage', v, onChange), placeholder: "https://example.com/image.jpg", defaultQuery: "hero background" }), _jsx(Separator, {}), _jsx(FieldInput, { label: "CTA Text", value: content.ctaText || '', onChange: (v) => updateField(content, 'ctaText', v, onChange), placeholder: "Get Started" }), _jsx(FieldInput, { label: "CTA Link", value: content.ctaLink || '', onChange: (v) => updateField(content, 'ctaLink', v, onChange), placeholder: "/contact" })] }));
 }
 /** Text / Rich Text block editor */
 function TextEditor({ content, onChange }) {
@@ -42,6 +54,7 @@ function CtaEditor({ content, onChange }) {
 /** Gallery block editor - list of image URLs */
 function GalleryEditor({ content, onChange }) {
     const images = content.images || [];
+    const [pickerIndex, setPickerIndex] = useState(null);
     const addImage = () => {
         onChange({ ...content, images: [...images, ''] });
     };
@@ -54,7 +67,10 @@ function GalleryEditor({ content, onChange }) {
         updated[index] = value;
         onChange({ ...content, images: updated });
     };
-    return (_jsxs("div", { className: "space-y-3", children: [_jsx(FieldInput, { label: "Gallery Title", value: content.title || '', onChange: (v) => updateField(content, 'title', v, onChange), placeholder: "Gallery title (optional)" }), _jsx(Separator, {}), _jsx(Label, { className: "text-sm", children: "Images" }), _jsx("div", { className: "space-y-2", children: images.map((url, index) => (_jsxs("div", { className: "flex items-center gap-2", children: [_jsx(Input, { value: url, onChange: (e) => updateImage(index, e.target.value), placeholder: `Image URL ${index + 1}`, className: "flex-1" }), _jsx(Button, { variant: "ghost", size: "icon", className: "h-8 w-8 text-destructive hover:text-destructive", onClick: () => removeImage(index), children: _jsx(Trash2, { className: "h-4 w-4" }) })] }, index))) }), _jsxs(Button, { variant: "outline", size: "sm", onClick: addImage, children: [_jsx(Plus, { className: "mr-1 h-4 w-4" }), "Add Image"] })] }));
+    return (_jsxs("div", { className: "space-y-3", children: [_jsx(FieldInput, { label: "Gallery Title", value: content.title || '', onChange: (v) => updateField(content, 'title', v, onChange), placeholder: "Gallery title (optional)" }), _jsx(Separator, {}), _jsx(Label, { className: "text-sm", children: "Images" }), pickerIndex !== null && (_jsx(ImagePicker, { open: true, onOpenChange: (o) => !o && setPickerIndex(null), onSelect: (img) => {
+                    updateImage(pickerIndex, img.url);
+                    setPickerIndex(null);
+                }, defaultQuery: "gallery" })), _jsx("div", { className: "space-y-2", children: images.map((url, index) => (_jsxs("div", { className: "flex items-center gap-2", children: [_jsx(Input, { value: url, onChange: (e) => updateImage(index, e.target.value), placeholder: `Image URL ${index + 1}`, className: "flex-1" }), _jsx(Button, { variant: "outline", size: "icon", className: "h-8 w-8 shrink-0", title: "Browse stock images", onClick: () => setPickerIndex(index), type: "button", children: _jsx(Image, { className: "h-4 w-4" }) }), _jsx(Button, { variant: "ghost", size: "icon", className: "h-8 w-8 text-destructive hover:text-destructive", onClick: () => removeImage(index), children: _jsx(Trash2, { className: "h-4 w-4" }) })] }, index))) }), _jsxs(Button, { variant: "outline", size: "sm", onClick: addImage, children: [_jsx(Plus, { className: "mr-1 h-4 w-4" }), "Add Image"] })] }));
 }
 /** Feature Grid block editor */
 function FeatureGridEditor({ content, onChange }) {
@@ -78,10 +94,10 @@ function FeatureGridEditor({ content, onChange }) {
 }
 /** Image block editor */
 function ImageEditor({ content, onChange }) {
-    return (_jsxs("div", { className: "space-y-3", children: [_jsx(FieldInput, { label: "Image URL", value: content.src || content.url || '', onChange: (v) => {
+    return (_jsxs("div", { className: "space-y-3", children: [_jsx(ImageUrlInput, { label: "Image URL", value: content.src || content.url || '', onChange: (v) => {
                     const key = 'url' in content ? 'url' : 'src';
                     updateField(content, key, v, onChange);
-                }, placeholder: "https://example.com/image.jpg" }), _jsx(FieldInput, { label: "Alt Text", value: content.alt || '', onChange: (v) => updateField(content, 'alt', v, onChange), placeholder: "Descriptive alt text" }), _jsx(FieldInput, { label: "Caption", value: content.caption || '', onChange: (v) => updateField(content, 'caption', v, onChange), placeholder: "Image caption (optional)" })] }));
+                }, placeholder: "https://example.com/image.jpg", defaultQuery: "image" }), _jsx(FieldInput, { label: "Alt Text", value: content.alt || '', onChange: (v) => updateField(content, 'alt', v, onChange), placeholder: "Descriptive alt text" }), _jsx(FieldInput, { label: "Caption", value: content.caption || '', onChange: (v) => updateField(content, 'caption', v, onChange), placeholder: "Image caption (optional)" })] }));
 }
 /** Video block editor */
 function VideoEditor({ content, onChange }) {

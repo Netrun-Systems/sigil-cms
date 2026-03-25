@@ -1,0 +1,100 @@
+{
+  "name": "@netrun-cms/icons",
+  "version": "1.0.0",
+  "description": "Comprehensive icon library for Sigil CMS — 200+ SVG icons across 13 verticals with admin IconPicker",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./general": {
+      "import": "./dist/general.mjs",
+      "require": "./dist/general.js",
+      "types": "./dist/general.d.ts"
+    },
+    "./navigation": {
+      "import": "./dist/navigation.mjs",
+      "require": "./dist/navigation.js",
+      "types": "./dist/navigation.d.ts"
+    },
+    "./content": {
+      "import": "./dist/content.mjs",
+      "require": "./dist/content.js",
+      "types": "./dist/content.d.ts"
+    },
+    "./commerce": {
+      "import": "./dist/commerce.mjs",
+      "require": "./dist/commerce.js",
+      "types": "./dist/commerce.d.ts"
+    },
+    "./social": {
+      "import": "./dist/social.mjs",
+      "require": "./dist/social.js",
+      "types": "./dist/social.d.ts"
+    },
+    "./restaurant": {
+      "import": "./dist/restaurant.mjs",
+      "require": "./dist/restaurant.js",
+      "types": "./dist/restaurant.d.ts"
+    },
+    "./music": {
+      "import": "./dist/music.mjs",
+      "require": "./dist/music.js",
+      "types": "./dist/music.d.ts"
+    },
+    "./business": {
+      "import": "./dist/business.mjs",
+      "require": "./dist/business.js",
+      "types": "./dist/business.d.ts"
+    },
+    "./saas": {
+      "import": "./dist/saas.mjs",
+      "require": "./dist/saas.js",
+      "types": "./dist/saas.d.ts"
+    },
+    "./community": {
+      "import": "./dist/community.mjs",
+      "require": "./dist/community.js",
+      "types": "./dist/community.d.ts"
+    },
+    "./publishing": {
+      "import": "./dist/publishing.mjs",
+      "require": "./dist/publishing.js",
+      "types": "./dist/publishing.d.ts"
+    },
+    "./scheduling": {
+      "import": "./dist/scheduling.mjs",
+      "require": "./dist/scheduling.js",
+      "types": "./dist/scheduling.d.ts"
+    },
+    "./status": {
+      "import": "./dist/status.mjs",
+      "require": "./dist/status.js",
+      "types": "./dist/status.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  }
+}

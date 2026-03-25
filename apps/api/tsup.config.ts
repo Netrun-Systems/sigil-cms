@@ -33,6 +33,8 @@ export default defineConfig({
     '@netrun-cms/plugin-support',
     '@netrun-cms/plugin-community',
     '@netrun-cms/plugin-marketplace',
+    // Poppies plugins
+    '@poppies/pos',
     // Platform runtime (if referenced)
     '@netrun/platform-runtime',
   ],

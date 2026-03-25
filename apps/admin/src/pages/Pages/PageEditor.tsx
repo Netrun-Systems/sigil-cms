@@ -54,8 +54,10 @@ import {
 } from '@netrun-cms/ui';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { BlockType } from '@netrun-cms/core';
+import { useTheme, themePresets, type ThemePreset } from '@netrun-cms/theme';
 import { api } from '../../lib/api';
 import { BlockContentEditor } from '../../components/BlockContentEditor';
+import { BlockGrid } from '../../components/BlockGrid';
 import { LanguageSelector } from '../../components/LanguageSelector';
 import { RevisionHistory } from '../../components/RevisionHistory';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -72,6 +74,13 @@ interface ContentBlock {
   type: BlockType;
   content: Record<string, unknown>;
   isVisible: boolean;
+  colSpan?: number; // 1-12, default 12 (full width)
+  settings?: {
+    width?: string;
+    padding?: string;
+    background?: string;
+    animation?: string;
+  };
 }
 
 interface PageFormData {
@@ -278,6 +287,7 @@ function EditorContent({
   activeTab,
   setActiveTab,
   blocks,
+  setBlocks,
   selectedBlockId,
   setSelectedBlockId,
   handleDeleteBlock,
@@ -291,6 +301,7 @@ function EditorContent({
   activeTab: string;
   setActiveTab: (tab: string) => void;
   blocks: ContentBlock[];
+  setBlocks: React.Dispatch<React.SetStateAction<ContentBlock[]>>;
   selectedBlockId: string | null;
   setSelectedBlockId: (id: string | null) => void;
   handleDeleteBlock: (id: string) => void;
@@ -311,54 +322,47 @@ function EditorContent({
       {/* Content Blocks Tab */}
       <TabsContent value="content" className="space-y-4 mt-4">
         {blocks.length > 0 ? (
-          <div className="space-y-3">
-            {blocks.map((block) => (
-              <div key={block.id}>
-                <BlockPreview
-                  block={block}
-                  isSelected={selectedBlockId === block.id}
-                  onEdit={() =>
-                    setSelectedBlockId(
-                      selectedBlockId === block.id ? null : block.id
-                    )
-                  }
-                  onDelete={() => {
-                    handleDeleteBlock(block.id);
-                    if (selectedBlockId === block.id) setSelectedBlockId(null);
-                  }}
-                  onToggleVisibility={() => handleToggleBlockVisibility(block.id)}
-                  onMoveUp={() => handleMoveBlock(block.id, 'up')}
-                  onMoveDown={() => handleMoveBlock(block.id, 'down')}
-                />
-                {selectedBlockId === block.id && (
-                  <Card className="mt-2 border-primary/30">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-base">
-                          Edit {blockTypes.find((b) => b.type === block.type)?.label || block.type} Content
-                        </CardTitle>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => setSelectedBlockId(null)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <BlockContentEditor
-                        blockType={block.type}
-                        content={block.content}
-                        onChange={(content) => handleBlockContentChange(block.id, content)}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ))}
-          </div>
+          <BlockGrid
+            blocks={blocks}
+            selectedBlockId={selectedBlockId}
+            onSelect={setSelectedBlockId}
+            onReorder={setBlocks}
+            onResize={(blockId, colSpan) => {
+              setBlocks((prev) =>
+                prev.map((b) =>
+                  b.id === blockId ? { ...b, colSpan } : b
+                )
+              );
+            }}
+            onEdit={(id) =>
+              setSelectedBlockId(selectedBlockId === id ? null : id)
+            }
+            onDelete={(id) => {
+              handleDeleteBlock(id);
+              if (selectedBlockId === id) setSelectedBlockId(null);
+            }}
+            onToggleVisibility={handleToggleBlockVisibility}
+            renderBlock={(block, isSelected) => (
+              <BlockPreview
+                block={block}
+                isSelected={isSelected}
+                onEdit={() =>
+                  setSelectedBlockId(
+                    selectedBlockId === block.id ? null : block.id
+                  )
+                }
+                onDelete={() => {
+                  handleDeleteBlock(block.id);
+                  if (selectedBlockId === block.id) setSelectedBlockId(null);
+                }}
+                onToggleVisibility={() =>
+                  handleToggleBlockVisibility(block.id)
+                }
+                onMoveUp={() => handleMoveBlock(block.id, 'up')}
+                onMoveDown={() => handleMoveBlock(block.id, 'down')}
+              />
+            )}
+          />
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -372,6 +376,41 @@ function EditorContent({
             </CardContent>
           </Card>
         )}
+
+        {/* Block content editor — shown below the grid when a block is selected */}
+        {selectedBlockId && (() => {
+          const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
+          if (!selectedBlock) return null;
+          return (
+            <Card className="border-primary/30">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">
+                    Edit {blockTypes.find((b) => b.type === selectedBlock.type)?.label || selectedBlock.type} Content
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setSelectedBlockId(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <BlockContentEditor
+                  blockType={selectedBlock.type}
+                  content={selectedBlock.content}
+                  onChange={(content) =>
+                    handleBlockContentChange(selectedBlock.id, content)
+                  }
+                />
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         <AddBlockButton onAdd={handleAddBlock} />
       </TabsContent>
 
@@ -469,6 +508,21 @@ export function PageEditor() {
   const [showSchedulePanel, setShowSchedulePanel] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('edit');
   const [previewViewport, setPreviewViewport] = useState<ViewportSize>('desktop');
+
+  // --- Active theme for block defaults ---
+  const [activeThemePreset, setActiveThemePreset] = useState<ThemePreset | null>(null);
+  useEffect(() => {
+    if (!siteId) return;
+    api.get<{ data: Record<string, unknown> }>('/sites/' + siteId + '/themes/active').then((res) => {
+      const theme = res.data;
+      if (theme && theme.baseTheme) {
+        const preset = themePresets.find((p) => p.id === (theme.baseTheme as string));
+        if (preset) setActiveThemePreset(preset);
+      }
+    }).catch(() => {
+      // No active theme — use no block defaults
+    });
+  }, [siteId]);
 
   // --- Live Preview Channel ---
   const { iframeRef, sendUpdate } = usePreviewChannel();
@@ -569,11 +623,21 @@ export function PageEditor() {
   };
 
   const handleAddBlock = (type: string) => {
+    // Get block defaults from active theme's blockDefaults
+    const themeDefaults = activeThemePreset?.blockDefaults?.[type] || {};
+
     const newBlock: ContentBlock = {
       id: Date.now().toString(),
       type: type as BlockType,
       content: {},
       isVisible: true,
+      colSpan: themeDefaults.colSpan || 12,
+      settings: {
+        width: themeDefaults.width,
+        padding: themeDefaults.padding,
+        background: themeDefaults.background,
+        animation: themeDefaults.animation,
+      },
     };
     setBlocks((prev) => [...prev, newBlock]);
   };
@@ -809,6 +873,7 @@ export function PageEditor() {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 blocks={blocks}
+                setBlocks={setBlocks}
                 selectedBlockId={selectedBlockId}
                 setSelectedBlockId={setSelectedBlockId}
                 handleDeleteBlock={handleDeleteBlock}
@@ -840,6 +905,7 @@ export function PageEditor() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               blocks={blocks}
+              setBlocks={setBlocks}
               selectedBlockId={selectedBlockId}
               setSelectedBlockId={setSelectedBlockId}
               handleDeleteBlock={handleDeleteBlock}

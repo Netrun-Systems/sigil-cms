@@ -15,6 +15,7 @@ import {
   Space,
   MousePointer2,
   Wand2,
+  Lock,
 } from 'lucide-react';
 import {
   Card,
@@ -49,6 +50,8 @@ import { FontBrowser, type CustomFont, generateFontFaceCss } from '../../compone
 import { AIDesignPanel } from '../../components/AIDesignPanel';
 import { DesignAdvisor } from '../../components/DesignAdvisor';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useThemeWithLocks } from '../../hooks/useThemeWithLocks';
+import { ThemeLockPanel } from '../../components/ThemeLockPanel';
 
 // ============================================================================
 // CONTROLS
@@ -525,9 +528,13 @@ export function ThemeEditor() {
   const [activeThemeId, setActiveThemeId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Lock/unlock toggles for design layers
+  const { locks, setLocks, applyPreset: applyPresetWithLocks, setCurrentTokens: setLockedTokens } = useThemeWithLocks();
+
   useEffect(() => {
     setCustomTokens(tokens);
-  }, [tokens]);
+    setLockedTokens(tokens);
+  }, [tokens, setLockedTokens]);
 
   // Load active theme from API
   useEffect(() => {
@@ -542,21 +549,23 @@ export function ThemeEditor() {
         if (theme.tokens) {
           const savedTokens = theme.tokens as ThemeTokens;
           setCustomTokens(savedTokens);
+          setLockedTokens(savedTokens);
           setSiteTheme({ darkTokens: savedTokens, lightTokens: savedTokens });
         }
       }
     }).catch(() => {
       // No active theme yet — that's fine, use defaults
     });
-  }, [siteId, setSiteTheme]);
+  }, [siteId, setSiteTheme, setLockedTokens]);
 
   const handlePresetSelect = (presetId: string) => {
     setSelectedPreset(presetId);
     const preset = themePresets.find((p) => p.id === presetId);
     if (preset) {
-      const newTokens = previewMode === 'dark' ? preset.darkTokens : preset.lightTokens;
-      setCustomTokens(newTokens);
-      setSiteTheme({ darkTokens: preset.darkTokens, lightTokens: preset.lightTokens });
+      // Apply preset with lock awareness — locked layers keep their current values
+      const mergedTokens = applyPresetWithLocks(preset, previewMode);
+      setCustomTokens(mergedTokens);
+      setSiteTheme({ darkTokens: mergedTokens, lightTokens: mergedTokens });
       setHasChanges(true);
     }
   };
@@ -605,6 +614,7 @@ export function ThemeEditor() {
     if (preset) {
       const newTokens = previewMode === 'dark' ? preset.darkTokens : preset.lightTokens;
       setCustomTokens(newTokens);
+      setLockedTokens(newTokens);
       setSiteTheme({ darkTokens: preset.darkTokens, lightTokens: preset.lightTokens });
       setHasChanges(false);
     }
@@ -737,6 +747,15 @@ export function ThemeEditor() {
               </TabsTrigger>
             </TabsList>
 
+            {/* Design Lock Toggles */}
+            <div className="mt-3 mb-1">
+              <ThemeLockPanel
+                locks={locks}
+                onLocksChange={setLocks}
+                disabled={!canEdit}
+              />
+            </div>
+
             {/* Presets Tab */}
             <TabsContent value="presets" className="mt-4">
               <Card>
@@ -758,7 +777,13 @@ export function ThemeEditor() {
             </TabsContent>
 
             {/* Colors Tab */}
-            <TabsContent value="colors" className="mt-4 space-y-4">
+            <TabsContent value="colors" className={cn('mt-4 space-y-4', locks.colors && 'opacity-60 pointer-events-none relative')}>
+              {locks.colors && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary pointer-events-auto opacity-100">
+                  <Lock className="h-4 w-4 flex-shrink-0" />
+                  Colors are locked. Switching presets will preserve these values.
+                </div>
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle>Brand Colors</CardTitle>
@@ -806,7 +831,13 @@ export function ThemeEditor() {
             </TabsContent>
 
             {/* Typography Tab */}
-            <TabsContent value="typography" className="mt-4 space-y-4">
+            <TabsContent value="typography" className={cn('mt-4 space-y-4', locks.typography && 'opacity-60 pointer-events-none relative')}>
+              {locks.typography && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary pointer-events-auto opacity-100">
+                  <Lock className="h-4 w-4 flex-shrink-0" />
+                  Typography is locked. Switching presets will preserve these values.
+                </div>
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle>Font Families</CardTitle>
@@ -908,7 +939,13 @@ export function ThemeEditor() {
             </TabsContent>
 
             {/* Shapes Tab */}
-            <TabsContent value="shapes" className="mt-4 space-y-4">
+            <TabsContent value="shapes" className={cn('mt-4 space-y-4', locks.effects && 'opacity-60 pointer-events-none relative')}>
+              {locks.effects && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary pointer-events-auto opacity-100">
+                  <Lock className="h-4 w-4 flex-shrink-0" />
+                  Effects are locked. Switching presets will preserve these values.
+                </div>
+              )}
               <Card>
                 <CardHeader><CardTitle>Button Shape</CardTitle><CardDescription>Dramatically changes the feel — square is corporate, pill is playful</CardDescription></CardHeader>
                 <CardContent>
@@ -930,7 +967,13 @@ export function ThemeEditor() {
             </TabsContent>
 
             {/* Effects Tab */}
-            <TabsContent value="effects" className="mt-4 space-y-4">
+            <TabsContent value="effects" className={cn('mt-4 space-y-4', locks.effects && 'opacity-60 pointer-events-none relative')}>
+              {locks.effects && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary pointer-events-auto opacity-100">
+                  <Lock className="h-4 w-4 flex-shrink-0" />
+                  Effects are locked. Switching presets will preserve these values.
+                </div>
+              )}
               <Card>
                 <CardHeader><CardTitle>Shadows</CardTitle></CardHeader>
                 <CardContent>
@@ -989,7 +1032,13 @@ export function ThemeEditor() {
             </TabsContent>
 
             {/* Spacing Tab */}
-            <TabsContent value="spacing" className="mt-4">
+            <TabsContent value="spacing" className={cn('mt-4', locks.spacing && 'opacity-60 pointer-events-none relative')}>
+              {locks.spacing && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary pointer-events-auto opacity-100 mb-4">
+                  <Lock className="h-4 w-4 flex-shrink-0" />
+                  Spacing is locked. Switching presets will preserve these values.
+                </div>
+              )}
               <Card>
                 <CardHeader><CardTitle>Spacing Scale</CardTitle><CardDescription>Controls whitespace and breathing room</CardDescription></CardHeader>
                 <CardContent className="space-y-4">

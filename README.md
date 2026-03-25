@@ -236,23 +236,23 @@ Scale-to-zero on Cloud Run and Fargate means you pay almost nothing when the adm
 
 For teams that want managed hosting, automatic updates, and priority support.
 
-| | **Starter** | **Team** | **Business** | **Enterprise** |
+| | **Solo** | **Team** | **Business** | **Enterprise** |
 |---|---|---|---|---|
-| **Price** | Free | $29/mo | $79/mo | $249/mo |
+| **Price** | $12/mo | $29/mo | $79/mo | $249/mo |
 | **Seats** | 3 | 10 | 25 | Unlimited |
 | **Sites** | 1 | 5 | 25 | Unlimited |
-| **Content items** | 1,000 | 10,000 | 100,000 | Unlimited |
-| **Media storage** | 1 GB | 10 GB | 100 GB | 1 TB |
-| **API calls** | 50K/mo | 500K/mo | 5M/mo | Unlimited |
+| **Content items** | 5,000 | 10,000 | 100,000 | Unlimited |
+| **Media storage** | 5 GB | 10 GB | 100 GB | 1 TB |
+| **API calls** | 100K/mo | 500K/mo | 5M/mo | Unlimited |
 | **Plugins** | Core (8) | All (19) | All (19) | All + custom |
-| **Design Playground** | Basic | Full | Full | Full + white-label |
+| **Design Playground** | Full | Full | Full | Full + white-label |
 | **Multi-tenancy** | -- | -- | Yes | Yes |
 | **Resonance analytics** | -- | -- | Yes | Yes |
 | **SSO (SAML/OIDC)** | -- | -- | -- | Yes |
 | **Support** | Community | Email (48h) | Email (24h) | Dedicated (4h SLA) |
 | **SLA** | -- | 99.5% | 99.9% | 99.95% |
 
-Annual billing: 2 months free (save 17%).
+Annual billing: 2 months free (save 17%). Self-hosted is always free and unlimited.
 
 ## Architecture
 

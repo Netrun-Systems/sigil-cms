@@ -13,7 +13,9 @@ import {
   Button,
   Separator,
 } from '@netrun-cms/ui';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, Image } from 'lucide-react';
+import { ImagePicker } from './ImagePicker';
+import type { StockImage } from './ImagePicker';
 
 export interface BlockContentEditorProps {
   blockType: string;
@@ -85,6 +87,64 @@ function FieldTextarea({
   );
 }
 
+/**
+ * ImageUrlInput — a labeled URL input with a "Browse Stock Images" button.
+ * Replaces bare FieldInput for image URL fields.
+ */
+function ImageUrlInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  defaultQuery,
+  vertical,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  defaultQuery?: string;
+  vertical?: string;
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const handleSelect = (image: StockImage) => {
+    onChange(image.url);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-sm">{label}</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          title="Browse stock images"
+          onClick={() => setPickerOpen(true)}
+          type="button"
+        >
+          <Image className="h-4 w-4" />
+        </Button>
+      </div>
+      <ImagePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={handleSelect}
+        defaultQuery={defaultQuery}
+        vertical={vertical}
+      />
+    </div>
+  );
+}
+
 /** Hero block editor */
 function HeroEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (c: Record<string, unknown>) => void }) {
   return (
@@ -101,11 +161,12 @@ function HeroEditor({ content, onChange }: { content: Record<string, unknown>; o
         onChange={(v) => updateField(content, 'subheadline', v, onChange)}
         placeholder="Supporting text"
       />
-      <FieldInput
+      <ImageUrlInput
         label="Background Image URL"
         value={(content.backgroundImage as string) || ''}
         onChange={(v) => updateField(content, 'backgroundImage', v, onChange)}
         placeholder="https://example.com/image.jpg"
+        defaultQuery="hero background"
       />
       <Separator />
       <FieldInput
@@ -183,6 +244,7 @@ function CtaEditor({ content, onChange }: { content: Record<string, unknown>; on
 /** Gallery block editor - list of image URLs */
 function GalleryEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (c: Record<string, unknown>) => void }) {
   const images = (content.images as string[]) || [];
+  const [pickerIndex, setPickerIndex] = useState<number | null>(null);
 
   const addImage = () => {
     onChange({ ...content, images: [...images, ''] });
@@ -209,6 +271,17 @@ function GalleryEditor({ content, onChange }: { content: Record<string, unknown>
       />
       <Separator />
       <Label className="text-sm">Images</Label>
+      {pickerIndex !== null && (
+        <ImagePicker
+          open
+          onOpenChange={(o) => !o && setPickerIndex(null)}
+          onSelect={(img) => {
+            updateImage(pickerIndex, img.url);
+            setPickerIndex(null);
+          }}
+          defaultQuery="gallery"
+        />
+      )}
       <div className="space-y-2">
         {images.map((url, index) => (
           <div key={index} className="flex items-center gap-2">
@@ -218,6 +291,16 @@ function GalleryEditor({ content, onChange }: { content: Record<string, unknown>
               placeholder={`Image URL ${index + 1}`}
               className="flex-1"
             />
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              title="Browse stock images"
+              onClick={() => setPickerIndex(index)}
+              type="button"
+            >
+              <Image className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -319,7 +402,7 @@ function FeatureGridEditor({ content, onChange }: { content: Record<string, unkn
 function ImageEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (c: Record<string, unknown>) => void }) {
   return (
     <div className="space-y-3">
-      <FieldInput
+      <ImageUrlInput
         label="Image URL"
         value={(content.src as string) || (content.url as string) || ''}
         onChange={(v) => {
@@ -327,6 +410,7 @@ function ImageEditor({ content, onChange }: { content: Record<string, unknown>; 
           updateField(content, key, v, onChange);
         }}
         placeholder="https://example.com/image.jpg"
+        defaultQuery="image"
       />
       <FieldInput
         label="Alt Text"

@@ -19,7 +19,17 @@ import {
   pages,
   seedArtistTemplate,
   seedSigilLanding,
+  seedSmallBusinessTemplate,
+  seedEcommerceTemplate,
+  seedRestaurantTemplate,
+  seedAgencyTemplate,
+  seedSaasTemplate,
+  seedConsultantTemplate,
+  seedCommunityTemplate,
+  seedPublisherTemplate,
+  seedCooperativeTemplate,
 } from '@netrun-cms/db';
+import { getTemplateById } from '@netrun-cms/core';
 import { getPresetById } from '@netrun-cms/theme/presets';
 import { getDb } from '../db.js';
 import { authenticate, requireRole, generateToken } from '../middleware/index.js';
@@ -394,6 +404,164 @@ router.post(
       success: true,
       data: {
         site: { id: site.id, slug: site.slug, status: site.status },
+        pages: Number(pageCount),
+        theme: themeRecord
+          ? { id: themeRecord.id, isActive: themeRecord.isActive }
+          : null,
+      },
+    });
+  }
+);
+
+// ============================================================================
+// Seed function registry — maps template IDs to their seed functions
+// ============================================================================
+const templateSeedFns: Record<string, (db: ReturnType<typeof getDb>, siteId: string) => Promise<unknown>> = {
+  artist: seedArtistTemplate,
+  small_business: seedSmallBusinessTemplate,
+  ecommerce: seedEcommerceTemplate,
+  restaurant: seedRestaurantTemplate,
+  agency: seedAgencyTemplate,
+  saas: seedSaasTemplate,
+  consultant: seedConsultantTemplate,
+  community: seedCommunityTemplate,
+  publisher: seedPublisherTemplate,
+  cooperative: seedCooperativeTemplate,
+};
+
+// ============================================================================
+// POST /from-template - Create a site from a vertical template
+// Auth: JWT Bearer token (admin role required)
+// ============================================================================
+router.post(
+  '/from-template',
+  authenticate,
+  requireRole('admin'),
+  async (req: AuthenticatedRequest, res) => {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+
+    const { templateId, siteName, siteSlug } = req.body;
+
+    // Validate required fields
+    if (!templateId || !siteName || !siteSlug) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'templateId, siteName, and siteSlug are required',
+        },
+      });
+      return;
+    }
+
+    // Look up template from registry
+    const template = getTemplateById(templateId as string);
+    if (!template) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TEMPLATE',
+          message: `Template '${templateId}' not found. Valid templates: ${Object.keys(templateSeedFns).join(', ')}`,
+        },
+      });
+      return;
+    }
+
+    // Check if seed function exists
+    const seedFn = templateSeedFns[template.id];
+    if (!seedFn) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'TEMPLATE_NOT_IMPLEMENTED',
+          message: `Seed function for template '${template.id}' is not implemented`,
+        },
+      });
+      return;
+    }
+
+    // Check if site already exists for this tenant (409 Conflict)
+    const [existingSite] = await db
+      .select()
+      .from(sites)
+      .where(and(eq(sites.tenantId, tenantId), eq(sites.slug, siteSlug as string)))
+      .limit(1);
+
+    if (existingSite) {
+      res.status(409).json({
+        success: false,
+        error: {
+          code: 'SITE_EXISTS',
+          message: `Site with slug '${siteSlug}' already exists for this tenant`,
+        },
+        data: {
+          site: {
+            id: existingSite.id,
+            slug: existingSite.slug,
+            status: existingSite.status,
+          },
+        },
+      });
+      return;
+    }
+
+    // 1. Create site
+    const [site] = await db
+      .insert(sites)
+      .values({
+        tenantId,
+        name: siteName as string,
+        slug: siteSlug as string,
+        domain: (req.body.domain as string) || null,
+        template: templateId as string,
+        status: 'published',
+      })
+      .returning();
+
+    // 2. Run the matching seed function
+    await seedFn(db, site.id);
+
+    // 3. Apply the matching theme preset
+    let themeRecord: { id: string; isActive: boolean } | null = null;
+    const preset = getPresetById(template.presetId);
+    if (preset) {
+      const [insertedTheme] = await db
+        .insert(themes)
+        .values({
+          siteId: site.id,
+          name: preset.name,
+          isActive: true,
+          baseTheme: template.presetId,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          tokens: preset.darkTokens as any,
+        })
+        .returning();
+      themeRecord = insertedTheme;
+    }
+
+    // 4. Publish all pages
+    await db
+      .update(pages)
+      .set({ status: 'published', publishedAt: new Date() })
+      .where(eq(pages.siteId, site.id));
+
+    // Count seeded pages
+    const [{ value: pageCount }] = await db
+      .select({ value: count() })
+      .from(pages)
+      .where(eq(pages.siteId, site.id));
+
+    res.status(201).json({
+      success: true,
+      data: {
+        site: { id: site.id, slug: site.slug, status: site.status },
+        template: {
+          id: template.id,
+          name: template.name,
+          presetId: template.presetId,
+          plugins: template.plugins,
+        },
         pages: Number(pageCount),
         theme: themeRecord
           ? { id: themeRecord.id, isActive: themeRecord.isActive }

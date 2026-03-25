@@ -20,3 +20,14 @@ export { runMigrations } from './migrate';
 // Seed utilities
 export { seedArtistTemplate } from './seeds/artist-template';
 export { seedSigilLanding } from './seeds/sigil-landing';
+export {
+  seedSmallBusinessTemplate,
+  seedEcommerceTemplate,
+  seedRestaurantTemplate,
+  seedAgencyTemplate,
+  seedSaasTemplate,
+  seedConsultantTemplate,
+  seedCommunityTemplate,
+  seedPublisherTemplate,
+  seedCooperativeTemplate,
+} from './seeds/vertical-templates';

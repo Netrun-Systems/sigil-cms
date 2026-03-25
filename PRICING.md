@@ -37,20 +37,20 @@ Self-host Sigil on your own infrastructure — unlimited users, unlimited sites,
 
 For teams that want managed hosting, automatic updates, and priority support.
 
-| Feature | **Starter** | **Team** | **Business** | **Enterprise** |
-|---------|-------------|----------|--------------|----------------|
-| **Price** | **Free** | **$29/mo** | **$79/mo** | **$249/mo** |
+| Feature | **Solo** | **Team** | **Business** | **Enterprise** |
+|---------|----------|----------|--------------|----------------|
+| **Price** | **$12/mo** | **$29/mo** | **$79/mo** | **$249/mo** |
 | **Seats** | 3 | 10 | 25 | Unlimited |
 | **Sites** | 1 | 5 | 25 | Unlimited |
-| **Content items** | 1,000 | 10,000 | 100,000 | Unlimited |
-| **Media storage** | 1 GB | 10 GB | 100 GB | 1 TB |
-| **API calls** | 50K/mo | 500K/mo | 5M/mo | Unlimited |
-| **Custom domain** | - | Yes | Yes | Yes |
+| **Content items** | 5,000 | 10,000 | 100,000 | Unlimited |
+| **Media storage** | 5 GB | 10 GB | 100 GB | 1 TB |
+| **API calls** | 100K/mo | 500K/mo | 5M/mo | Unlimited |
+| **Custom domain** | Yes | Yes | Yes | Yes |
 | **Plugins** | Core (8) | All (19) | All (19) | All + custom |
 | **GraphQL API** | Yes | Yes | Yes | Yes |
-| **Content scheduling** | - | Yes | Yes | Yes |
+| **Content scheduling** | Yes | Yes | Yes | Yes |
 | **Resonance analytics** | - | - | Yes | Yes |
-| **Design Playground** | Basic | Full | Full | Full + white-label |
+| **Design Playground** | Full | Full | Full | Full + white-label |
 | **Multi-tenancy** | - | - | Yes | Yes |
 | **SSO (SAML/OIDC)** | - | - | - | Yes |
 | **Audit logs** | - | - | Yes | Yes |
@@ -99,7 +99,7 @@ A: Yes. No user limits, no site limits, no content limits, no API call limits. T
 **Q: Can I start self-hosted and migrate to cloud later?**
 A: Yes. `sigil migrate --to-cloud` exports your database and media, provisions your cloud instance, and imports everything. Takes about 10 minutes.
 
-**Q: What if I need more seats on the Starter plan?**
+**Q: What if I need more seats on the Solo plan?**
 A: Upgrade to Team ($29/mo for 10 seats). No per-seat pricing at any tier.
 
 **Q: Do you offer annual billing?**

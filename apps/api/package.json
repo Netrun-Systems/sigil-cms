@@ -42,6 +42,7 @@
     "@netrun-cms/plugin-community": "workspace:*",
     "@netrun-cms/plugin-marketplace": "workspace:*",
     "@netrun-cms/plugin-webhooks": "workspace:*",
+    "@poppies/pos": "workspace:*",
     "@netrun-cms/theme": "workspace:*",
     "@netrun/error-handling": "file:../../../netrun-shared-ts/packages/error-handling",
     "@netrun/health": "file:../../../netrun-shared-ts/packages/health",

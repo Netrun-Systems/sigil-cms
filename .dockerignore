@@ -3,11 +3,17 @@
 .gitignore
 
 # Dependencies (reinstalled in Docker)
+# NOTE: apps/api/node_modules is intentionally NOT excluded — needed by the production image
 node_modules
 **/node_modules
+!apps/api/node_modules
 
 # Build artifacts (rebuilt in Docker)
+# NOTE: apps/api/dist and apps/admin/dist are intentionally NOT excluded —
+# the production Dockerfiles use pre-built artifacts
 **/dist
+!apps/api/dist
+!apps/admin/dist
 **/.turbo
 
 # Development files

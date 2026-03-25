@@ -125,7 +125,7 @@ Sigil uses PostgreSQL with Drizzle ORM. The schema is declared in TypeScript (`p
 
 | Table | Purpose |
 |-------|---------|
-| `cms_tenants` | Multi-tenant root. Each tenant is an organization with a plan, settings, and active flag. Indexed by slug and plan. Plan constraint: `free`, `starter`, `pro`, `enterprise`. |
+| `cms_tenants` | Multi-tenant root. Each tenant is an organization with a plan, settings, and active flag. Indexed by slug and plan. Plan constraint: `solo`, `team`, `business`, `enterprise`. |
 | `cms_sites` | Individual websites per tenant. Stores name, slug, domain, default language, status, template, and settings JSONB (favicon, logo, social links, analytics, SEO). Unique constraint on `(tenantId, slug)`. |
 | `cms_themes` | Per-site theme customization. Stores base theme name, token JSONB (colors, typography, spacing, effects), and optional custom CSS. Active theme tracked via `isActive` flag. Base theme constraint: `netrun-dark`, `netrun-light`, `kog`, `intirkon`, `minimal`, `frost`, `custom`. |
 | `cms_pages` | Content pages with hierarchical structure (`parentId` self-reference), full `fullPath` computed field, status workflow (`draft`, `published`, `scheduled`, `archived`), language code, SEO fields with database-enforced length limits (metaTitle ≤ 60 chars, metaDescription ≤ 160 chars), and scheduling fields (`publishAt`, `unpublishAt`). GIN full-text index on title + metaDescription for PostgreSQL native search. |
@@ -406,7 +406,7 @@ Each site can have a custom domain with automatic SSL. The API validates domain 
 
 ### 4.10 SaaS Billing and Plan Enforcement
 
-Five pricing tiers (Free, Starter $12/mo, Pro $29/mo, Business $79/mo, Enterprise custom) with per-resource limits enforced by middleware: sites, pages per site, storage, media files, custom domains, plugin access, API access, and webhooks. Stripe Checkout handles upgrades, the Billing Portal handles self-service management, and webhooks sync plan changes in real time. The admin billing page shows usage meters with color-coded progress bars and a plan comparison grid with monthly/yearly toggle.
+Four pricing tiers (Solo $12/mo, Team $29/mo, Business $79/mo, Enterprise $249/mo) with per-resource limits enforced by middleware: sites, pages per site, storage, media files, custom domains, plugin access, API access, and webhooks. Stripe Checkout handles upgrades, the Billing Portal handles self-service management, and webhooks sync plan changes in real time. The admin billing page shows usage meters with color-coded progress bars and a plan comparison grid with monthly/yearly toggle.
 
 ---
 
@@ -1139,27 +1139,27 @@ A production self-hosted deployment on Google Cloud Run (scale-to-zero) costs ap
 
 ### 10.2 Cloud-Hosted Plans
 
-| Feature | Starter | Team | Business | Enterprise |
-|---------|---------|------|----------|------------|
-| **Price** | **Free** | **$29/mo** | **$79/mo** | **$249/mo** |
+| Feature | Solo | Team | Business | Enterprise |
+|---------|------|------|----------|------------|
+| **Price** | **$12/mo** | **$29/mo** | **$79/mo** | **$249/mo** |
 | **Seats** | 3 | 10 | 25 | Unlimited |
 | **Sites** | 1 | 5 | 25 | Unlimited |
-| **Content items** | 1,000 | 10,000 | 100,000 | Unlimited |
-| **Media storage** | 1 GB | 10 GB | 100 GB | 1 TB |
-| **API calls/mo** | 50K | 500K | 5M | Unlimited |
-| **Custom domain** | No | Yes | Yes | Yes |
+| **Content items** | 5,000 | 10,000 | 100,000 | Unlimited |
+| **Media storage** | 5 GB | 10 GB | 100 GB | 1 TB |
+| **API calls/mo** | 100K | 500K | 5M | Unlimited |
+| **Custom domain** | Yes | Yes | Yes | Yes |
 | **Plugins** | Core (8) | All (21) | All (21) | All + custom |
 | **GraphQL** | Yes | Yes | Yes | Yes |
-| **Content scheduling** | No | Yes | Yes | Yes |
+| **Content scheduling** | Yes | Yes | Yes | Yes |
 | **Resonance analytics** | No | No | Yes | Yes |
-| **Design Playground** | Basic | Full | Full | Full + white-label |
+| **Design Playground** | Full | Full | Full | Full + white-label |
 | **Multi-tenancy** | No | No | Yes | Yes |
 | **SSO (SAML/OIDC)** | No | No | No | Yes |
 | **Audit logs** | No | No | Yes | Yes |
 | **SLA** | None | 99.5% | 99.9% | 99.95% |
 | **Support** | Community | Email (48h) | Email (24h) | Dedicated (4h SLA) |
 
-Annual billing: 2 months free (17% discount) on all paid plans.
+Annual billing: 2 months free (17% discount) on all paid plans. Self-hosted is always free and unlimited.
 
 **Plan enforcement** is handled at the middleware layer. Every write operation checks the tenant's current plan against per-resource limits (sites, pages per site, storage, media files, custom domains, plugin access, API calls, and webhooks). Stripe Checkout handles upgrades, the Billing Portal handles self-service plan management, and Stripe webhooks sync plan changes to the `cms_tenants` table in real time. The admin billing page shows usage meters with color-coded progress bars (green under 70%, yellow 70-90%, red 90%+) and a plan comparison grid with monthly/yearly toggle.
 

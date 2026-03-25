@@ -16,6 +16,7 @@ import {
   FolderPlus,
   ArrowLeft,
   Check,
+  Globe,
 } from 'lucide-react';
 import {
   Card,
@@ -38,11 +39,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
   cn,
 } from '@netrun-cms/ui';
 import { useState, useEffect, useRef } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { usePermissions } from '../../hooks/usePermissions';
+import { StockImageBrowser } from './StockImageBrowser';
 
 interface MediaFile {
   id: string;
@@ -440,6 +446,25 @@ export function MediaLibrary() {
         </div>
       </div>
 
+      {/* Top-level tabs: My Media / Stock Images */}
+      <Tabs defaultValue="my-media">
+        <TabsList>
+          <TabsTrigger value="my-media">
+            <Image className="mr-2 h-4 w-4" />
+            My Media
+          </TabsTrigger>
+          <TabsTrigger value="stock">
+            <Globe className="mr-2 h-4 w-4" />
+            Stock Images
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="stock" className="mt-4">
+          <StockImageBrowser />
+        </TabsContent>
+
+        <TabsContent value="my-media" className="mt-4">
+
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
@@ -616,6 +641,8 @@ export function MediaLibrary() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
