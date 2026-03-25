@@ -18,6 +18,9 @@ import billingRouter from './billing.js';
 import authRouter from './auth.js';
 import tenantsRouter from './tenants.js';
 import auditRouter from './audit.js';
+import clipboardRouter from './clipboard.js';
+import dataExportRouter from './data-export.js';
+import twoFactorRouter from './two-factor.js';
 import blockTemplatesRouter from './block-templates.js';
 import { validateUuidParam, resolveSubdomain, auditLog } from '../middleware/index.js';
 
@@ -79,6 +82,16 @@ router.use('/sites/:siteId/block-templates', validateUuidParam('siteId'), blockT
 
 // Audit log: /api/v1/audit (tenant activity history for compliance)
 router.use('/audit', auditRouter);
+
+// Block clipboard: /api/v1/sites/:siteId/clipboard (copy/paste blocks between pages)
+router.use('/sites/:siteId/clipboard', validateUuidParam('siteId'), clipboardRouter);
+
+// Data export/import: /api/v1/sites/:siteId/export, /api/v1/sites/:siteId/import
+router.use('/sites/:siteId/export', validateUuidParam('siteId'), dataExportRouter);
+router.use('/sites/:siteId/import', validateUuidParam('siteId'), dataExportRouter);
+
+// Two-factor authentication: /api/v1/auth/2fa
+router.use('/auth/2fa', twoFactorRouter);
 
 // NOTE: The following routes have been moved to plugins:
 // - releases, events, artist-profiles → @netrun-cms/plugin-artist

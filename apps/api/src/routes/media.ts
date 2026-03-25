@@ -95,4 +95,13 @@ router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor', 'auth
  */
 router.delete('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), MediaController.delete);
 
+/**
+ * PUT /api/v1/sites/:siteId/media/:id/focal-point
+ * Set the focal point for responsive image cropping.
+ *
+ * Body: { x: number (0-100), y: number (0-100) }
+ * Default is (50, 50) = center.
+ */
+router.put('/:id/focal-point', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), MediaController.setFocalPoint);
+
 export default router;

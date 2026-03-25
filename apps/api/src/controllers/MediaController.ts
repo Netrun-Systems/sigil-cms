@@ -634,4 +634,63 @@ export class MediaController {
 
     res.status(created.length > 0 ? 201 : 400).json(response);
   }
+
+  /**
+   * Set the focal point for an image.
+   *
+   * PUT /api/v1/sites/:siteId/media/:id/focal-point
+   *
+   * The focal point defines the point of interest for responsive cropping.
+   * Values are percentages: x=0 is left edge, x=100 is right edge,
+   * y=0 is top, y=100 is bottom. Default is (50, 50) = center.
+   *
+   * Body: { x: number (0-100), y: number (0-100) }
+   */
+  static async setFocalPoint(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const { siteId, id } = req.params;
+    const { x, y } = req.body;
+
+    if (typeof x !== 'number' || typeof y !== 'number' || x < 0 || x > 100 || y < 0 || y > 100) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'x and y must be numbers between 0 and 100' },
+      });
+      return;
+    }
+
+    // Verify site belongs to tenant
+    const [site] = await db.select({ id: sites.id }).from(sites)
+      .where(and(eq(sites.id, siteId), eq(sites.tenantId, tenantId))).limit(1);
+    if (!site) {
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Site not found' } });
+      return;
+    }
+
+    // Update focal point via raw SQL (columns added by migration 005)
+    const result = await db.execute({
+      text: `
+        UPDATE cms_media SET focal_x = $1, focal_y = $2, updated_at = NOW()
+        WHERE id = $3 AND site_id = $4
+        RETURNING id, filename, url, focal_x, focal_y
+      `,
+      values: [x, y, id, siteId],
+    } as any);
+
+    const rows = (result as any).rows ?? result;
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Media not found' } });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: rows[0].id,
+        focalPoint: { x: rows[0].focal_x, y: rows[0].focal_y },
+        css: `object-position: ${x}% ${y}%`,
+      },
+    });
+  }
 }
