@@ -20,7 +20,7 @@ One deployment. Unlimited clients. Free forever.
 
 Every headless CMS forces agencies to choose between cloud lock-in (Sanity), plugin hell (Strapi), or running separate deployments per client. Sigil is the first headless CMS with **native multi-tenancy** -- one deployment serves unlimited client tenants with Row-Level Security at the database layer. No per-seat pricing traps, no separate instances per client, no vendor lock-in.
 
-Ship client sites with a **Design Playground** (1,400+ CSS variables, 70+ Google Fonts), block-level **Resonance analytics**, **AI design generation** (describe a page, get editable blocks), and **19 built-in plugins** covering e-commerce, booking, docs, artist content, and more -- all from a single MIT-licensed codebase you own.
+Ship client sites with a **Design Playground** (1,400+ CSS variables, 70+ Google Fonts), block-level **Resonance analytics**, **AI design generation** (describe a page, get editable blocks), and **21 built-in plugins** covering e-commerce, booking, docs, artist content, and more -- all from a single MIT-licensed codebase you own.
 
 ## Quick Start
 
@@ -44,13 +44,19 @@ npx sigil-cms create my-band --template artist
 
 | Feature | Sigil | Strapi | Sanity | Payload |
 |---------|-------|--------|--------|---------|
-| **Multi-tenancy** | Native (RLS) | No | No (per-project billing) | No |
+| **Multi-tenancy** | Native (RLS) | No | No (per-project billing) | Plugin (buggy) |
 | **Self-hosting** | Free, unlimited | Free, unlimited | Not available | Free, unlimited |
 | **Visual design editor** | Design Playground | No | No | No |
 | **Block-level analytics** | Resonance | No | No | No |
 | **AI design generation** | Stitch + Charlotte | No | AI Assist (text only) | No |
-| **Built-in plugins** | 19 | Marketplace | No | Marketplace |
+| **Built-in plugins** | 21 | Marketplace | No | Marketplace |
 | **Content scheduling** | Built-in | Enterprise only | Yes | Yes |
+| **Copy/paste blocks** | Built-in | No | No | No |
+| **Site cloning** | One-click | No | No | No |
+| **Image focal point** | Built-in | No | No | No |
+| **Data export (JSON/CSV)** | Built-in | Paid add-on | Yes | No (51 votes open) |
+| **2FA (TOTP)** | Built-in | Enterprise only | Yes | No (49 votes open) |
+| **Tenant audit log** | Built-in | No | Enterprise only | No |
 | **GraphQL API** | Yes | Yes | GROQ | Yes |
 | **Seats at $29/mo** | **10** | 5 | 2 ($15/user) | 3 |
 | **Sites at $29/mo** | **5** | 1 | 1 project | 1 |
@@ -78,6 +84,23 @@ const pages = await client.pages.listPublished();
 ```
 
 Users can have different roles per site -- an `editor` on one client site and a `viewer` on another, all within the same tenant.
+
+**Tenant switcher**: Super-admins managing multiple agencies can switch between tenants from a single login — no separate URLs or re-authentication.
+
+**Subdomain routing**: Each tenant gets a subdomain (`client-a.agency.com`) that auto-routes to the correct tenant and site. Custom domains (`clientsite.com`) also resolve automatically.
+
+**Site cloning**: Onboard a new client in one click. `POST /sites/:id/clone` duplicates all pages, blocks, theme, and settings into a new site — preserving page hierarchy.
+
+**Bulk provisioning**: Create a complete tenant environment in one API call — tenant + admin user + site + default theme + starter pages:
+
+```bash
+curl -X POST /api/v1/tenants/provision \
+  -d '{ "tenant": { "name": "Acme Agency", "subdomain": "acme" },
+        "site": { "name": "Client Site", "slug": "client-site" },
+        "admin": { "email": "admin@acme.com", "name": "Admin", "password": "..." } }'
+```
+
+**Audit log**: Every write operation is recorded with who, what, when, and which tenant — queryable for SOC2/GDPR compliance. `GET /api/v1/audit?resource_type=page&from=2026-01-01`
 
 ### Design Playground
 
@@ -115,7 +138,7 @@ POST /api/v1/sites/:siteId/design/import
 → Structured Sigil blocks added to page
 ```
 
-### 19 Built-In Plugins
+### 21 Built-In Plugins
 
 Every plugin is environment-gated -- missing env vars cause a graceful skip, never a crash. The core CMS always works.
 
@@ -210,9 +233,19 @@ Plugins add more: `product_grid`, `buy_button`, `booking_calendar`, `service_lis
 - **Content versioning** -- unlimited revision history with full snapshots, revert to any version
 - **Content scheduling** -- publish and unpublish at specific times via built-in daemon
 - **15-language i18n** via page-clone model with per-language slug uniqueness
-- **Media library** -- bulk upload (20 files, 50MB each), folder organization, dimension metadata, multi-provider storage
-- **Block templates** -- save and reuse block presets across sites in a tenant
+- **Media library** -- bulk upload (20 files, 50MB each), folder organization, dimension metadata, multi-provider storage, **image focal point** for responsive cropping
+- **Block templates** -- save and reuse block presets across sites in a tenant. Three scopes: site-only, tenant-wide (all sites), or global (platform presets)
+- **Block clipboard** -- copy blocks from one page and paste them into any other page, even across different sites within the same tenant
+- **Data export** -- export a full site as JSON (pages + blocks + theme) or CSV (pages for spreadsheet reporting). Import bundles into any site.
 - **Live preview** -- split-view editor with desktop/tablet/mobile viewports
+
+### Security
+
+- **Two-factor authentication** -- TOTP (RFC 6238) compatible with Google Authenticator, Authy, and 1Password. Setup via QR code, 8 backup codes, ±30s clock skew tolerance. Pure Node.js crypto — no external dependencies.
+- **Row-Level Security** -- tenant isolation enforced at the PostgreSQL engine level, not the application layer. No shared slug tables, no cross-tenant data leakage.
+- **Per-tenant media isolation** -- uploaded files stored under `media/{tenantId}/{siteId}/` paths. Serving validates the tenant prefix matches the requesting user's JWT.
+- **Audit log** -- every write operation recorded with user, action, resource, tenant, IP, and duration. Queryable by date range, user, resource type, and site. Compliant with SOC2 and GDPR audit requirements.
+- **JWT authentication** with 4 roles (admin, editor, author, viewer) and per-site permission overrides
 
 ## Self-Hosting
 
@@ -273,7 +306,7 @@ sigil-cms/
 ├── apps/
 │   ├── api          — Express.js backend (REST + GraphQL)
 │   └── admin        — Vite + React 18 SPA
-└── plugins/         — 19 feature plugins (env-gated, graceful skip)
+└── plugins/         — 21 feature plugins (env-gated, graceful skip)
 ```
 
 **Stack**: TypeScript 5.7, Node.js 20+, Express.js, React 18, PostgreSQL, Drizzle ORM, Vite, Turborepo, pnpm workspaces.
@@ -296,7 +329,7 @@ sigil-cms/
 
 ## Built With
 
-Sigil was built by a solo founder with 25 years of cloud infrastructure experience and 20 AI development agents under [SDLC v2.3](https://netrunsystems.com) governance. The entire platform -- API, admin panel, 19 plugins, SDK, CLI, Next.js integration, Design Playground, Resonance analytics, AI design generation -- was architected and shipped by one person coordinating a fleet of specialized AI agents.
+Sigil was built by a solo founder with 25 years of cloud infrastructure experience and 20 AI development agents under [SDLC v2.3](https://netrunsystems.com) governance. The entire platform -- API, admin panel, 21 plugins, SDK, CLI, Next.js integration, Design Playground, Resonance analytics, AI design generation -- was architected and shipped by one person coordinating a fleet of specialized AI agents.
 
 We use our own products to bring Sigil to market: **KOG CRM** for lead tracking, **Intirkast** for social media scheduling, **KAMERA** for prospect research, **Charlotte** for AI assistance. Built, not subscribed.
 
