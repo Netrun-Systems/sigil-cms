@@ -16,6 +16,7 @@ import publicRouter from './public.js';
 import seedRouter from './seed.js';
 import billingRouter from './billing.js';
 import authRouter from './auth.js';
+import tenantsRouter from './tenants.js';
 import blockTemplatesRouter from './block-templates.js';
 import { validateUuidParam } from '../middleware/index.js';
 
@@ -61,7 +62,9 @@ router.use('/billing', billingRouter);
 // Auth: /api/v1/auth (tenant switching, multi-tenant auth helpers)
 router.use('/auth', authRouter);
 
-// Tenant info: /api/v1/tenants/current (current tenant from JWT)
+// Tenants: /api/v1/tenants (provision, usage, current)
+router.use('/tenants', tenantsRouter);
+// Auth tenant helpers (switch-tenant, current — also mounted under /tenants for backward compat)
 router.use('/tenants', authRouter);
 
 // Block templates: /api/v1/sites/:siteId/block-templates (reusable block presets)

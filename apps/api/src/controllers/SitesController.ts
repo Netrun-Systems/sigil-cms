@@ -7,7 +7,7 @@
 import dns from 'dns';
 import type { Response } from 'express';
 import { eq, and, desc, asc, count, ne } from 'drizzle-orm';
-import { sites, insertSiteSchema, type Site } from '@netrun-cms/db';
+import { sites, themes, pages, contentBlocks, insertSiteSchema, type Site } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 import { parsePagination } from '../middleware/validation.js';
 import type { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types/index.js';
@@ -468,5 +468,168 @@ export class SitesController {
         expected: EXPECTED_DOMAIN_TARGET,
       },
     });
+  }
+
+  /**
+   * Clone a site — duplicates pages, blocks, theme, and settings into a new site.
+   * One-click client onboarding for agencies.
+   *
+   * POST /api/v1/sites/:id/clone
+   *
+   * Body: {
+   *   name: string,          // New site name (required)
+   *   slug: string,          // New site slug (required)
+   *   includeContent?: bool, // Clone pages + blocks (default true)
+   *   includeTheme?: bool,   // Clone active theme (default true)
+   *   status?: string,       // New site status (default 'draft')
+   * }
+   */
+  static async clone(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const db = getDb();
+    const tenantId = req.tenantId!;
+    const sourceId = req.params.id;
+    const {
+      name,
+      slug,
+      includeContent = true,
+      includeTheme = true,
+      status = 'draft',
+    } = req.body;
+
+    if (!name || !slug) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'name and slug are required' },
+      });
+      return;
+    }
+
+    // Verify source site exists and belongs to tenant
+    const [source] = await db
+      .select()
+      .from(sites)
+      .where(and(eq(sites.id, sourceId), eq(sites.tenantId, tenantId)))
+      .limit(1);
+
+    if (!source) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Source site ${sourceId} not found` },
+      });
+      return;
+    }
+
+    // Check slug uniqueness within tenant
+    const [slugConflict] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.tenantId, tenantId), eq(sites.slug, slug)))
+      .limit(1);
+
+    if (slugConflict) {
+      res.status(409).json({
+        success: false,
+        error: { code: 'SLUG_TAKEN', message: `Slug "${slug}" is already used in this tenant` },
+      });
+      return;
+    }
+
+    // Create the new site
+    const [newSite] = await db.insert(sites).values({
+      tenantId,
+      name,
+      slug,
+      defaultLanguage: source.defaultLanguage,
+      status,
+      template: source.template,
+      settings: source.settings,
+    }).returning();
+
+    let clonedPages = 0;
+    let clonedBlocks = 0;
+    let clonedTheme = false;
+
+    // Clone active theme
+    if (includeTheme) {
+      const sourceThemes = await db
+        .select()
+        .from(themes)
+        .where(and(eq(themes.siteId, sourceId), eq(themes.isActive, true)))
+        .limit(1);
+
+      if (sourceThemes.length > 0) {
+        const t = sourceThemes[0];
+        await db.insert(themes).values({
+          siteId: newSite.id,
+          name: t.name,
+          isActive: true,
+          baseTheme: t.baseTheme,
+          tokens: t.tokens,
+          customCss: t.customCss,
+        });
+        clonedTheme = true;
+      }
+    }
+
+    // Clone pages + blocks (preserving hierarchy)
+    if (includeContent) {
+      // Get all pages from source site (ordered by parent to handle hierarchy)
+      const sourcePages = await db
+        .select()
+        .from(pages)
+        .where(eq(pages.siteId, sourceId))
+        .orderBy(asc(pages.sortOrder));
+
+      // Map old page IDs to new page IDs (for parent references)
+      const pageIdMap = new Map<string, string>();
+
+      for (const p of sourcePages) {
+        const [newPage] = await db.insert(pages).values({
+          siteId: newSite.id,
+          parentId: p.parentId ? pageIdMap.get(p.parentId) || null : null,
+          title: p.title,
+          slug: p.slug,
+          fullPath: p.fullPath,
+          status: 'draft', // Clone as draft regardless of source status
+          language: p.language,
+          metaTitle: p.metaTitle,
+          metaDescription: p.metaDescription,
+          ogImageUrl: p.ogImageUrl,
+          template: p.template,
+          sortOrder: p.sortOrder,
+        }).returning();
+
+        pageIdMap.set(p.id, newPage.id);
+        clonedPages++;
+
+        // Clone blocks for this page
+        const sourceBlocks = await db
+          .select()
+          .from(contentBlocks)
+          .where(eq(contentBlocks.pageId, p.id))
+          .orderBy(asc(contentBlocks.sortOrder));
+
+        for (const b of sourceBlocks) {
+          await db.insert(contentBlocks).values({
+            pageId: newPage.id,
+            blockType: b.blockType,
+            content: b.content,
+            settings: b.settings,
+            sortOrder: b.sortOrder,
+          });
+          clonedBlocks++;
+        }
+      }
+    }
+
+    const response: ApiResponse<Site & { cloned: { pages: number; blocks: number; theme: boolean } }> = {
+      success: true,
+      data: {
+        ...newSite,
+        cloned: { pages: clonedPages, blocks: clonedBlocks, theme: clonedTheme },
+      },
+    };
+
+    res.status(201).json(response);
   }
 }

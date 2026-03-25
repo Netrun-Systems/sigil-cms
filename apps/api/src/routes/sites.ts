@@ -81,4 +81,12 @@ router.delete('/:id/domain', validateUuidParam('id'), requireRole('admin', 'edit
  */
 router.get('/:id/domain/verify', validateUuidParam('id'), requireRole('admin', 'editor'), SitesController.verifyDomain);
 
+/**
+ * POST /api/v1/sites/:id/clone
+ * Clone a site — duplicates pages, blocks, theme, and settings into a new site.
+ *
+ * Body: { name: string, slug: string, includeContent?: bool, includeTheme?: bool, status?: string }
+ */
+router.post('/:id/clone', validateUuidParam('id'), requireRole('admin'), SitesController.clone);
+
 export default router;
