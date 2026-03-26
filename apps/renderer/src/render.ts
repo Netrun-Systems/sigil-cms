@@ -102,14 +102,26 @@ function renderFeatureGrid(block: BlockData): string {
   const cols = (c.columns as number) || 3;
 
   const cards = features.map(f => {
-    const link = f.link ? ` onclick="window.location='${esc(f.link as string)}'"` : '';
-    const imageHtml = f.image ? `<div class="sigil-feature-image"><img src="${esc(f.image as string)}" alt="${esc(f.title as string)}" loading="lazy"></div>` : '';
-    return `<div class="sigil-feature-card"${link}>
-      ${imageHtml}
-      ${f.icon && !f.image ? `<div class="sigil-feature-icon">${esc(f.icon as string)}</div>` : ''}
-      <h3>${esc(f.title as string)}</h3>
-      <p>${esc(f.description as string)}</p>
-    </div>`;
+    const hasLink = !!f.link;
+    const tag = hasLink ? 'a' : 'div';
+    const href = hasLink ? ` href="${esc(f.link as string)}"` : '';
+    const clickableClass = hasLink ? ' sigil-feature-card-clickable' : '';
+    
+    let visualHtml = '';
+    if (f.image) {
+      visualHtml = `<div class="sigil-feature-image"><img src="${esc(f.image as string)}" alt="${esc(f.title as string)}" loading="lazy"></div>`;
+    } else if (f.icon) {
+      visualHtml = `<div class="sigil-feature-icon-wrapper"><div class="sigil-feature-icon">${esc(f.icon as string)}</div></div>`;
+    }
+
+    return `<${tag}${href} class="sigil-feature-card${clickableClass}">
+      ${visualHtml}
+      <div class="sigil-feature-content">
+        <h3>${esc(f.title as string)}</h3>
+        <p>${esc(f.description as string)}</p>
+        ${hasLink ? `<div class="sigil-feature-learn-more">Learn more <span class="sigil-arrow">→</span></div>` : ''}
+      </div>
+    </${tag}>`;
   }).join('\n    ');
 
   return `<section class="${blockClasses(block, 'sigil-features')}">

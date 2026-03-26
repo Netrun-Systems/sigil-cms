@@ -81,7 +81,7 @@ ${customCss}
 <body>
   <nav class="sigil-nav">
     <div class="sigil-nav-inner">
-      <a href="/" class="sigil-nav-brand">${esc(displayName)}</a>
+      <a href="/" class="sigil-nav-brand"><img src="/static/sigil-logo-256.png" alt="${esc(displayName)}" class="sigil-nav-logo">${esc(displayName)}</a>
       ${navigation.length > 0 ? `<ul class="sigil-nav-links">
           ${navLinks}
         </ul>` : ''}
@@ -98,6 +98,23 @@ ${customCss}
     </div>
   </footer>
 
+  <!-- Lightbox for screenshot zoom -->
+  <div id="sigil-lightbox" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.9);cursor:pointer;align-items:center;justify-content:center" onclick="this.style.display='none'">
+    <img id="sigil-lightbox-img" style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+    <button style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer">&times;</button>
+  </div>
+  <script>
+  document.querySelectorAll('.sigil-feature-image img').forEach(function(img) {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var lb = document.getElementById('sigil-lightbox');
+      document.getElementById('sigil-lightbox-img').src = this.src;
+      lb.style.display = 'flex';
+    });
+  });
+  </script>
   <script src="/api/v1/public/resonance/${encodeURIComponent(siteSlug)}/snippet.js" async defer></script>
 </body>
 </html>`;

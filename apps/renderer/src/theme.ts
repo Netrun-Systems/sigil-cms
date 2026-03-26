@@ -144,6 +144,13 @@ a:hover { color: var(--sigil-link-hover, var(--sigil-primary-light, #a8cfbd)); }
   font-size: 1.25rem;
   font-weight: var(--sigil-font-weight-bold, 700);
   color: var(--sigil-text, #fff);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sigil-nav-logo {
+  height: 2rem;
+  width: auto;
 }
 .sigil-nav-links { display: flex; gap: var(--sigil-space-lg, 1.5rem); list-style: none; }
 .sigil-nav-links a {
@@ -321,42 +328,89 @@ section[class^="sigil-"] {
   border: 1px solid var(--sigil-border, rgba(255,255,255,0.08));
   border-radius: var(--sigil-card-radius, var(--sigil-border-radius-lg, 12px));
   overflow: hidden;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
 }
-.sigil-feature-card:hover {
-  transform: translateY(-2px);
+.sigil-feature-card-clickable {
+  cursor: pointer;
+}
+.sigil-feature-card-clickable:hover {
+  transform: translateY(-4px);
   border-color: var(--sigil-primary, #90b9ab);
+  box-shadow: 0 12px 24px -8px rgba(0,0,0,0.5);
+}
+.sigil-feature-card-clickable:active {
+  transform: translateY(-1px);
 }
 .sigil-feature-image {
   width: 100%;
-  height: 180px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
+  border-bottom: 1px solid var(--sigil-border, rgba(255,255,255,0.05));
 }
 .sigil-feature-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 0.5s;
 }
 .sigil-feature-card:hover .sigil-feature-image img {
   transform: scale(1.05);
 }
+.sigil-feature-icon-wrapper {
+  padding: var(--sigil-space-xl, 2rem) var(--sigil-space-xl, 2rem) 0;
+}
 .sigil-feature-icon {
   font-size: 2rem;
-  margin-bottom: var(--sigil-space-md, 1rem);
-  padding: var(--sigil-space-xl, 2rem) var(--sigil-space-xl, 2rem) 0;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--sigil-primary-rgb, 144, 185, 171), 0.1);
+  color: var(--sigil-primary, #90b9ab);
+  border-radius: 10px;
+}
+.sigil-feature-content {
+  padding: var(--sigil-space-xl, 2rem);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .sigil-feature-card h3 {
   font-family: var(--sigil-font-family-heading, var(--sigil-font-family));
-  margin-bottom: var(--sigil-space-sm, 0.5rem);
-  font-size: 1.125rem;
-  padding: var(--sigil-space-md, 1rem) var(--sigil-space-xl, 2rem) 0;
+  margin-bottom: var(--sigil-space-md, 1rem);
+  font-size: 1.25rem;
+  line-height: 1.3;
 }
 .sigil-feature-card p {
   color: var(--sigil-text-secondary, #B8B8B8);
-  font-size: var(--sigil-font-size-sm, 0.875rem);
+  font-size: var(--sigil-font-size-base, 1rem);
   line-height: 1.6;
-  padding: 0 var(--sigil-space-xl, 2rem) var(--sigil-space-xl, 2rem);
+  margin-bottom: var(--sigil-space-lg, 1.5rem);
+}
+.sigil-feature-learn-more {
+  margin-top: auto;
+  color: var(--sigil-primary, #90b9ab);
+  font-size: var(--sigil-font-size-sm, 0.875rem);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: gap 0.2s;
+}
+.sigil-feature-card:hover .sigil-feature-learn-more {
+  gap: 0.75rem;
+}
+.sigil-arrow {
+  transition: transform 0.2s;
+}
+.sigil-feature-card:hover .sigil-arrow {
+  transform: translateX(2px);
 }
 
 /* === Gallery === */

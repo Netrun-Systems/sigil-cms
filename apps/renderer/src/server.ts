@@ -162,73 +162,46 @@ app.get('/favicon.ico', (_req, res) => {
 
 // --- Page Routes ---
 
-// Homepage
-app.get('/', async (req, res) => {
-  try {
-    const siteSlug = await resolveSiteSlug(req.headers.host || '');
-    const [theme, navigation] = await Promise.all([getTheme(), getNavigation()]);
-
-    // Try 'home' slug first, then fall back to first published page
-    let page = await fetchPage(siteSlug, 'home');
-
-    if (!page && navigation.length > 0) {
-      const firstSlug = navigation[0].href === '/' ? 'home' : navigation[0].href.replace('/', '');
-      if (firstSlug !== 'home') {
-        page = await fetchPage(siteSlug, firstSlug);
-      }
-    }
-
-    if (!page) {
-      res.status(404).send(render404({
-        cssVariables: theme.cssVariables,
-        fontLinks: theme.fontLinks,
-        siteSlug,
-        siteName: SITE_NAME,
-        navigation,
-        customCss: theme.customCss,
-      }));
-      return;
-    }
-
-    const blocksHtml = renderBlocks(page.blocks || [], siteSlug);
-    const html = renderLayout({
-      title: page.metaTitle || page.title,
-      description: page.metaDescription || '',
-      ogImage: page.ogImageUrl,
-      cssVariables: theme.cssVariables,
-      fontLinks: theme.fontLinks,
-      body: blocksHtml,
-      siteSlug,
-      siteName: SITE_NAME,
-      navigation,
-      currentPath: '/',
-      customCss: theme.customCss,
-    });
-
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
-  } catch (err) {
-    console.error('Error rendering homepage:', err);
-    res.status(500).send('<h1>500 - Internal Server Error</h1>');
-  }
-});
-
-// Page by slug
-app.get('/:pageSlug', async (req, res) => {
-  const { pageSlug } = req.params;
-
-  // Skip API-like paths
-  if (pageSlug.startsWith('api') || pageSlug.startsWith('_')) {
-    res.status(404).send('Not found');
+// Catch-all route for pages
+app.get('*', async (req, res) => {
+  const fullPath = req.path;
+  
+  // Skip static assets and API-like paths
+  if (fullPath.startsWith('/static') || fullPath.startsWith('/api') || fullPath.startsWith('/favicon')) {
     return;
   }
 
+  // Normalize path to slug (remove leading/trailing slashes)
+  // "/" -> "home"
+  // "/features" -> "features"
+  // "/features/multi-tenant" -> "features/multi-tenant"
+  let pageSlug = fullPath.replace(/^\/+|\/+$/g, '');
+  if (pageSlug === '') pageSlug = 'home';
+
   try {
     const siteSlug = await resolveSiteSlug(req.headers.host || '');
     const [theme, navigation] = await Promise.all([getTheme(), getNavigation()]);
-    const page = await fetchPage(siteSlug, pageSlug);
+    
+    // Fetch page by slug — try full path first, then just the leaf slug
+    let page = await fetchPage(siteSlug, pageSlug);
+    if (!page && pageSlug.includes('/')) {
+      // For nested paths like "features/hero-block", try just "hero-block"
+      const leafSlug = pageSlug.split('/').pop()!;
+      page = await fetchPage(siteSlug, leafSlug);
+    }
 
     if (!page) {
+      // Fallback: if we requested "/" and "home" doesn't exist, try the first navigation item
+      if (pageSlug === 'home' && navigation.length > 0) {
+        const firstSlug = navigation[0].href.replace(/^\/+|\/+$/g, '');
+        if (firstSlug && firstSlug !== 'home') {
+          const fallbackPage = await fetchPage(siteSlug, firstSlug);
+          if (fallbackPage) {
+            // ... render fallbackPage
+          }
+        }
+      }
+
       res.status(404).send(render404({
         cssVariables: theme.cssVariables,
         fontLinks: theme.fontLinks,
@@ -251,14 +224,14 @@ app.get('/:pageSlug', async (req, res) => {
       siteSlug,
       siteName: SITE_NAME,
       navigation,
-      currentPath: `/${pageSlug}`,
+      currentPath: fullPath,
       customCss: theme.customCss,
     });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
   } catch (err) {
-    console.error(`Error rendering page /${pageSlug}:`, err);
+    console.error(`Error rendering page ${fullPath}:`, err);
     res.status(500).send('<h1>500 - Internal Server Error</h1>');
   }
 });

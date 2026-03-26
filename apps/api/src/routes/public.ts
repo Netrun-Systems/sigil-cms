@@ -18,14 +18,14 @@ import type { Router as RouterType } from "express";
 const router: RouterType = Router();
 
 /**
- * GET /api/v1/public/sites/:siteSlug/pages/:pageSlug
+ * GET /api/v1/public/sites/:siteSlug/pages/:pageSlug(*)
  * Public page content with blocks
  *
  * Query params:
  * - lang: string (e.g., 'es') — fetch the page in a specific language.
  *   Falls back to the site's defaultLanguage if not found.
  */
-router.get('/sites/:siteSlug/pages/:pageSlug', async (req: Request, res: Response) => {
+router.get('/sites/:siteSlug/pages/:pageSlug(*)', async (req: Request, res: Response) => {
   const db = getDb();
   const siteSlug = req.params.siteSlug as string;
   const pageSlug = req.params.pageSlug as string;
@@ -59,6 +59,38 @@ router.get('/sites/:siteSlug/pages/:pageSlug', async (req: Request, res: Respons
       .where(and(eq(pages.siteId, site.id), eq(pages.slug, pageSlug), eq(pages.status, 'published')))
       .limit(1);
     page = anyPage;
+  }
+
+  // Fallback: try matching by fullPath (for nested pages like /features/hero-block)
+  if (!page && pageSlug.includes('/')) {
+    const fullPathValue = '/' + pageSlug;
+    const pathResults = await db.execute(
+      sql`SELECT * FROM cms_pages WHERE site_id = ${site.id} AND full_path = ${fullPathValue} AND status = 'published' LIMIT 1`
+    );
+    if (pathResults && Array.isArray(pathResults) && pathResults.length > 0) {
+      // Map raw row to page format
+      const row = pathResults[0] as Record<string, unknown>;
+      page = {
+        id: row.id as string,
+        siteId: row.site_id as string,
+        parentId: row.parent_id as string | null,
+        title: row.title as string,
+        slug: row.slug as string,
+        fullPath: row.full_path as string | null,
+        status: row.status as string,
+        publishedAt: row.published_at as Date | null,
+        publishAt: row.publish_at as Date | null,
+        unpublishAt: row.unpublish_at as Date | null,
+        language: row.language as string,
+        metaTitle: row.meta_title as string | null,
+        metaDescription: row.meta_description as string | null,
+        ogImageUrl: row.og_image_url as string | null,
+        template: row.template as string,
+        sortOrder: row.sort_order as number,
+        createdAt: row.created_at as Date,
+        updatedAt: row.updated_at as Date,
+      } as typeof page;
+    }
   }
 
   if (!page) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Page not found' } }); return; }

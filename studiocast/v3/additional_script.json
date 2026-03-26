@@ -6,7 +6,7 @@
       "dialogue": [
         {
           "speaker": "HOST",
-          "text": "Site Cloning lets you duplicate any existing site with a single click. The clone copies all pages, blocks, themes, and media into a new draft site. The original stays untouched. Below that, Bulk Provisioning creates multiple tenant sites at once. Enter five slugs and display names, hit Provision All, and Sigil spins up all five with their own isolated databases, themes, and admin users. The progress bar tracks each site as it initializes."
+          "text": "Site Cloning lets you duplicate any existing site with a single click. The clone copies all pages, blocks, themes, and media into a new draft site. The original stays untouched. Below that, Bulk Provisioning creates multiple tenant sites at once. Enter five slugs and display names, hit Provision All, and Sijil spins up all five with their own isolated databases, themes, and admin users. The progress bar tracks each site as it initializes."
         },
         {
           "speaker": "GUEST",
@@ -52,7 +52,7 @@
         },
         {
           "speaker": "GUEST",
-          "text": "Two-factor is table stakes for any multi-tenant platform \u2014 without it, a compromised editor password exposes every site in the tenant. The backup codes are critical because people lose access to authenticator apps more often than you would expect. The audit log is where Sigil separates from most CMS platforms. WordPress has activity log plugins, but they are third-party and inconsistent. Here every action is logged at the framework level with IP tracking. For agencies managing client sites, this is compliance documentation built in."
+          "text": "Two-factor is table stakes for any multi-tenant platform \u2014 without it, a compromised editor password exposes every site in the tenant. The backup codes are critical because people lose access to authenticator apps more often than you would expect. The audit log is where Sijil separates from most CMS platforms. WordPress has activity log plugins, but they are third-party and inconsistent. Here every action is logged at the framework level with IP tracking. For agencies managing client sites, this is compliance documentation built in."
         }
       ]
     },
@@ -66,7 +66,7 @@
         },
         {
           "speaker": "GUEST",
-          "text": "This closes the portability gap. Most CMS platforms make it easy to get content in and hard to get it out. Sigil exports everything \u2014 not just pages and posts, but theme configurations, block settings, media files, and even analytics data. The merge mode is what makes this practical for real workflows. You export a staging site, import it into production, and existing content stays untouched while new pages merge in. Try doing that with a WordPress XML export."
+          "text": "This closes the portability gap. Most CMS platforms make it easy to get content in and hard to get it out. Sijil exports everything \u2014 not just pages and posts, but theme configurations, block settings, media files, and even analytics data. The merge mode is what makes this practical for real workflows. You export a staging site, import it into production, and existing content stays untouched while new pages merge in. Try doing that with a WordPress XML export."
         }
       ]
     },
@@ -76,11 +76,11 @@
       "dialogue": [
         {
           "speaker": "HOST",
-          "text": "The Point of Sale interface is a register-style layout inside the Sigil admin. The left side is a product grid organized by category \u2014 merch, digital products, services, and events. Each card shows the product name, price, category indicator, and stock status. The right side is the order panel with line items, quantities, subtotal, tax calculation, and a prominent total. Three payment buttons at the bottom \u2014 Card for Stripe terminal, Cash, and Split for mixed payment. Quick actions handle discounts, order holds, and cart clearing."
+          "text": "The Point of Sale interface is a register-style layout inside the Sijil admin. The left side is a product grid organized by category \u2014 merch, digital products, services, and events. Each card shows the product name, price, category indicator, and stock status. The right side is the order panel with line items, quantities, subtotal, tax calculation, and a prominent total. Three payment buttons at the bottom \u2014 Card for Stripe terminal, Cash, and Split for mixed payment. Quick actions handle discounts, order holds, and cart clearing."
         },
         {
           "speaker": "GUEST",
-          "text": "This turns Sigil from a website CMS into a full retail platform. A pop-up shop, a conference booth, a studio visit \u2014 you pull up the POS on a tablet, ring up a T-shirt and a consulting session in the same transaction. The Stripe terminal integration means card payments go through the same Stripe account as online orders. No separate Square account, no reconciliation between in-person and online sales. The customer field ties the sale to a CRM contact, so the next email campaign knows what they bought."
+          "text": "This turns Sijil from a website CMS into a full retail platform. A pop-up shop, a conference booth, a studio visit \u2014 you pull up the POS on a tablet, ring up a T-shirt and a consulting session in the same transaction. The Stripe terminal integration means card payments go through the same Stripe account as online orders. No separate Square account, no reconciliation between in-person and online sales. The customer field ties the sale to a CRM contact, so the next email campaign knows what they bought."
         }
       ]
     }
