@@ -170,3 +170,27 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ── TTS Corrections ──
+# Words that TTS mispronounces and need SSML or text substitution
+TTS_CORRECTIONS = {
+    "Sigil": {
+        "ssml": '<phoneme alphabet="ipa" ph="ˈsɪdʒəl">Sigil</phoneme>',
+        "text_sub": "Sijil",
+        "note": "Google TTS Studio-Q says 'siggil' (hard G). Use SSML phoneme or spell as 'Sijil'.",
+    },
+    "Ojai": {
+        "ssml": '<phoneme alphabet="ipa" ph="oʊˈhaɪ">Ojai</phoneme>',
+        "text_sub": "Oh-hi",
+        "note": "Spanish origin. OH-HI. Not 'oh-jay' or 'oh-jai'.",
+    },
+}
+
+def apply_tts_corrections(text: str, use_ssml: bool = False) -> str:
+    """Replace known mispronounced words with TTS-friendly versions."""
+    for word, fix in TTS_CORRECTIONS.items():
+        if use_ssml:
+            text = text.replace(word, fix["ssml"])
+        else:
+            text = text.replace(word, fix["text_sub"])
+    return text
