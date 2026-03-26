@@ -77,6 +77,42 @@ export function Sidebar() {
             }
         }
     }
+    // Merge sections with the same title (e.g. mailing-list and contact both create "Engagement")
+    const mergedSections = [];
+    for (const section of sitePluginSections) {
+        const existing = mergedSections.find(s => s.title === section.title);
+        if (existing) {
+            existing.items.push(...section.items);
+        }
+        else {
+            mergedSections.push({ ...section, items: [...section.items] });
+        }
+    }
+    // Define the desired section order for logical grouping
+    const SECTION_ORDER = [
+        'Artist Content',
+        'Knowledge Base',
+        'Engagement',
+        'Store',
+        'Merch',
+        'Booking',
+        'Community',
+        'Analytics',
+        'Broadcasting',
+        'CRM',
+        'KAMERA',
+        'Migration',
+        'Integrations',
+        'Media',
+        'Support',
+        'Point of Sale',
+    ];
+    // Sort merged sections by the defined order
+    mergedSections.sort((a, b) => {
+        const ai = SECTION_ORDER.indexOf(a.title);
+        const bi = SECTION_ORDER.indexOf(b.title);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
     const allMainNavItems = [...mainNavItems, ...globalPluginNav];
     return (_jsxs("aside", { className: "fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar", children: [_jsxs("div", { className: "flex h-16 items-center gap-3 border-b border-sidebar-border px-6", children: [_jsx("div", { className: "flex h-9 w-9 items-center justify-center rounded-lg bg-primary", children: _jsx("span", { className: "text-lg font-bold text-primary-foreground", children: "N" }) }), _jsxs("div", { className: "flex flex-col", children: [_jsx("span", { className: "text-sm font-bold text-sidebar-foreground", children: "Sigil" }), _jsx("span", { className: "text-xs text-sidebar-foreground/60", children: "by Netrun" })] })] }), _jsxs("nav", { className: "flex-1 overflow-y-auto px-3 py-4", children: [_jsx("div", { className: "space-y-1", children: allMainNavItems.map((item) => (_jsx(NavItemComponent, { item: item }, item.href))) }), siteId && (_jsxs("div", { className: "mt-6", children: [_jsx("div", { className: "mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50", children: "Current Site" }), _jsxs("div", { className: "space-y-1", children: [_jsxs(NavLink, { to: `/sites/${siteId}/pages`, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
@@ -84,7 +120,7 @@ export function Sidebar() {
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                             : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Image, { className: "h-5 w-5" }), _jsx("span", { children: "Media" })] }), _jsxs(NavLink, { to: `/sites/${siteId}/themes`, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
                                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Palette, { className: "h-5 w-5" }), _jsx("span", { children: "Theme" })] })] }), sitePluginSections.map((section) => (_jsxs("div", { children: [_jsx("div", { className: "mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50", children: section.title }), _jsx("div", { className: "space-y-1", children: section.items.map((item) => (_jsxs(NavLink, { to: item.href, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
+                                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(Palette, { className: "h-5 w-5" }), _jsx("span", { children: "Theme" })] })] }), mergedSections.map((section) => (_jsxs("div", { children: [_jsx("div", { className: "mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50", children: section.title }), _jsx("div", { className: "space-y-1", children: section.items.map((item) => (_jsxs(NavLink, { to: item.href, className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors', isActive
                                                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                                 : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'), children: [_jsx(item.icon, { className: "h-5 w-5" }), _jsx("span", { children: item.label })] }, item.href))) })] }, section.title)))] }))] }), canManageSettings && (_jsxs("div", { className: "border-t border-sidebar-border p-4 space-y-1", children: [_jsxs(NavLink, { to: "/billing", className: ({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors', isActive
                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'

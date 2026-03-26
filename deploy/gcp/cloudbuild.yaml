@@ -1,0 +1,135 @@
+# =============================================================================
+# Sigil CMS — Cloud Build CI/CD
+# Triggered on push to main. Builds all 3 images and deploys to Cloud Run.
+#
+# Setup:
+#   gcloud builds triggers create github \
+#     --repo-name=sigil-cms --repo-owner=Netrun-Systems \
+#     --branch-pattern="^main$" \
+#     --build-config=deploy/gcp/cloudbuild.yaml \
+#     --project=$PROJECT_ID
+#
+# Required substitution variables (set in trigger config):
+#   _REGION: Cloud Run region (default: us-central1)
+#   _DB_INSTANCE: Cloud SQL instance name (default: sigil-db)
+# =============================================================================
+
+substitutions:
+  _REGION: "us-central1"
+  _DB_INSTANCE: "sigil-db"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # ---- Build API image -------------------------------------------------------
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-api:${SHORT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-api:latest"
+      - "-f"
+      - "Dockerfile"
+      - "."
+    id: "build-api"
+
+  # ---- Build Admin image -----------------------------------------------------
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-admin:${SHORT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-admin:latest"
+      - "-f"
+      - "Dockerfile.admin"
+      - "."
+    id: "build-admin"
+
+  # ---- Build Renderer image --------------------------------------------------
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-renderer:${SHORT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-renderer:latest"
+      - "-f"
+      - "apps/renderer/Dockerfile"
+      - "apps/renderer/"
+    id: "build-renderer"
+
+  # ---- Push all images -------------------------------------------------------
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "--all-tags", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-api"]
+    waitFor: ["build-api"]
+    id: "push-api"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "--all-tags", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-admin"]
+    waitFor: ["build-admin"]
+    id: "push-admin"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "--all-tags", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-renderer"]
+    waitFor: ["build-renderer"]
+    id: "push-renderer"
+
+  # ---- Deploy API to Cloud Run -----------------------------------------------
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "sigil-api"
+      - "--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-api:${SHORT_SHA}"
+      - "--region=${_REGION}"
+      - "--add-cloudsql-instances=${PROJECT_ID}:${_REGION}:${_DB_INSTANCE}"
+      - "--min-instances=0"
+      - "--max-instances=3"
+      - "--memory=512Mi"
+      - "--allow-unauthenticated"
+      - "--quiet"
+    waitFor: ["push-api"]
+    id: "deploy-api"
+
+  # ---- Deploy Admin to Cloud Run ---------------------------------------------
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "sigil-admin"
+      - "--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-admin:${SHORT_SHA}"
+      - "--region=${_REGION}"
+      - "--min-instances=0"
+      - "--max-instances=2"
+      - "--memory=256Mi"
+      - "--allow-unauthenticated"
+      - "--quiet"
+    waitFor: ["push-admin"]
+    id: "deploy-admin"
+
+  # ---- Deploy Renderer to Cloud Run ------------------------------------------
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "sigil-renderer"
+      - "--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-renderer:${SHORT_SHA}"
+      - "--region=${_REGION}"
+      - "--min-instances=0"
+      - "--max-instances=2"
+      - "--memory=256Mi"
+      - "--allow-unauthenticated"
+      - "--quiet"
+    waitFor: ["push-renderer"]
+    id: "deploy-renderer"
+
+images:
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-api:${SHORT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-admin:${SHORT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/sigil-artifacts/sigil-renderer:${SHORT_SHA}"

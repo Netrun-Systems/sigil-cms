@@ -156,6 +156,44 @@ export function Sidebar() {
     }
   }
 
+  // Merge sections with the same title (e.g. mailing-list and contact both create "Engagement")
+  const mergedSections: typeof sitePluginSections = [];
+  for (const section of sitePluginSections) {
+    const existing = mergedSections.find(s => s.title === section.title);
+    if (existing) {
+      existing.items.push(...section.items);
+    } else {
+      mergedSections.push({ ...section, items: [...section.items] });
+    }
+  }
+
+  // Define the desired section order for logical grouping
+  const SECTION_ORDER = [
+    'Artist Content',
+    'Knowledge Base',
+    'Engagement',
+    'Store',
+    'Merch',
+    'Booking',
+    'Community',
+    'Analytics',
+    'Broadcasting',
+    'CRM',
+    'KAMERA',
+    'Migration',
+    'Integrations',
+    'Media',
+    'Support',
+    'Point of Sale',
+  ];
+
+  // Sort merged sections by the defined order
+  mergedSections.sort((a, b) => {
+    const ai = SECTION_ORDER.indexOf(a.title);
+    const bi = SECTION_ORDER.indexOf(b.title);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+
   const allMainNavItems = [...mainNavItems, ...globalPluginNav];
 
   return (
@@ -231,7 +269,7 @@ export function Sidebar() {
             </div>
 
             {/* Plugin nav sections (site-scoped) */}
-            {sitePluginSections.map((section) => (
+            {mergedSections.map((section) => (
               <div key={section.title}>
                 <div className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
                   {section.title}

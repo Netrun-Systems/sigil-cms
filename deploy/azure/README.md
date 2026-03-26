@@ -1,141 +1,174 @@
-# NetrunCMS Azure Deployment
+# Sigil CMS — Azure Container Apps Deployment
 
-## Development Environment
+Deploy Sigil CMS to Azure Container Apps with PostgreSQL Flexible Server. Includes a Bicep IaC template for one-click deployment.
 
-This deployment uses shared Netrun infrastructure for minimal cost.
+## Prerequisites
 
-### Resources Created
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) (`az`) authenticated
+- [Docker](https://docs.docker.com/get-docker/) (for building images locally)
+- An Azure subscription
 
-| Resource | Name | Type | Cost |
-|----------|------|------|------|
-| Database | `netrun_cms_dev` | PostgreSQL Flexible Server (shared) | $0/mo |
-| API | `netrun-cms-api` | Container App (0.25 vCPU, 0.5GB) | ~$5/mo |
-| Admin | `netrun-cms-admin` | Static Web App (Free tier) | $0/mo |
+## Quick Start
 
-**Total Estimated Cost: ~$5/month** (scale to 0 when not in use = $0)
-
-### URLs
-
-- **Admin Panel**: https://polite-rock-07cbf6e0f.2.azurestaticapps.net
-- **API Endpoint**: https://netrun-cms-api.orangesmoke-f0fb748a.eastus2.azurecontainerapps.io
-
-### Database Configuration
-
-The CMS uses the shared PostgreSQL Flexible Server:
-
-- **Server**: `intirkast-staging-db.postgres.database.azure.com`
-- **Database**: `netrun_cms_dev`
-- **SSL**: Required
-
-#### Configure Database Access
-
-1. Get the database admin password from Key Vault:
-   ```bash
-   az keyvault secret show --vault-name kv-intirkast-final --name POSTGRES-PASSWORD --query value -o tsv
-   ```
-
-2. Update the Container App DATABASE_URL secret:
-   ```bash
-   az containerapp secret set \
-     --name netrun-cms-api \
-     --resource-group rg-intirkast-staging \
-     --secrets "database-url=postgresql://intirkast_admin:PASSWORD@intirkast-staging-db.postgres.database.azure.com:5432/netrun_cms_dev?sslmode=require"
-
-   az containerapp update \
-     --name netrun-cms-api \
-     --resource-group rg-intirkast-staging \
-     --set-env-vars "DATABASE_URL=secretref:database-url"
-   ```
-
-3. Run database migrations:
-   ```bash
-   cd packages/@netrun-cms/db
-   pnpm db:generate
-   # Apply migrations to the deployed database
-   ```
-
-### JWT Secret Configuration
-
-Generate and set a secure JWT secret:
+### Option A: Shell Script (recommended)
 
 ```bash
-JWT_SECRET=$(openssl rand -base64 32)
-az containerapp secret set \
-  --name netrun-cms-api \
-  --resource-group rg-intirkast-staging \
-  --secrets "jwt-secret=$JWT_SECRET"
-
-az containerapp update \
-  --name netrun-cms-api \
-  --resource-group rg-intirkast-staging \
-  --set-env-vars "JWT_SECRET=secretref:jwt-secret"
+cd sigil-cms/deploy/azure
+chmod +x deploy.sh
+./deploy.sh sigil-rg eastus2
 ```
 
-### Deployment Commands
-
-#### Redeploy API
+### Option B: Bicep IaC Template
 
 ```bash
-# Build and push new image
-docker build -f apps/api/Dockerfile -t acrintirkaststaging.azurecr.io/netrun-cms-api:dev .
-docker push acrintirkaststaging.azurecr.io/netrun-cms-api:dev
+# Create resource group
+az group create --name sigil-rg --location eastus2
 
-# Update Container App
-az containerapp update \
-  --name netrun-cms-api \
-  --resource-group rg-intirkast-staging \
-  --image acrintirkaststaging.azurecr.io/netrun-cms-api:dev
+# Deploy all infrastructure
+az deployment group create \
+  --resource-group sigil-rg \
+  --template-file deploy/azure/bicep/main.bicep \
+  --parameters \
+    dbPassword="$(openssl rand -base64 32 | tr -d '/@\"=+')" \
+    jwtSecret="$(openssl rand -hex 32)"
+
+# Get endpoints
+az deployment group show --resource-group sigil-rg --name main --query 'properties.outputs'
 ```
 
-#### Redeploy Admin
+The Bicep template deploys:
+- Container Apps Environment with Log Analytics
+- 3 Container Apps (API, Admin, Renderer) with auto-scaling
+- PostgreSQL 16 Flexible Server (Burstable B1ms)
+- Azure Container Registry (Basic)
+
+## Cost Estimate
+
+| Resource | Monthly Cost | Notes |
+|----------|-------------|-------|
+| Container Apps (3 apps) | ~$5-15 | Scale-to-zero when idle |
+| PostgreSQL (B1ms) | ~$13 | Always on (smallest production tier) |
+| Container Registry (Basic) | ~$5 | 10 GB included |
+| Log Analytics | ~$1-2 | 5 GB free/month |
+| **Total** | **~$20-30/mo** | |
+
+## Custom Domain with HTTPS
 
 ```bash
-# Build admin
-pnpm --filter @netrun-cms/admin build
+# Add custom domain to the renderer
+az containerapp hostname add \
+  --name sigil-renderer \
+  --resource-group sigil-rg \
+  --hostname your-domain.com
 
-# Deploy
-npx @azure/static-web-apps-cli deploy apps/admin/dist \
-  --deployment-token "$(az staticwebapp secrets list --name netrun-cms-admin --resource-group rg-intirkast-staging --query 'properties.apiKey' -o tsv)"
+# Bind a managed certificate (auto-renewed)
+az containerapp hostname bind \
+  --name sigil-renderer \
+  --resource-group sigil-rg \
+  --hostname your-domain.com \
+  --environment sigil-env
 ```
 
-### Scaling
+## Azure AD Integration (SSO)
 
-The Container App is configured with:
-- **Min replicas**: 0 (scales to zero when idle = no cost)
-- **Max replicas**: 1 (for dev environment)
-- **CPU**: 0.25 vCPU
-- **Memory**: 0.5 GB
+Azure Container Apps supports Easy Auth for Azure AD SSO:
 
-To scale for production:
+```bash
+az containerapp auth microsoft update \
+  --name sigil-admin \
+  --resource-group sigil-rg \
+  --client-id <app-registration-client-id> \
+  --client-secret <client-secret> \
+  --issuer "https://login.microsoftonline.com/<tenant-id>/v2.0"
+```
+
+## Secrets Management
+
+Secrets are stored in Azure Key Vault:
+- `sigil-db-password` — PostgreSQL password
+- `sigil-jwt-secret` — JWT signing key
+- `sigil-seed-key` — Bootstrap API key
+
+Retrieve a secret:
+```bash
+KV_NAME=$(az keyvault list --resource-group sigil-rg --query '[0].name' --output tsv)
+az keyvault secret show --vault-name "$KV_NAME" --name sigil-seed-key --query value --output tsv
+```
+
+## Health Checks
+
+```bash
+API_URL=$(az containerapp show --name sigil-api --resource-group sigil-rg --query 'properties.configuration.ingress.fqdn' --output tsv)
+curl "https://$API_URL/health"
+```
+
+## Monitoring and Logs
+
+```bash
+# Stream logs
+az containerapp logs show --name sigil-api --resource-group sigil-rg --follow
+
+# View replicas
+az containerapp replica list --name sigil-api --resource-group sigil-rg
+
+# View revision info
+az containerapp revision list --name sigil-api --resource-group sigil-rg --output table
+```
+
+## Updating
+
+Re-run the deploy script to build new images and update services:
+```bash
+./deploy.sh sigil-rg eastus2
+```
+
+Or update a single service:
 ```bash
 az containerapp update \
-  --name netrun-cms-api \
-  --resource-group rg-intirkast-staging \
+  --name sigil-api \
+  --resource-group sigil-rg \
+  --image <acr>.azurecr.io/sigil-api:new-tag
+```
+
+## Backup
+
+```bash
+# PostgreSQL backup (automatic with 7-day retention)
+# Manual export:
+az postgres flexible-server backup create \
+  --resource-group sigil-rg \
+  --server-name sigil-pgserver \
+  --backup-name "manual-$(date +%Y%m%d)"
+
+# List backups
+az postgres flexible-server backup list \
+  --resource-group sigil-rg \
+  --server-name sigil-pgserver \
+  --output table
+```
+
+## Scaling
+
+```bash
+# Scale API for production
+az containerapp update \
+  --name sigil-api \
+  --resource-group sigil-rg \
   --min-replicas 1 \
-  --max-replicas 3 \
-  --cpu 0.5 \
-  --memory 1.0Gi
+  --max-replicas 5 \
+  --cpu 1.0 \
+  --memory 2.0Gi
 ```
 
-### Cleanup
-
-To remove all resources:
+## Teardown
 
 ```bash
-# Delete Container App
-az containerapp delete --name netrun-cms-api --resource-group rg-intirkast-staging --yes
+# Remove the entire resource group (destructive — deletes everything)
+az group delete --name sigil-rg --yes --no-wait
 
-# Delete Static Web App
-az staticwebapp delete --name netrun-cms-admin --resource-group rg-intirkast-staging --yes
-
-# Delete database (optional - keeps data)
-az postgres flexible-server db delete \
-  --server-name intirkast-staging-db \
-  --resource-group rg-intirkast-staging \
-  --database-name netrun_cms_dev --yes
+# Or remove individual resources:
+az containerapp delete --name sigil-api --resource-group sigil-rg --yes
+az containerapp delete --name sigil-admin --resource-group sigil-rg --yes
+az containerapp delete --name sigil-renderer --resource-group sigil-rg --yes
+az postgres flexible-server delete --name sigil-pgserver --resource-group sigil-rg --yes
 ```
-
----
-
-*Deployed: January 2026*
-*Infrastructure: Shared Netrun Resources (rg-intirkast-staging)*

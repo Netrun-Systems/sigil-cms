@@ -1,0 +1,88 @@
+{
+  "topics": [
+    {
+      "topic_title": "Site Cloning and Bulk Provisioning",
+      "screenshot": "16-cloning.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Site Cloning lets you duplicate any existing site with a single click. The clone copies all pages, blocks, themes, and media into a new draft site. The original stays untouched. Below that, Bulk Provisioning creates multiple tenant sites at once. Enter five slugs and display names, hit Provision All, and Sigil spins up all five with their own isolated databases, themes, and admin users. The progress bar tracks each site as it initializes."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This is an agency workflow feature. Without it, you are clicking through a site creation wizard five times, uploading the same starter template five times, configuring the same default theme five times. Clone gives you a golden template. Bulk provisioning turns a Monday morning of onboarding into a thirty-second operation. WordPress Multisite has network activation, but it does not clone an entire site config and content tree in one action."
+        }
+      ]
+    },
+    {
+      "topic_title": "Subdomain Routing",
+      "screenshot": "17-subdomains.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Every site gets an auto-generated subdomain under sigil.netrunsystems.com. Frost Portfolio resolves at frost.sigil.netrunsystems.com, the agency portfolio at portfolio.sigil.netrunsystems.com. The routing diagram shows how it works: the browser sends a request, the Host header carries the subdomain, the middleware extracts the slug, looks up the tenant in PostgreSQL, and serves that site's content and theme. Wildcard DNS handles all subdomains with a single A record."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The beauty here is zero configuration per site. Create a site with slug 'frost' and it is instantly live at frost.sigil.netrunsystems.com. No DNS records to add, no SSL certificates to provision for the subdomain \u2014 the wildcard certificate covers everything. Custom domains are still supported via CNAME and TXT verification, but out of the box every site has a working URL. This eliminates the DNS propagation delay that blocks every new site launch."
+        }
+      ]
+    },
+    {
+      "topic_title": "Block Templates",
+      "screenshot": "18-templates.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Block Templates turn any configured content block into a reusable starting point. The page editor shows a Save as Template button on every expanded block. The Template Library panel on the right lists all saved templates \u2014 Hero Dark, Pricing Three Tier, FAQ Collapsible, CTA Gradient. Each shows its description, usage count, and an Apply button. Clicking Apply inserts a new block pre-filled with the template's content and settings."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This is the missing piece between a blank block and a finished design. Without templates, every new page starts from scratch \u2014 you configure a hero block, set the overlay, pick the font size, set the CTA colors, every single time. With templates, your best-performing hero is one click away. The usage count tracks adoption, so you can see which templates your team actually uses. It is Figma component instances for CMS content."
+        }
+      ]
+    },
+    {
+      "topic_title": "Security \u2014 Two-Factor Authentication and Audit Log",
+      "screenshot": "19-security.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Security page has two sections. The top is Two-Factor Authentication setup \u2014 a QR code for Google Authenticator or Authy, a manual key for backup apps, a six-digit verification field, and eight one-time backup recovery codes. Below that is the Audit Log \u2014 a filterable table of every admin action. Each row records the timestamp, user email, action type, affected resource, and source IP address. Actions range from page updates and theme saves to user logins, media uploads, plugin activations, and system operations like SSL renewals and scheduled backups."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Two-factor is table stakes for any multi-tenant platform \u2014 without it, a compromised editor password exposes every site in the tenant. The backup codes are critical because people lose access to authenticator apps more often than you would expect. The audit log is where Sigil separates from most CMS platforms. WordPress has activity log plugins, but they are third-party and inconsistent. Here every action is logged at the framework level with IP tracking. For agencies managing client sites, this is compliance documentation built in."
+        }
+      ]
+    },
+    {
+      "topic_title": "Data Transfer \u2014 Export and Import",
+      "screenshot": "20-transfer.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Data Transfer page splits into Export and Import panels. Export lets you select which content types to include \u2014 pages, blocks, themes, media, settings, users, analytics, and community data \u2014 with item counts and sizes for each. The format dropdown offers JSON for structured data, ZIP for media bundles, or CSV for tabular exports. Import has a drag-and-drop zone accepting JSON and ZIP files. Three import modes: merge with existing content, overwrite by slug, or create a fresh site from the export. A progress bar tracks the operation in real time."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This closes the portability gap. Most CMS platforms make it easy to get content in and hard to get it out. Sigil exports everything \u2014 not just pages and posts, but theme configurations, block settings, media files, and even analytics data. The merge mode is what makes this practical for real workflows. You export a staging site, import it into production, and existing content stays untouched while new pages merge in. Try doing that with a WordPress XML export."
+        }
+      ]
+    },
+    {
+      "topic_title": "Point of Sale System",
+      "screenshot": "21-pos.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Point of Sale interface is a register-style layout inside the Sigil admin. The left side is a product grid organized by category \u2014 merch, digital products, services, and events. Each card shows the product name, price, category indicator, and stock status. The right side is the order panel with line items, quantities, subtotal, tax calculation, and a prominent total. Three payment buttons at the bottom \u2014 Card for Stripe terminal, Cash, and Split for mixed payment. Quick actions handle discounts, order holds, and cart clearing."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This turns Sigil from a website CMS into a full retail platform. A pop-up shop, a conference booth, a studio visit \u2014 you pull up the POS on a tablet, ring up a T-shirt and a consulting session in the same transaction. The Stripe terminal integration means card payments go through the same Stripe account as online orders. No separate Square account, no reconciliation between in-person and online sales. The customer field ties the sale to a CRM contact, so the next email campaign knows what they bought."
+        }
+      ]
+    }
+  ]
+}

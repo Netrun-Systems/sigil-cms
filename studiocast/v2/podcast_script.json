@@ -1,0 +1,214 @@
+{
+  "topics": [
+    {
+      "topic_title": "Sigil Landing Page",
+      "screenshot": "01-landing.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Sigil is a multi-tenant headless CMS by Netrun Systems. One deployment, unlimited sites, twenty-two plugins. The landing page at sigil.netrunsystems.com leads with the value proposition: Build Anything, Own Everything. Self-host for free under MIT license, or use the managed cloud starting at twelve dollars a month."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The stats bar is worth noting \u2014 twenty-two plugins, seventy-plus Google Fonts, forty-nine admin pages, zero cost for self-hosting. Most CMS platforms lock you into their hosting. Sigil ships as a Docker image you can run on any VPS, Cloud Run instance, or your own hardware. The managed cloud is for teams that want us to handle ops."
+        }
+      ]
+    },
+    {
+      "topic_title": "Admin Dashboard",
+      "screenshot": "02-dashboard.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The admin dashboard shows the full portfolio at a glance. Stats cards for total sites, pages, media usage, and active plugins. The sidebar navigation organizes all forty-nine admin pages into sections \u2014 Main, Artist Content, Engagement, Store, Booking, Broadcasting, Integrations, and System. Below the stats, recent activity streams every action \u2014 page edits, media uploads, plugin activations, orders, bookings, community posts, and webhook fires."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The plugin status section shows all twenty-two plugins as badges with active or inactive indicators. System health monitors the API server, PostgreSQL, blob storage, email service, and Stripe connection with response times and pool utilization. This is a single admin panel managing what would typically require six or seven separate SaaS dashboards."
+        }
+      ]
+    },
+    {
+      "topic_title": "Sites and Domains",
+      "screenshot": "03-sites.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Sites and Domains page manages every site in the tenant. Each card shows the site name, custom domain with SSL verification status, page count, storage usage, and last update time. Actions include edit, design, duplicate, and settings. Adding a custom domain is a DNS CNAME record \u2014 the system verifies ownership and provisions the SSL certificate automatically."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Multi-site on a single deployment is where Sigil diverges from WordPress Multisite or Squarespace. There is no per-site fee. Each site has its own theme, pages, media, and plugin configuration. A design agency could run twenty client sites on one fifteen-dollar Cloud Run instance. The duplicate button clones an entire site as a starting template for the next project."
+        }
+      ]
+    },
+    {
+      "topic_title": "Design Playground",
+      "screenshot": "04-design.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Design Playground replaces the typical theme dropdown. Six tabs \u2014 Presets, Colors, Typography, Shapes, Effects, Spacing \u2014 give full control over every visual parameter. The color palette has ten configurable tokens. Button shape options range from square to rounded to pill. Typography controls include a font browser with seventy-plus Google Fonts, heading scale sliders from H1 through body, and a custom font upload tab."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The spacing tab is where it gets serious. Section padding, container max-width, card gap, block margin, grid columns, sidebar width, content padding \u2014 seven sliders with pixel-level precision. The live preview panel on the right updates with every change. Start from one of the five presets \u2014 Netrun Dark, KOG, Intirkon, Minimal, or Frost \u2014 then override anything. This level of control previously required a CSS developer."
+        }
+      ]
+    },
+    {
+      "topic_title": "Page Editor and Blocks",
+      "screenshot": "05-editor.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Pages are built from composable content blocks. The editor shows a block list with drag handles for reordering. Expanded blocks reveal inline field editors \u2014 the Hero block has headline, subheadline, CTA text, CTA URL, background image, and overlay opacity. Collapsed blocks show a summary line. The block registry is open \u2014 plugins add their own types. The artist plugin adds six block types, the community plugin adds three."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The revision history panel tracks every save with a timeline. Each revision records what changed and when. You can restore any previous version. The Pricing Table block uses structured tier inputs \u2014 not raw HTML. The FAQ block uses an accordion pattern with structured question-answer pairs. Every block type has a typed schema, which means the API delivers structured JSON that any frontend can consume."
+        }
+      ]
+    },
+    {
+      "topic_title": "Plugin Marketplace",
+      "screenshot": "06-marketplace.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Twenty-two plugins ship with Sigil, organized into six categories \u2014 Content, Commerce, Engagement, Analytics, Netrun integrations, and System. The marketplace grid shows each plugin with its description, category badge, and activation status. Plugins are environment-gated: set the required API key or connection string and the plugin activates. Remove the key and it skips gracefully. No config files, no server restart."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The Content category covers Blog, Portfolio, Events, Mailing List, Contact Forms, and SEO. Commerce has Stripe Store, Printful merch, PayPal, and Booking. Engagement includes Community Forum, Knowledge Base, and Resonance Analytics. The Netrun category integrates with four products \u2014 Intirkast broadcasting, KOG CRM, KAMERA 3D scanning, and Charlotte AI. System plugins handle migration, webhooks, the marketplace itself, and billing."
+        }
+      ]
+    },
+    {
+      "topic_title": "Commerce Suite",
+      "screenshot": "07-commerce.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Commerce Suite combines three payment channels and a booking system. The Store plugin syncs products with Stripe \u2014 create a product in Sigil, it creates the Stripe Product and Price automatically. Checkout generates a Stripe Session on their hosted page. Printful handles print-on-demand merch with catalog sync, mockup images, and fulfillment tracking. The Booking plugin provides service scheduling with availability rules and email confirmations."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The order history table shows all transactions across payment methods in one view. Stripe charges their standard two point nine percent \u2014 Sigil adds zero platform fee. Printful prints and ships on demand, so there is no inventory to manage. The Booking section shows upcoming appointments with service duration and pricing. This replaces Calendly, Shopify, and a separate merch provider with three plugins on one platform."
+        }
+      ]
+    },
+    {
+      "topic_title": "Community Forum",
+      "screenshot": "08-community.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Community plugin adds a gated forum. Members authenticate via magic link \u2014 no passwords. Posts support discussion, question, article, and announcement types. Questions have a solved-answer workflow. Voting affects post scores and author reputation. The leaderboard sidebar tracks top contributors across six tiers from Newcomer to Legend. Thread cards show vote count, type badge, category, solved status, and tags."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Content gating is the key differentiator from open forums. Non-members see truncated previews \u2014 two hundred characters. Full content requires email verification, which blocks scrapers and incentivizes registration. Search uses PostgreSQL GIN full-text indexing. Moderation tools include pin, lock, close, and ban. The reputation system creates a natural hierarchy where quality contributors rise to Expert and Legend tiers."
+        }
+      ]
+    },
+    {
+      "topic_title": "Resonance Analytics",
+      "screenshot": "09-analytics.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Resonance is block-level content analytics. The dashboard shows a heatmap for each content block on a page \u2014 green blocks have high engagement, red blocks lose visitors. Each block has a composite score based on viewport time, click-through rate, scroll continuation, and bounce avoidance. The tracking snippet is two kilobytes, uses no cookies, collects no PII, and runs entirely through Intersection Observer."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The A/B testing panel lets you clone a block as a variant and split traffic. The system evaluates the winner with a ninety-percent confidence z-test. The AI suggestions panel uses Gemini to analyze low-scoring blocks and recommend specific changes \u2014 move this section, rewrite this CTA, shorten this paragraph. Blocks scoring below forty automatically trigger suggestions. No external tracking scripts, no cookies, fully GDPR compliant."
+        }
+      ]
+    },
+    {
+      "topic_title": "Knowledge Base",
+      "screenshot": "10-docs.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Knowledge Base plugin provides categorized documentation with search, versioning, and feedback ratings. Each article shows its category, tags, view count, helpful percentage, version number, and featured status. The search uses the same PostgreSQL GIN index as the community forum. Articles can be marked as featured to appear on the documentation homepage."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The helpful ratio is the feedback loop that most documentation platforms miss. Readers rate each article, and the percentage surfaces which docs need rewriting. Version tracking means you can publish an update without losing the previous draft. This replaces GitBook or Notion for product documentation while staying inside the same admin panel as your CMS, commerce, and community."
+        }
+      ]
+    },
+    {
+      "topic_title": "Migration Tool",
+      "screenshot": "11-migrate.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Migration Tool imports content from WordPress, Shopify, and Square. WordPress imports read WXR XML exports \u2014 posts, pages, media, and categories map directly to Sigil content blocks and the media library. Shopify imports products and collections from CSV. Square API integration is planned. The migration history table shows every completed and in-progress import with content counts and duration."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The active migration progress bar shows real-time status \u2014 step three of five, downloading media assets, sixty percent complete. Content mapping is the hard part of any CMS migration, and the tool handles the WordPress post format to Sigil block conversion automatically. A forty-seven post WordPress site with eighty-nine media files migrated in under four minutes. That removes the biggest barrier to switching from an existing CMS."
+        }
+      ]
+    },
+    {
+      "topic_title": "Netrun Platform Integrations",
+      "screenshot": "12-platform.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Sigil integrates with four products from the Netrun ecosystem. KOG CRM shows lead management with pipeline stages, deal values, and lead scores. Intirkast handles broadcasting with live stream status and scheduling across YouTube, Twitch, and LinkedIn. KAMERA provides 3D site scanning with point cloud data. Charlotte AI embeds a RAG-powered chat widget that answers questions using your site content and documentation."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The Support Panel adds ticketing with priority levels, assignment routing, and SLA tracking. The Charlotte AI preview shows context-aware responses \u2014 ask how to add a Stripe product and it walks through the exact steps using your documentation. These are not generic integrations. They share the same PostgreSQL database, the same auth system, and the same admin panel. Activating KOG CRM in Sigil gives you lead management without a separate CRM subscription."
+        }
+      ]
+    },
+    {
+      "topic_title": "Webhooks and Events",
+      "screenshot": "13-webhooks.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Webhooks plugin provides an event bus with endpoint management. Register a URL, select the events it receives \u2014 page published, order completed, form submitted, community post created \u2014 and the system delivers JSON payloads with HMAC-SHA256 signatures. Each endpoint shows its success rate, last fire time, and delivery log. Retry logic follows a two-four-eight second backoff pattern with three attempts."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The delivery log is the debugging tool. Every webhook fire shows the event type, endpoint, HTTP status, response, duration, and timestamp. Failed deliveries show retry attempts and eventual resolution. This is the integration layer that connects Sigil to Slack, Zapier, n8n, or any external system. The HMAC signing prevents spoofed payloads \u2014 the receiving system verifies the signature before processing."
+        }
+      ]
+    },
+    {
+      "topic_title": "Billing and Plans",
+      "screenshot": "14-billing.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Billing page manages SaaS subscriptions through Stripe. The current plan card shows the tier, monthly cost, and next billing date. Usage meters track sites, pages, storage, and API calls against plan limits with visual progress bars. The plan comparison grid shows all four tiers side by side \u2014 Free at zero dollars for self-hosting, Starter at twelve dollars, Pro at forty-nine dollars, and Enterprise at seventy-nine dollars and up."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Plan enforcement is automatic. Hit your site limit on Starter and the system blocks new site creation with an upgrade prompt \u2014 it does not silently charge overage fees. The Free tier is genuinely free for self-hosting with twelve plugins. The Pro tier unlocks Resonance analytics, A/B testing, and white-label branding. Enterprise adds SLA, SSO, and custom integrations. Stripe handles all billing, invoicing, and subscription lifecycle."
+        }
+      ]
+    },
+    {
+      "topic_title": "Public Pricing Page",
+      "screenshot": "15-pricing.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The public pricing page presents all four tiers with an annual billing toggle that saves twenty percent. Free is self-hosted under MIT license \u2014 one site, ten pages, one gigabyte storage, twelve plugins, community support. Starter at twelve dollars per month adds three sites, fifty pages, five gigs, all twenty-two plugins, and email support. Pro at forty-nine adds ten sites, two hundred pages, analytics, A/B testing, and priority support. Enterprise starts at seventy-nine for unlimited everything with SLA and SSO."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The self-host option is the trust signal. Sigil is not a walled garden \u2014 download the Docker image, deploy it anywhere, and you own the data. The cloud tiers exist for teams that want managed infrastructure, automatic updates, and support. The FAQ section addresses the common questions \u2014 plan switching, free trials, payment methods, and hybrid self-host-plus-cloud configurations. The pricing is intentionally below Squarespace, Webflow, and WordPress hosting, because the infrastructure cost for running Sigil on Cloud Run is genuinely lower."
+        }
+      ]
+    }
+  ]
+}

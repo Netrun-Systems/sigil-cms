@@ -14,6 +14,7 @@ import type { ThemeData, PageData } from './api-client.js';
 import { themeToCss, themeToFontLinks } from './theme.js';
 import { renderBlocks } from './render.js';
 import { renderLayout, render404 } from './layout.js';
+import { handleSignup } from './signup.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
@@ -133,6 +134,12 @@ async function getNavigation(): Promise<{ label: string; href: string }[]> {
   navCache = { items, fetchedAt: now };
   return items;
 }
+
+// --- Signup / Payment Redirect ---
+// Routes /signup?plan=<plan> to the appropriate Stripe Payment Link.
+// Source of truth: boardroom/reports/payment_links_registry.md
+
+app.get('/signup', handleSignup);
 
 // --- Static Assets ---
 

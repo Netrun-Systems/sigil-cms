@@ -1,0 +1,36 @@
+[Unit]
+Description=Sigil CMS API Server
+Documentation=https://github.com/Netrun-Systems/sigil-cms
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=sigil
+Group=sigil
+WorkingDirectory=/opt/sigil
+EnvironmentFile=/opt/sigil/.env
+ExecStart=/usr/bin/node /opt/sigil/apps/api/dist/index.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sigil
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=1G
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/sigil
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+
+[Install]
+WantedBy=multi-user.target

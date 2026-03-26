@@ -13,7 +13,7 @@ import {
   Button,
   Separator,
 } from '@netrun-cms/ui';
-import { Plus, Trash2, X, Image } from 'lucide-react';
+import { Plus, Trash2, X, Image, Star, Check } from 'lucide-react';
 import { ImagePicker } from './ImagePicker';
 import type { StockImage } from './ImagePicker';
 
@@ -342,6 +342,8 @@ function FeatureGridEditor({ content, onChange }: { content: Record<string, unkn
     onChange({ ...content, features: updated });
   };
 
+  const columns = (content.columns as number) || 3;
+
   return (
     <div className="space-y-3">
       <FieldInput
@@ -350,6 +352,25 @@ function FeatureGridEditor({ content, onChange }: { content: Record<string, unkn
         onChange={(v) => updateField(content, 'title', v, onChange)}
         placeholder="Our Features"
       />
+      <div className="space-y-1.5">
+        <Label className="text-sm">Columns</Label>
+        <div className="flex gap-2">
+          {[1, 2, 3, 4].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => updateField(content, 'columns', n, onChange)}
+              className={`flex h-9 w-9 items-center justify-center rounded-md border text-sm font-medium transition-colors ${
+                columns === n
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
       <Separator />
       <Label className="text-sm">Features</Label>
       <div className="space-y-4">
@@ -502,6 +523,310 @@ function JsonEditor({ content, onChange }: { content: Record<string, unknown>; o
   );
 }
 
+/** Bento Grid block editor — visual layout presets + grid items */
+function BentoGridEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (c: Record<string, unknown>) => void }) {
+  const layout = (content.layout as string) || '2-col';
+  const items = (content.items as Array<{ title?: string; description?: string; span?: number }>) || [];
+
+  const LAYOUT_PRESETS: Array<{ id: string; label: string; grid: number[][] }> = [
+    { id: '2-col', label: '2 Column', grid: [[1, 1], [1, 1]] },
+    { id: '3-col', label: '3 Column', grid: [[1, 1, 1], [1, 1, 1]] },
+    { id: 'featured-left', label: 'Featured Left', grid: [[2, 1], [1, 1]] },
+    { id: 'featured-right', label: 'Featured Right', grid: [[1, 2], [1, 1]] },
+  ];
+
+  const addItem = () => {
+    onChange({ ...content, items: [...items, { title: '', description: '', span: 1 }] });
+  };
+
+  const removeItem = (index: number) => {
+    onChange({ ...content, items: items.filter((_, i) => i !== index) });
+  };
+
+  const updateItem = (index: number, field: string, value: unknown) => {
+    const updated = [...items];
+    updated[index] = { ...updated[index], [field]: value };
+    onChange({ ...content, items: updated });
+  };
+
+  return (
+    <div className="space-y-3">
+      <FieldInput
+        label="Section Title"
+        value={(content.title as string) || ''}
+        onChange={(v) => updateField(content, 'title', v, onChange)}
+        placeholder="Bento Grid Title"
+      />
+
+      <div className="space-y-1.5">
+        <Label className="text-sm">Layout Preset</Label>
+        <div className="grid grid-cols-4 gap-2">
+          {LAYOUT_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => updateField(content, 'layout', preset.id, onChange)}
+              className={`flex flex-col items-center gap-1 rounded-lg border-2 p-2 transition-colors ${
+                layout === preset.id
+                  ? 'border-primary bg-primary/10'
+                  : 'border-input hover:border-primary/50'
+              }`}
+            >
+              {/* Visual thumbnail of grid layout */}
+              <div className="flex w-full flex-col gap-0.5">
+                {preset.grid.map((row, ri) => (
+                  <div key={ri} className="flex gap-0.5">
+                    {row.map((span, ci) => (
+                      <div
+                        key={ci}
+                        className={`h-3 rounded-sm ${
+                          layout === preset.id ? 'bg-primary/60' : 'bg-muted-foreground/30'
+                        }`}
+                        style={{ flex: span }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <span className="text-[10px] font-medium text-muted-foreground">{preset.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+      <Label className="text-sm">Grid Items</Label>
+      <div className="space-y-4">
+        {items.map((item, index) => (
+          <div key={index} className="rounded-md border p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-destructive hover:text-destructive"
+                onClick={() => removeItem(index)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+            <Input
+              value={item.title || ''}
+              onChange={(e) => updateItem(index, 'title', e.target.value)}
+              placeholder="Item title"
+              className="text-sm"
+            />
+            <Textarea
+              value={item.description || ''}
+              onChange={(e) => updateItem(index, 'description', e.target.value)}
+              placeholder="Item description"
+              rows={2}
+              className="text-sm"
+            />
+            <div className="space-y-1">
+              <Label className="text-xs">Column Span</Label>
+              <div className="flex gap-2">
+                {[1, 2].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => updateItem(index, 'span', n)}
+                    className={`flex h-7 w-7 items-center justify-center rounded border text-xs font-medium transition-colors ${
+                      (item.span || 1) === n
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-input bg-background hover:bg-accent'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Button variant="outline" size="sm" onClick={addItem}>
+        <Plus className="mr-1 h-4 w-4" />
+        Add Item
+      </Button>
+    </div>
+  );
+}
+
+/** Pricing Table block editor — horizontal tier cards */
+function PricingTableEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (c: Record<string, unknown>) => void }) {
+  const tiers = (content.tiers as Array<{
+    name?: string;
+    price?: string;
+    interval?: string;
+    features?: string[];
+    ctaText?: string;
+    isPopular?: boolean;
+  }>) || [];
+
+  const addTier = () => {
+    onChange({
+      ...content,
+      tiers: [...tiers, { name: '', price: '', interval: '/mo', features: [], ctaText: 'Get Started', isPopular: false }],
+    });
+  };
+
+  const removeTier = (index: number) => {
+    onChange({ ...content, tiers: tiers.filter((_, i) => i !== index) });
+  };
+
+  const updateTier = (index: number, field: string, value: unknown) => {
+    const updated = [...tiers];
+    updated[index] = { ...updated[index], [field]: value };
+    onChange({ ...content, tiers: updated });
+  };
+
+  const addFeature = (tierIndex: number) => {
+    const updated = [...tiers];
+    const features = [...(updated[tierIndex].features || []), ''];
+    updated[tierIndex] = { ...updated[tierIndex], features };
+    onChange({ ...content, tiers: updated });
+  };
+
+  const removeFeature = (tierIndex: number, featureIndex: number) => {
+    const updated = [...tiers];
+    const features = (updated[tierIndex].features || []).filter((_, i) => i !== featureIndex);
+    updated[tierIndex] = { ...updated[tierIndex], features };
+    onChange({ ...content, tiers: updated });
+  };
+
+  const updateFeature = (tierIndex: number, featureIndex: number, value: string) => {
+    const updated = [...tiers];
+    const features = [...(updated[tierIndex].features || [])];
+    features[featureIndex] = value;
+    updated[tierIndex] = { ...updated[tierIndex], features };
+    onChange({ ...content, tiers: updated });
+  };
+
+  return (
+    <div className="space-y-3">
+      <FieldInput
+        label="Section Title"
+        value={(content.title as string) || ''}
+        onChange={(v) => updateField(content, 'title', v, onChange)}
+        placeholder="Pricing"
+      />
+      <FieldTextarea
+        label="Subtitle"
+        value={(content.subtitle as string) || ''}
+        onChange={(v) => updateField(content, 'subtitle', v, onChange)}
+        placeholder="Choose the plan that works for you"
+        rows={2}
+      />
+
+      <Separator />
+      <Label className="text-sm">Tiers</Label>
+
+      {/* Horizontal scrollable tier cards */}
+      <div className="flex gap-4 overflow-x-auto pb-2">
+        {tiers.map((tier, index) => (
+          <div
+            key={index}
+            className={`min-w-[240px] max-w-[280px] flex-shrink-0 rounded-lg border-2 p-4 space-y-3 ${
+              tier.isPopular ? 'border-primary bg-primary/5' : 'border-input'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Tier {index + 1}</span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => updateTier(index, 'isPopular', !tier.isPopular)}
+                  title={tier.isPopular ? 'Remove popular badge' : 'Mark as popular'}
+                  className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
+                    tier.isPopular ? 'text-yellow-500' : 'text-muted-foreground/40 hover:text-yellow-500'
+                  }`}
+                >
+                  <Star className="h-3.5 w-3.5" fill={tier.isPopular ? 'currentColor' : 'none'} />
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-destructive hover:text-destructive"
+                  onClick={() => removeTier(index)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+
+            <Input
+              value={tier.name || ''}
+              onChange={(e) => updateTier(index, 'name', e.target.value)}
+              placeholder="Plan name"
+              className="text-sm font-medium"
+            />
+
+            <div className="flex gap-2">
+              <Input
+                value={tier.price || ''}
+                onChange={(e) => updateTier(index, 'price', e.target.value)}
+                placeholder="$29"
+                className="flex-1 text-sm"
+              />
+              <Input
+                value={tier.interval || ''}
+                onChange={(e) => updateTier(index, 'interval', e.target.value)}
+                placeholder="/mo"
+                className="w-16 text-sm"
+              />
+            </div>
+
+            <Input
+              value={tier.ctaText || ''}
+              onChange={(e) => updateTier(index, 'ctaText', e.target.value)}
+              placeholder="CTA text"
+              className="text-sm"
+            />
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Features</Label>
+              {(tier.features || []).map((feat, fi) => (
+                <div key={fi} className="flex items-center gap-1">
+                  <Check className="h-3 w-3 shrink-0 text-green-500" />
+                  <Input
+                    value={feat}
+                    onChange={(e) => updateFeature(index, fi, e.target.value)}
+                    placeholder="Feature..."
+                    className="h-7 text-xs"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 shrink-0 text-destructive hover:text-destructive"
+                    onClick={() => removeFeature(index, fi)}
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs"
+                onClick={() => addFeature(index)}
+              >
+                <Plus className="mr-1 h-3 w-3" />
+                Feature
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Button variant="outline" size="sm" onClick={addTier}>
+        <Plus className="mr-1 h-4 w-4" />
+        Add Tier
+      </Button>
+    </div>
+  );
+}
+
 /** Map of block types to their editor components */
 const editorMap: Record<string, React.FC<{ content: Record<string, unknown>; onChange: (c: Record<string, unknown>) => void }>> = {
   hero: HeroEditor,
@@ -510,6 +835,8 @@ const editorMap: Record<string, React.FC<{ content: Record<string, unknown>; onC
   cta: CtaEditor,
   gallery: GalleryEditor,
   feature_grid: FeatureGridEditor,
+  bento_grid: BentoGridEditor,
+  pricing_table: PricingTableEditor,
   image: ImageEditor,
   video: VideoEditor,
   code_block: CodeBlockEditor,

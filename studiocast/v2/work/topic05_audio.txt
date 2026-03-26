@@ -1,0 +1,2 @@
+file '/data/workspace/github/netrun-cms/studiocast/v2/work/topic05_seg00.mp3'
+file '/data/workspace/github/netrun-cms/studiocast/v2/work/topic05_seg01.mp3'
