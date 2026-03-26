@@ -3,53 +3,43 @@
  *
  * Maps /signup?plan=<plan> to the corresponding Stripe Payment Link.
  * Uses Stripe Hosted Checkout (PCI compliant — no card data touches our servers).
- *
- * Payment links are registered in:
- *   /data/workspace/github/boardroom/reports/payment_links_registry.md
+ * All payment links support promotion codes (e.g., free month codes).
  */
 
 import type { Request, Response } from 'express';
 
-// Stripe Payment Links — Sigil CMS plans
-// Source of truth: boardroom/reports/payment_links_registry.md
+// Stripe Payment Links — Sigil CMS plans (v2 — promo codes enabled)
 const PAYMENT_LINKS: Record<string, string> = {
   // Monthly plans
-  'starter':          'https://buy.stripe.com/dRmeVf1Mgf806sjcIybwk0F',
-  'starter-monthly':  'https://buy.stripe.com/dRmeVf1Mgf806sjcIybwk0F',
-  'solo':             'https://buy.stripe.com/dRmeVf1Mgf806sjcIybwk0F',
+  'starter':          'https://buy.stripe.com/8x26oJ8aEgc48Ar8sibwk11',
+  'starter-monthly':  'https://buy.stripe.com/8x26oJ8aEgc48Ar8sibwk11',
+  'solo':             'https://buy.stripe.com/8x26oJ8aEgc48Ar8sibwk11',
 
-  'pro':              'https://buy.stripe.com/28E14p9eIcZS3g78sibwk0H',
-  'pro-monthly':      'https://buy.stripe.com/28E14p9eIcZS3g78sibwk0H',
-  'team':             'https://buy.stripe.com/28E14p9eIcZS3g78sibwk0H',
+  'pro':              'https://buy.stripe.com/dRm5kF2Qk3pi2c323Ubwk13',
+  'pro-monthly':      'https://buy.stripe.com/dRm5kF2Qk3pi2c323Ubwk13',
+  'team':             'https://buy.stripe.com/dRm5kF2Qk3pi2c323Ubwk13',
 
-  'business':         'https://buy.stripe.com/cNi00l1Mg5xq6sj23Ubwk0J',
-  'business-monthly': 'https://buy.stripe.com/cNi00l1Mg5xq6sj23Ubwk0J',
+  'business':         'https://buy.stripe.com/3cIdRb8aE7FydULgYObwk15',
+  'business-monthly': 'https://buy.stripe.com/3cIdRb8aE7FydULgYObwk15',
 
-  'enterprise':         'https://buy.stripe.com/fZu14p3Uo0d617Z5g6bwk0L',
-  'enterprise-monthly': 'https://buy.stripe.com/fZu14p3Uo0d617Z5g6bwk0L',
+  // Yearly plans (20% discount)
+  'starter-yearly':   'https://buy.stripe.com/14AfZjaiMcZSeYP37Ybwk12',
+  'solo-yearly':      'https://buy.stripe.com/14AfZjaiMcZSeYP37Ybwk12',
 
-  // Yearly plans
-  'starter-yearly':   'https://buy.stripe.com/8x214p1Mgf80aIzaAqbwk0G',
-  'solo-yearly':      'https://buy.stripe.com/8x214p1Mgf80aIzaAqbwk0G',
+  'pro-yearly':       'https://buy.stripe.com/eVq4gB0Ic5xq9EvgYObwk14',
+  'team-yearly':      'https://buy.stripe.com/eVq4gB0Ic5xq9EvgYObwk14',
 
-  'pro-yearly':       'https://buy.stripe.com/8x2bJ3fD69NG17ZfUKbwk0I',
-  'team-yearly':      'https://buy.stripe.com/8x2bJ3fD69NG17ZfUKbwk0I',
-
-  'business-yearly':  'https://buy.stripe.com/dRm7sNcqU5xqdUL37Ybwk0K',
-
-  'enterprise-yearly':'https://buy.stripe.com/8x228tfD60d6cQH4c2bwk0M',
+  'business-yearly':  'https://buy.stripe.com/9B69AV4Ys9NG9Ev5g6bwk16',
 };
 
-// Default plan when no plan is specified — lowest paid tier
 const DEFAULT_PLAN = 'starter';
 
 /**
  * GET /signup
  * GET /signup?plan=pro
- * GET /signup?plan=enterprise-yearly
+ * GET /signup?plan=business-yearly
  *
- * Redirects to the Stripe Payment Link for the requested plan.
- * Returns 302 to Stripe Hosted Checkout.
+ * Redirects to Stripe Payment Link. Promo codes accepted on all links.
  */
 export function handleSignup(req: Request, res: Response): void {
   const planParam = (req.query.plan as string | undefined)?.toLowerCase().trim();
@@ -58,13 +48,11 @@ export function handleSignup(req: Request, res: Response): void {
   const stripeUrl = PAYMENT_LINKS[plan];
 
   if (!stripeUrl) {
-    // Unknown plan — redirect to default with a note, not a 404
-    // This prevents broken links from bouncing visitors entirely
-    console.warn(`[signup] Unknown plan requested: "${plan}" — redirecting to default`);
+    console.warn(`[signup] Unknown plan: "${plan}" — redirecting to default`);
     res.redirect(302, PAYMENT_LINKS[DEFAULT_PLAN]);
     return;
   }
 
-  console.info(`[signup] Redirecting plan="${plan}" to Stripe`);
+  console.info(`[signup] plan="${plan}" → Stripe`);
   res.redirect(302, stripeUrl);
 }
