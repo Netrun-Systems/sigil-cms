@@ -38,7 +38,7 @@ Built as a pnpm monorepo with Turborepo orchestration, Sigil runs on Express.js 
 - **21 vertical plugins shipped**: Music artist, e-commerce (Stripe + Printful + PayPal), appointment booking (Google Calendar), documentation/knowledge base, mailing list, Resonance analytics, community forum, plugin marketplace, and more — baked into the framework, not bolted on from a marketplace.
 - **AI design generation**: Google Stitch integration generates full-page HTML from a text prompt, then a Stitch-to-blocks converter imports that design as structured Sigil content blocks. Charlotte AI (Gemini 2.0 Flash) provides context-aware design advice with access to the current page's blocks and theme tokens.
 - **Community-driven support**: Built-in gated forum with reputation system, magic-link authentication, and solved-answer workflows — replacing Discourse or Circle as a separate SaaS.
-- **Platform ecosystem**: Sigil integrates with the full Netrun Systems product suite — KOG CRM for lead capture, Charlotte AI for conversational support, KAMERA for 3D scan visualization, and Intirkast for broadcast content.
+- **Platform ecosystem**: Sigil integrates with the full Netrun Systems product suite — KOG CRM for lead capture, Charlotte AI for conversational support, KAMERA for OSINT research and intelligence reports, and Intirkast for broadcast content.
 - **Radical self-hosting**: Runs on any PostgreSQL host for ~$0-5/month on scale-to-zero infrastructure. The same codebase powers the free self-hosted tier and the paid cloud offering — no feature gating, no watermarking, no betrayal.
 
 **Who should read this:**
@@ -494,9 +494,9 @@ The advisor is global (not site-scoped) and available to all authenticated users
 
 ### Integration Plugins
 
-**`kamera` — Survai 3D Scan Integration**
+**`kamera` — KAMERA OSINT Research Integration**
 
-Netrun Systems integration. Connects Sigil sites to the Survai smart site scanner pipeline (3D scan → MEP planning → web visualization). Enables construction and architecture firms using Survai to publish scan results to their Sigil-powered websites.
+Netrun Systems integration. Embeds KAMERA's OSINT research capabilities into Sigil sites — automated intelligence gathering, company and individual research, risk scoring, and narrative report generation. Enables due diligence firms, investigators, and media outlets to run and publish OSINT research directly from their CMS.
 
 **`kog` — K0DE Platform Integration**
 
@@ -530,7 +530,7 @@ Six plugins connect Sigil to the broader Netrun Systems product ecosystem:
 
 | Plugin | Product | Integration |
 |--------|---------|-------------|
-| `kamera` | Survai (KAMERA) | 3D scan viewer embeds, project dashboards, construction report generation |
+| `kamera` | KAMERA | OSINT research — company/individual intelligence, risk scoring, narrative reports |
 | `kog` | K0DE by Wilbur | Customer project sites managed via Sigil, activity feed embeds |
 | `intirkast` | Intirkast | Podcast player, live stream status widget, broadcast schedule embeds |
 | `charlotte` | Charlotte AI | Conversational support chat widget, knowledge base search, content recommendations |
@@ -1247,7 +1247,7 @@ Sigil CMS is one component of the Netrun Systems product ecosystem. When deploye
 | **Sigil CMS** | Multi-tenant headless CMS | Core product |
 | **KOG CRM** | Customer relationship management | Lead capture → CRM contacts, activity feed embeds |
 | **Charlotte** | AI voice assistant + orchestration | Conversational support widget, knowledge base search, content recommendations |
-| **KAMERA** | 3D scan processing (Survai) | Scan viewer embeds, project dashboards, report generation |
+| **KAMERA** | OSINT research tool | Company/individual intelligence, risk scoring, due diligence reports |
 | **Intirkast** | Content syndication + broadcasting | Podcast player, live stream status, broadcast schedule |
 
 The Support Panel plugin unifies these integrations into a single slide-out widget: knowledge base search (from Docs plugin), contact form (from Contact plugin), AI chat (from Charlotte), and status announcements — all accessible from any page.

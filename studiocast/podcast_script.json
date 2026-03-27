@@ -45,7 +45,7 @@
       "screenshot": "06-plugin-marketplace.png",
       "dialogue": [
         {"speaker": "HOST", "text": "Twenty-one plugins ship with Sigil. The marketplace shows each plugin's description, category, and activation status. Plugins are environment-gated — set the Stripe secret key and the Store plugin activates. Remove it and the plugin skips gracefully. No configuration files to edit, no server restart."},
-        {"speaker": "GUEST", "text": "The plugin categories cover content, commerce, scheduling, analytics, integrations, and the Netrun product ecosystem. SEO, Artist content, Mailing List, Contact forms, Docs and Knowledge Base, Booking, Store with Stripe, Printful merch, PayPal, Resonance analytics, Community forum, Charlotte AI assistant, KAMERA 3D scanning, KOG CRM, Intirkast broadcasting, Migration from WordPress and Shopify, Webhooks, and the Support panel."}
+        {"speaker": "GUEST", "text": "The plugin categories cover content, commerce, scheduling, analytics, integrations, and the Netrun product ecosystem. SEO, Artist content, Mailing List, Contact forms, Docs and Knowledge Base, Booking, Store with Stripe, Printful merch, PayPal, Resonance analytics, Community forum, Charlotte AI assistant, KAMERA OSINT research, KOG CRM, Intirkast broadcasting, Migration from WordPress and Shopify, Webhooks, and the Support panel."}
       ]
     },
     {

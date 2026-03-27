@@ -1,8 +1,9 @@
 /**
- * KAMERA Plugin — Survai 3D scan processing pipeline integration
+ * KAMERA Plugin — OSINT research and intelligence report integration
  *
- * Embeds scan viewers, project status dashboards, and report generation
- * into CMS pages by proxying the Survai API.
+ * Embeds KAMERA's OSINT research capabilities into CMS pages — automated
+ * intelligence gathering, company/individual research, risk scoring,
+ * and narrative report generation for due diligence and investigations.
  */
 
 import type { CmsPlugin } from '@netrun-cms/plugin-runtime';
@@ -10,7 +11,7 @@ import { createRoutes } from './routes.js';
 
 const kameraPlugin: CmsPlugin = {
   id: 'kamera',
-  name: 'KAMERA (3D Scanning)',
+  name: 'KAMERA (OSINT Research)',
   version: '1.0.0',
   requiredEnv: ['SURVAI_API_URL'],
 

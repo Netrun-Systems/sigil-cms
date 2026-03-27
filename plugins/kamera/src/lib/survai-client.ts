@@ -1,5 +1,5 @@
 /**
- * Survai API Client — communicates with the Survai 3D scan processing pipeline.
+ * KAMERA API Client — communicates with the KAMERA OSINT research pipeline.
  *
  * Endpoints proxy through the CMS plugin so scan data can be embedded
  * directly into CMS pages without exposing the internal Survai API.

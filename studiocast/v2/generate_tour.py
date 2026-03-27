@@ -849,7 +849,7 @@ def scene_06_marketplace():
         ("Resonance Analytics", "Analytics", True, "Block-level content heatmaps, A/B testing, and AI-powered suggestions."),
         ("Intirkast", "Netrun", True, "Broadcasting integration. Live stream status, broadcast scheduling, embed widgets."),
         ("KOG CRM", "Netrun", True, "Customer relationship management. Lead tracking, pipeline stages, contact notes."),
-        ("KAMERA", "Netrun", True, "3D site scanning integration. Scan status, point cloud viewer, measurement tools."),
+        ("KAMERA", "Netrun", True, "OSINT research integration. Intelligence gathering, risk scoring, due diligence reports."),
         ("Charlotte AI", "Netrun", True, "AI assistant widget. RAG-powered chat, context-aware responses, conversation history."),
         ("Support Panel", "Netrun", True, "Customer support ticketing. Priority levels, assignment, SLA tracking, canned responses."),
         ("Migration Tool", "System", True, "Import from WordPress, Shopify, and Square. Content mapping and asset download."),
@@ -1970,7 +1970,7 @@ def generate_script():
                 "screenshot": "06-marketplace.png",
                 "dialogue": [
                     {"speaker": "HOST", "text": "Twenty-two plugins ship with Sigil, organized into six categories — Content, Commerce, Engagement, Analytics, Netrun integrations, and System. The marketplace grid shows each plugin with its description, category badge, and activation status. Plugins are environment-gated: set the required API key or connection string and the plugin activates. Remove the key and it skips gracefully. No config files, no server restart."},
-                    {"speaker": "GUEST", "text": "The Content category covers Blog, Portfolio, Events, Mailing List, Contact Forms, and SEO. Commerce has Stripe Store, Printful merch, PayPal, and Booking. Engagement includes Community Forum, Knowledge Base, and Resonance Analytics. The Netrun category integrates with four products — Intirkast broadcasting, KOG CRM, KAMERA 3D scanning, and Charlotte AI. System plugins handle migration, webhooks, the marketplace itself, and billing."}
+                    {"speaker": "GUEST", "text": "The Content category covers Blog, Portfolio, Events, Mailing List, Contact Forms, and SEO. Commerce has Stripe Store, Printful merch, PayPal, and Booking. Engagement includes Community Forum, Knowledge Base, and Resonance Analytics. The Netrun category integrates with four products — Intirkast broadcasting, KOG CRM, KAMERA OSINT research, and Charlotte AI. System plugins handle migration, webhooks, the marketplace itself, and billing."}
                 ]
             },
             {
@@ -2017,7 +2017,7 @@ def generate_script():
                 "topic_title": "Netrun Platform Integrations",
                 "screenshot": "12-platform.png",
                 "dialogue": [
-                    {"speaker": "HOST", "text": "Sigil integrates with four products from the Netrun ecosystem. KOG CRM shows lead management with pipeline stages, deal values, and lead scores. Intirkast handles broadcasting with live stream status and scheduling across YouTube, Twitch, and LinkedIn. KAMERA provides 3D site scanning with point cloud data. Charlotte AI embeds a RAG-powered chat widget that answers questions using your site content and documentation."},
+                    {"speaker": "HOST", "text": "Sigil integrates with four products from the Netrun ecosystem. KOG CRM shows lead management with pipeline stages, deal values, and lead scores. Intirkast handles broadcasting with live stream status and scheduling across YouTube, Twitch, and LinkedIn. KAMERA provides OSINT research and intelligence report generation. Charlotte AI embeds a RAG-powered chat widget that answers questions using your site content and documentation."},
                     {"speaker": "GUEST", "text": "The Support Panel adds ticketing with priority levels, assignment routing, and SLA tracking. The Charlotte AI preview shows context-aware responses — ask how to add a Stripe product and it walks through the exact steps using your documentation. These are not generic integrations. They share the same PostgreSQL database, the same auth system, and the same admin panel. Activating KOG CRM in Sigil gives you lead management without a separate CRM subscription."}
                 ]
             },

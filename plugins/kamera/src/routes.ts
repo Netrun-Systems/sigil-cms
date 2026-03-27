@@ -1,6 +1,6 @@
 // @ts-nocheck — plugin routes use dynamic db queries with `any` db client
 /**
- * KAMERA Routes — Survai 3D scan viewer embeds, status, and report generation
+ * KAMERA Routes — OSINT research, intelligence reports, risk scoring
  */
 
 import { Router, type Request, type Response } from 'express';

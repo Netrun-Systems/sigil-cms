@@ -75,36 +75,48 @@ const sigilPages: SigilPageDef[] = [
               title: 'Multi-Tenant',
               description:
                 'One deployment serves unlimited sites with full tenant isolation',
+              link: '/features/multi-tenant',
+              image: 'https://sigil.netrunsystems.com/static/screenshots/multi-tenant.png',
             },
             {
               icon: 'puzzle',
               title: 'Plugin Architecture',
               description:
                 '21 plugins — commerce, booking, docs, analytics. Enable only what you need.',
+              link: '/plugins',
+              image: 'https://sigil.netrunsystems.com/static/screenshots/plugins.png',
             },
             {
               icon: 'palette',
               title: 'Design Playground',
               description:
                 '70+ Google Fonts, button shapes, shadows, spacing — all with live preview',
+              link: '/features/design',
+              image: 'https://sigil.netrunsystems.com/static/screenshots/design.png',
             },
             {
               icon: 'blocks',
               title: 'Composable Blocks',
               description:
                 'Hero, pricing, FAQ, gallery, embeds — 20+ block types out of the box',
+              link: '/features/blocks',
+              image: 'https://sigil.netrunsystems.com/static/screenshots/blocks.png',
             },
             {
               icon: 'code',
               title: 'API-First',
               description:
                 'Full REST + GraphQL API. TypeScript SDK. Next.js integration.',
+              link: '/features/api',
+              image: 'https://sigil.netrunsystems.com/static/screenshots/api.png',
             },
             {
               icon: 'server',
               title: 'Self-Host or Cloud',
               description:
                 'Deploy to Cloud Run for ~$5/month or use Sigil Cloud. Your data, your rules.',
+              link: '/features/hosting',
+              image: 'https://sigil.netrunsystems.com/static/screenshots/hosting.png',
             },
           ],
         },
@@ -156,18 +168,18 @@ const sigilPages: SigilPageDef[] = [
           headline: 'Content Blocks',
           columns: 3,
           features: [
-            { icon: 'star', title: 'Hero', description: 'Full-width hero sections with background images, CTAs, and alignment options' },
-            { icon: 'type', title: 'Text', description: 'Rich text with Markdown, HTML, or plain text formatting' },
-            { icon: 'edit', title: 'Rich Text', description: 'WYSIWYG editor for non-technical content creators' },
-            { icon: 'grid', title: 'Feature Grid', description: 'Responsive card grids with icons, titles, and descriptions' },
-            { icon: 'dollar-sign', title: 'Pricing Table', description: 'Tiered pricing cards with feature lists and CTA buttons' },
-            { icon: 'image', title: 'Gallery', description: 'Image galleries with grid and masonry layouts' },
-            { icon: 'mouse-pointer', title: 'CTA', description: 'Call-to-action sections with headlines, descriptions, and buttons' },
-            { icon: 'help-circle', title: 'FAQ', description: 'Accordion-style frequently asked questions' },
-            { icon: 'clock', title: 'Timeline', description: 'Chronological event timelines for milestones and history' },
-            { icon: 'bar-chart', title: 'Stats Bar', description: 'Horizontal stat counters for key metrics' },
-            { icon: 'message-circle', title: 'Testimonial', description: 'Customer quotes with avatars, names, and roles' },
-            { icon: 'mail', title: 'Contact Form', description: 'Configurable forms with validation, custom fields, and submissions API' },
+            { icon: 'star', title: 'Hero', description: 'Full-width hero sections with background images, CTAs, and alignment options', link: '/features/blocks' },
+            { icon: 'type', title: 'Text', description: 'Rich text with Markdown, HTML, or plain text formatting', link: '/features/blocks' },
+            { icon: 'edit', title: 'Rich Text', description: 'WYSIWYG editor for non-technical content creators', link: '/features/blocks' },
+            { icon: 'grid', title: 'Feature Grid', description: 'Responsive card grids with icons, titles, and descriptions', link: '/features/blocks' },
+            { icon: 'dollar-sign', title: 'Pricing Table', description: 'Tiered pricing cards with feature lists and CTA buttons', link: '/features/blocks' },
+            { icon: 'image', title: 'Gallery', description: 'Image galleries with grid and masonry layouts', link: '/features/blocks' },
+            { icon: 'mouse-pointer', title: 'CTA', description: 'Call-to-action sections with headlines, descriptions, and buttons', link: '/features/blocks' },
+            { icon: 'help-circle', title: 'FAQ', description: 'Accordion-style frequently asked questions', link: '/features/blocks' },
+            { icon: 'clock', title: 'Timeline', description: 'Chronological event timelines for milestones and history', link: '/features/blocks' },
+            { icon: 'bar-chart', title: 'Stats Bar', description: 'Horizontal stat counters for key metrics', link: '/features/blocks' },
+            { icon: 'message-circle', title: 'Testimonial', description: 'Customer quotes with avatars, names, and roles', link: '/features/blocks' },
+            { icon: 'mail', title: 'Contact Form', description: 'Configurable forms with validation, custom fields, and submissions API', link: '/features/blocks' },
           ],
         },
         settings: { padding: 'lg', width: 'container' },
@@ -413,7 +425,7 @@ const sigilPages: SigilPageDef[] = [
           features: [
             { icon: 'message-square', title: 'Community Forum', description: 'Discussion boards with threads, reactions, and moderation tools' },
             { icon: 'shopping-bag', title: 'Plugin Marketplace', description: 'Browse and install community plugins from the marketplace' },
-            { icon: 'box', title: 'KAMERA 3D Scanning', description: '3D site scanning and spatial data integration via KAMERA pipeline' },
+            { icon: 'box', title: 'KAMERA OSINT', description: 'OSINT research and intelligence reports — company/individual analysis, risk scoring, due diligence' },
             { icon: 'briefcase', title: 'KOG CRM', description: 'Customer relationship management with pipeline tracking and contacts' },
             { icon: 'radio', title: 'Intirkast Broadcasting', description: 'Live streaming and broadcasting integration for events and shows' },
             { icon: 'bot', title: 'Charlotte AI', description: 'AI assistant integration for visitor chat and content generation' },
@@ -541,8 +553,271 @@ const sigilPages: SigilPageDef[] = [
   },
 ];
 
+// =========================================================================
+// Feature Pages
+// =========================================================================
+
+const featurePages: SigilPageDef[] = [
+  {
+    title: 'Multi-Tenancy',
+    slug: 'features/multi-tenant',
+    template: 'landing',
+    sortOrder: 10,
+    meta: {
+      title: 'Multi-Tenancy — Sigil CMS',
+      description: 'Native multi-tenancy with Row-Level Security isolation.',
+    },
+    blocks: [
+      {
+        blockType: 'hero',
+        content: {
+          headline: 'Native Multi-Tenancy',
+          subheadline: 'One deployment. Unlimited clients. Total isolation.',
+          alignment: 'left',
+        },
+        settings: { padding: 'xl', width: 'full' },
+        sortOrder: 0,
+      },
+      {
+        blockType: 'image',
+        content: {
+          src: 'https://sigil.netrunsystems.com/static/screenshots/multi-tenant-annotated.png',
+          alt: 'Sigil Tenant Management Interface',
+          caption: 'The Sigil Tenant Switcher allows super-admins to manage multiple isolated client environments from a single login.',
+        },
+        settings: { padding: 'md', width: 'container' },
+        sortOrder: 1,
+      },
+      {
+        blockType: 'text',
+        content: {
+          body: [
+            '### Built for Agencies',
+            'Every headless CMS forces agencies to choose between cloud lock-in or running separate deployments per client. Sigil is the first headless CMS with **native multi-tenancy**.',
+            '',
+            '#### Row-Level Security (RLS)',
+            'Tenant isolation is enforced at the PostgreSQL engine level, not just the application layer. This ensures that Client A can never see Client B\'s data, even if they share the same database.',
+            '',
+            '- **One Deployment**: Save thousands on infrastructure costs.',
+            '- **Tenant Switcher**: Seamlessly jump between clients.',
+            '- **Custom Domains**: Each tenant can have its own domain with automatic SSL.',
+            '- **Isolated Media**: Media files are stored in tenant-specific folders.',
+          ].join('\n'),
+          format: 'markdown',
+        },
+        settings: { padding: 'lg', width: 'container' },
+        sortOrder: 2,
+      },
+    ],
+  },
+  {
+    title: 'Design Playground',
+    slug: 'features/design',
+    template: 'landing',
+    sortOrder: 11,
+    meta: {
+      title: 'Design Playground — Sigil CMS',
+      description: 'Visual design editor with 1,400+ CSS variables.',
+    },
+    blocks: [
+      {
+        blockType: 'hero',
+        content: {
+          headline: 'Design Without Code',
+          subheadline: 'The Design Playground exposes the entire design system through a visual editor.',
+          alignment: 'left',
+        },
+        settings: { padding: 'xl', width: 'full' },
+        sortOrder: 0,
+      },
+      {
+        blockType: 'image',
+        content: {
+          src: 'https://sigil.netrunsystems.com/static/screenshots/design-playground-annotated.png',
+          alt: 'Sigil Design Playground Interface',
+          caption: 'Real-time preview of 70+ Google Fonts, 1,400+ CSS variables, and dark/light modes.',
+        },
+        settings: { padding: 'md', width: 'container' },
+        sortOrder: 1,
+      },
+      {
+        blockType: 'text',
+        content: {
+          body: [
+            '### Complete Control',
+            'Give designers control without filing tickets. The Design Playground exposes everything from typography and spacing to border radius and backdrop blurs.',
+            '',
+            '- **Google Fonts**: Browser and search 70+ fonts directly in the editor.',
+            '- **CSS Variables**: Modify any of the 1,400+ theme tokens.',
+            '- **Live Preview**: See changes instantly across all viewports.',
+            '- **Theme Presets**: Start with one of our 7 professional presets and customize from there.',
+          ].join('\n'),
+          format: 'markdown',
+        },
+        settings: { padding: 'lg', width: 'container' },
+        sortOrder: 2,
+      },
+    ],
+  },
+  {
+    title: 'Composable Blocks',
+    slug: 'features/blocks',
+    template: 'landing',
+    sortOrder: 12,
+    meta: {
+      title: 'Composable Blocks — Sigil CMS',
+      description: 'Drag-and-drop content blocks for rapid page building.',
+    },
+    blocks: [
+      {
+        blockType: 'hero',
+        content: {
+          headline: 'Build Faster with Blocks',
+          subheadline: 'Mix and match 20+ built-in block types to create unique layouts in minutes.',
+          alignment: 'left',
+        },
+        settings: { padding: 'xl', width: 'full' },
+        sortOrder: 0,
+      },
+      {
+        blockType: 'image',
+        content: {
+          src: 'https://sigil.netrunsystems.com/static/screenshots/block-editor-annotated.png',
+          alt: 'Sigil Block Editor Interface',
+          caption: 'The drag-and-drop block editor makes content creation intuitive for non-technical users.',
+        },
+        settings: { padding: 'md', width: 'container' },
+        sortOrder: 1,
+      },
+      {
+        blockType: 'text',
+        content: {
+          body: [
+            '### Content as Data',
+            'Sigil blocks aren\'t just HTML — they are structured JSON data. This means you can render them on the web, in mobile apps, or via voice assistants without changing your content.',
+            '',
+            '#### Core Blocks',
+            '- **Hero & CTA**: High-impact sections for conversions.',
+            '- **Feature Grids**: Showcase capabilities with icons or images.',
+            '- **Pricing & FAQ**: Conversion-focused components.',
+            '- **Galleries & Media**: Beautiful image and video displays.',
+            '- **Forms**: Contact and newsletter capture out of the box.',
+          ].join('\n'),
+          format: 'markdown',
+        },
+        settings: { padding: 'lg', width: 'container' },
+        sortOrder: 2,
+      },
+    ],
+  },
+  {
+    title: 'API-First',
+    slug: 'features/api',
+    template: 'landing',
+    sortOrder: 13,
+    meta: {
+      title: 'API-First & SDK — Sigil CMS',
+      description: 'Full REST + GraphQL API with a type-safe TypeScript SDK.',
+    },
+    blocks: [
+      {
+        blockType: 'hero',
+        content: {
+          headline: 'Developer First',
+          subheadline: 'Integrate Sigil into any application with our comprehensive APIs and SDKs.',
+          alignment: 'left',
+        },
+        settings: { padding: 'xl', width: 'full' },
+        sortOrder: 0,
+      },
+      {
+        blockType: 'image',
+        content: {
+          src: 'https://sigil.netrunsystems.com/static/screenshots/api-explorer-annotated.png',
+          alt: 'Sigil API Explorer',
+          caption: 'Explore and test your API endpoints with the built-in Swagger and GraphQL interfaces.',
+        },
+        settings: { padding: 'md', width: 'container' },
+        sortOrder: 1,
+      },
+      {
+        blockType: 'text',
+        content: {
+          body: [
+            '### Type-Safe Integration',
+            'Sigil is built for the modern web. We provide first-class support for TypeScript and Next.js.',
+            '',
+            '#### Features',
+            '- **REST API**: Versioned endpoints for all resources.',
+            '- **GraphQL**: Query exactly what you need in one request.',
+            '- **TypeScript SDK**: Zero-dependency client for any environment.',
+            '- **Next.js Support**: Built-in components for App Router and ISR.',
+            '- **Webhooks**: Real-time event notifications for your CI/CD pipeline.',
+          ].join('\n'),
+          format: 'markdown',
+        },
+        settings: { padding: 'lg', width: 'container' },
+        sortOrder: 2,
+      },
+    ],
+  },
+  {
+    title: 'Hosting & Deployment',
+    slug: 'features/hosting',
+    template: 'landing',
+    sortOrder: 14,
+    meta: {
+      title: 'Hosting & Deployment — Sigil CMS',
+      description: 'Self-host for free or use our managed cloud.',
+    },
+    blocks: [
+      {
+        blockType: 'hero',
+        content: {
+          headline: 'Your Data, Your Rules',
+          subheadline: 'Deploy Sigil to your own infrastructure or let us handle it for you.',
+          alignment: 'left',
+        },
+        settings: { padding: 'xl', width: 'full' },
+        sortOrder: 0,
+      },
+      {
+        blockType: 'image',
+        content: {
+          src: 'https://sigil.netrunsystems.com/static/screenshots/hosting-annotated.png',
+          alt: 'Sigil Deployment Options',
+          caption: 'Deploy to Google Cloud, AWS, Azure, or any Docker-compatible host in minutes.',
+        },
+        settings: { padding: 'md', width: 'container' },
+        sortOrder: 1,
+      },
+      {
+        blockType: 'text',
+        content: {
+          body: [
+            '### Flexible Deployment',
+            'Sigil is designed to be lean and cost-effective. You can run the entire platform for approximately $5/month on modern cloud providers.',
+            '',
+            '#### Options',
+            '- **Sigil Cloud**: Fully managed hosting with automatic updates.',
+            '- **Docker**: One command deployment to any VPS.',
+            '- **Cloud Run / Fargate**: Scale-to-zero serverless hosting.',
+            '- **Local**: Run on-premise or on a Raspberry Pi.',
+          ].join('\n'),
+          format: 'markdown',
+        },
+        settings: { padding: 'lg', width: 'container' },
+        sortOrder: 2,
+      },
+    ],
+  },
+];
+
 export async function seedSigilLanding(db: DbClient, siteId: string): Promise<void> {
-  for (const pageDef of sigilPages) {
+  // Combine all pages
+  const allPages = [...sigilPages, ...featurePages];
+
+  for (const pageDef of allPages) {
     const [page] = await db
       .insert(pages)
       .values({
@@ -550,7 +825,7 @@ export async function seedSigilLanding(db: DbClient, siteId: string): Promise<vo
         title: pageDef.title,
         slug: pageDef.slug,
         fullPath: `/${pageDef.slug}`,
-        status: 'draft',
+        status: 'published',
         template: pageDef.template,
         sortOrder: pageDef.sortOrder,
         metaTitle: pageDef.meta.title,

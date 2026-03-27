@@ -188,7 +188,7 @@
       "dialogue": [
         {
           "speaker": "HOST",
-          "text": "Sijil integrates with four products from the Netrun ecosystem. KOG CRM shows lead management with pipeline stages, deal values, and lead scores. Intirkast handles broadcasting with live stream status and scheduling across YouTube, Twitch, and LinkedIn. KAMERA provides 3D site scanning with point cloud data. Charlotte AI embeds a RAG-powered chat widget that answers questions using your site content."
+          "text": "Sijil integrates with four products from the Netrun ecosystem. KOG CRM shows lead management with pipeline stages, deal values, and lead scores. Intirkast handles broadcasting with live stream status and scheduling across YouTube, Twitch, and LinkedIn. KAMERA provides OSINT research and intelligence report generation. Charlotte AI embeds a RAG-powered chat widget that answers questions using your site content."
         },
         {
           "speaker": "GUEST",

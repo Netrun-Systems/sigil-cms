@@ -1,7 +1,7 @@
 {
   "name": "@netrun-cms/plugin-kamera",
   "version": "1.0.0",
-  "description": "KAMERA/Survai integration plugin — 3D scan viewer embeds, project status widgets, report generation",
+  "description": "KAMERA OSINT integration plugin — intelligence research, risk scoring, due diligence reports",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

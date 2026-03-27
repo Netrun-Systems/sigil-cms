@@ -1,0 +1,312 @@
+{
+  "topics": [
+    {
+      "topic_title": "Sijil Landing Page",
+      "screenshot": "01-landing.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Sijil is a multi-tenant headless CMS by Netrun Systems. One deployment, unlimited sites, twenty-two plugins, forty-eight admin pages. The landing page leads with the value proposition: Build Anything, Own Everything. Self-host for free under MIT license, or use the managed cloud starting at twelve dollars a month."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The stats bar shows twenty-two plugins, seventy-plus Google Fonts, forty-eight admin pages, and zero cost for self-hosting. Below the hero, feature cards link directly to dedicated detail pages. Every card has a thumbnail preview and a learn-more link. Clicking any card opens a full reference page with capabilities, use cases, and integration guides."
+        }
+      ]
+    },
+    {
+      "topic_title": "Admin Dashboard",
+      "screenshot": "02-dashboard.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The admin dashboard shows the full portfolio at a glance. Stats cards for total sites, pages, media usage, and active plugins. The sidebar navigation uses the Sijil S logo and organizes all forty-eight admin pages into logical sections. Below the stats, the recent activity stream tracks every action across all plugins."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The plugin status section shows all twenty-two plugins as badges with active or inactive indicators. System health monitors the API server, PostgreSQL, blob storage, email service, and Stripe connection with response times. This is a single admin panel managing what would typically require six or seven separate SaaS dashboards."
+        }
+      ]
+    },
+    {
+      "topic_title": "Sites, Domains, Cloning, and Subdomains",
+      "screenshot": "03-sites.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Sites page manages every site in the tenant. Each card shows the site name, custom domain with SSL status, page count, storage, and last update. Site cloning duplicates an entire site with one click. Below that, every site gets an auto-generated subdomain under sigil dot netrunsystems dot com with wildcard SSL."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Multi-site on a single deployment is where Sijil diverges from WordPress Multisite or Squarespace. There is no per-site fee. The clone feature is an agency workflow accelerator. Create a golden template, clone it for each client. Subdomain routing means zero DNS configuration per site. Create a site and it is instantly live."
+        }
+      ]
+    },
+    {
+      "topic_title": "Page Editor and Block Editor with Grid Editing",
+      "screenshot": "04-editor.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Pages are built from composable content blocks. The editor shows a block list with drag handles for reordering. The Bento Grid block includes a layout preset picker with four visual thumbnails. The Pricing Table block uses a horizontal card editor where tiers are arranged side by side with inline editable fields for name, price, features, and CTA."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The grid editing changes how visual layouts work in Sijil. Instead of stacking blocks vertically, you pick a spatial layout at the block level. The pricing table horizontal editor means you see all tiers simultaneously while editing. Every block type has a typed schema, so the API delivers structured JSON that any frontend can consume."
+        }
+      ]
+    },
+    {
+      "topic_title": "Design Playground and Block Templates",
+      "screenshot": "05-design.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Design Playground replaces the typical theme dropdown. Six tabs give full control over every visual parameter. The color palette has ten configurable tokens. Button shapes range from square to rounded to pill. The font browser shows seventy-plus Google Fonts. Below the design controls, block templates turn any configured block into a reusable starting point."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The spacing tab has section padding, container max-width, card gap, block margin, and grid columns. Block templates close the gap between a blank block and a finished design. Save your best-performing hero as a template, and every new page gets that config in one click. Usage counts track which templates your team actually uses."
+        }
+      ]
+    },
+    {
+      "topic_title": "Media Library and Data Transfer",
+      "screenshot": "06-media.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Media Library manages all uploaded assets in a visual grid with file type indicators and size labels. Data Transfer splits into Export and Import panels. Export lets you select content types with format options for JSON, ZIP, or CSV. Import accepts drag-and-drop files with three modes: merge, overwrite, or create a new site."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This closes the portability gap. Most CMS platforms make it easy to get content in and hard to get it out. Sijil exports everything, not just pages, but theme configurations, block settings, and media files. The merge mode is what makes this practical for real workflows. Export staging, import into production, existing content stays untouched."
+        }
+      ]
+    },
+    {
+      "topic_title": "Artist Content — Blog, Portfolio, Events",
+      "screenshot": "07-artist.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Artist Content section combines three plugins. Blog posts support categories, tags, and RSS feed generation with view counts. Portfolio shows a filterable project grid. Events Calendar handles event listings with date, time, location, and RSVP functionality."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "These three plugins cover the core content needs for creative professionals and service businesses. A photographer needs a portfolio. A consultant needs a blog. A workshop instructor needs an events calendar. In Sijil, all three share the same admin panel, the same theme engine, and the same media library."
+        }
+      ]
+    },
+    {
+      "topic_title": "Knowledge Base and Detail Pages",
+      "screenshot": "08-knowledge.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Knowledge Base provides categorized documentation with search, versioning, and feedback ratings. But the real story is the forty-three detail pages. Every feature and plugin in Sijil has a dedicated reference page with a hero section, markdown content body, capabilities grid, and call-to-action. The marketing site is also the user guide."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Forty-three detail pages serve double duty as both marketing collateral and reference documentation. Click learn-more on any feature card and you get a full page with capabilities, technical details, and integration instructions. The helpful ratio on knowledge base articles surfaces which docs need rewriting. Version tracking means you can publish updates without losing previous drafts."
+        }
+      ]
+    },
+    {
+      "topic_title": "Engagement — Mailing List and Contact Forms",
+      "screenshot": "09-engagement.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Engagement section covers email collection and contact management. The mailing list tracks subscriber count, open rate, and click rate with a full subscriber table. Contact forms use a drag-and-drop builder with validation, spam protection, and email routing."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Mailing list with double opt-in and subscriber segments, plus configurable contact forms. These are typically two separate SaaS subscriptions. In Sijil, both plugins share the same contact database. A form submission automatically adds to the mailing list if the user opts in. One database, one admin panel, zero monthly fees beyond hosting."
+        }
+      ]
+    },
+    {
+      "topic_title": "Commerce Suite — Store, Merch, and PayPal",
+      "screenshot": "10-commerce.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Commerce Suite combines Stripe product management, Printful merch fulfillment, and PayPal payments. Store products sync with Stripe automatically. Merch cards show print-on-demand items with mockup previews. The order history table shows all transactions across payment methods in one view."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Stripe charges their standard two point nine percent. Sijil adds zero platform fee. Printful prints and ships on demand. The order table combines digital product sales, physical merch orders, and service bookings into a single view. This replaces Shopify, a separate merch provider, and a booking system with three plugins on one platform."
+        }
+      ]
+    },
+    {
+      "topic_title": "Booking System",
+      "screenshot": "11-booking.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Booking plugin provides service scheduling with availability rules, duration, pricing, and upcoming appointment tracking. Three service types are shown, each with their own availability windows and booking counts."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This replaces Calendly with a built-in solution. When someone books a consultation, Sijil creates the appointment, charges the card via Stripe, adds the contact to the CRM, and sends the confirmation email. In Calendly plus Stripe plus a separate CRM, you need Zapier to connect all three. Here it is one database, one event, zero glue code."
+        }
+      ]
+    },
+    {
+      "topic_title": "Community Forum",
+      "screenshot": "12-community.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Community plugin adds a gated forum. Members authenticate via magic link. Posts support discussion, question, article, and announcement types. Questions have a solved-answer workflow. Voting affects post scores and author reputation."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Content gating is the key differentiator. Non-members see truncated previews. Full content requires email verification, which blocks scrapers and incentivizes registration. Moderation tools include pin, lock, close, and ban. The reputation system creates a natural hierarchy where quality contributors rise to Expert and Legend tiers."
+        }
+      ]
+    },
+    {
+      "topic_title": "Resonance Analytics and A/B Testing",
+      "screenshot": "13-analytics.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Resonance is block-level content analytics. The dashboard shows a heatmap for each content block. The A/B testing panel lets you clone a block as a variant and split traffic. AI suggestions use Gemini to analyze low-scoring blocks and recommend specific changes."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The tracking snippet is two kilobytes, uses no cookies, collects no PII, and runs entirely through Intersection Observer. Blocks scoring below forty automatically trigger AI suggestions. The ninety-percent confidence z-test evaluates A/B winners. No external tracking scripts, fully GDPR compliant."
+        }
+      ]
+    },
+    {
+      "topic_title": "Netrun Platform — Broadcasting, CRM, KAMERA, Charlotte",
+      "screenshot": "14-platform.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Sijil integrates with four products from the Netrun ecosystem. KOG CRM shows lead management with pipeline stages and deal values. Intirkast handles broadcasting with live stream scheduling. KAMERA provides OSINT research and intelligence reports. Charlotte AI embeds a RAG-powered chat widget that answers questions using your site content."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "These are not generic API integrations. They share the same PostgreSQL database, the same auth system, and the same admin panel. Activating KOG CRM gives you lead management without a separate CRM subscription. Charlotte AI pulls context from your documentation and content blocks to give accurate, site-specific answers."
+        }
+      ]
+    },
+    {
+      "topic_title": "Migration Tool — WordPress, Shopify, Square",
+      "screenshot": "15-migrate.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Migration Tool imports content from WordPress, Shopify, and Square. WordPress imports read WXR XML exports. Shopify imports products and collections from CSV. The migration history table shows every completed and in-progress import with content counts and duration."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Content mapping is the hard part of any CMS migration, and the tool handles WordPress post format to Sijil block conversion automatically. A forty-seven post WordPress site migrated in under four minutes. The active migration progress bar shows real-time status. That removes the biggest barrier to switching from an existing CMS."
+        }
+      ]
+    },
+    {
+      "topic_title": "Webhooks and Events",
+      "screenshot": "16-webhooks.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Webhooks plugin provides an event bus with endpoint management. Register a URL, select the events it receives, and the system delivers JSON payloads with HMAC-SHA256 signatures. Each endpoint shows success rate, last fire time, and a delivery log."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "The delivery log is the debugging tool. Every webhook fire shows event type, endpoint, HTTP status, duration, and timestamp. Retry logic follows a two-four-eight second backoff pattern. This is the integration layer that connects Sijil to Slack, Zapier, n8n, or any external system."
+        }
+      ]
+    },
+    {
+      "topic_title": "Support Panel",
+      "screenshot": "17-support.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Support Panel adds customer ticketing with priority levels, assignment routing, and SLA tracking. Each ticket shows subject, priority, status, and age. SLA metrics track average response time, compliance percentage, and first-contact resolution rate."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Built-in ticketing means support requests come through the same admin panel as everything else. When a customer reports a domain configuration issue, the support agent can check the Sites page, verify DNS, and resolve the ticket without switching tools."
+        }
+      ]
+    },
+    {
+      "topic_title": "Security — Two-Factor Authentication and Audit Log",
+      "screenshot": "18-security.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Security page has two sections. The top is Two-Factor Authentication setup with a QR code, manual key, verification field, and eight backup recovery codes. Below that is the Audit Log, a filterable table of every admin action with timestamp, user, action type, resource, and IP address."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Two-factor is table stakes for any multi-tenant platform. The audit log is where Sijil separates from most CMS platforms. Every action is logged at the framework level with IP tracking. For agencies managing client sites, this is compliance documentation built in."
+        }
+      ]
+    },
+    {
+      "topic_title": "Billing and Plans",
+      "screenshot": "19-billing.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Billing page manages SaaS subscriptions through Stripe. The current plan card shows tier, monthly cost, and next billing date. Usage meters track sites, pages, storage, and API calls against plan limits. The plan comparison shows all four tiers."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Plan enforcement is automatic. Hit your site limit and the system blocks new site creation with an upgrade prompt. The Free tier is genuinely free for self-hosting with twelve plugins. Pro unlocks Resonance analytics, A/B testing, and white-label branding. The pricing is intentionally below Squarespace and Webflow."
+        }
+      ]
+    },
+    {
+      "topic_title": "Plugin Marketplace",
+      "screenshot": "20-marketplace.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "Twenty-two plugins ship with Sijil, organized into six categories. The marketplace grid shows each plugin card with a thumbnail image, category badge, and activation status. Every card has a learn-more link that opens the plugin's detail page with full documentation."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Content covers Blog, Portfolio, Events, Mailing List, Contact Forms, and SEO. Commerce has Stripe Store, Printful merch, PayPal, and Booking. Engagement includes Community Forum and Knowledge Base. The Netrun category integrates four products. System plugins handle migration, webhooks, marketplace, and billing. No config files, no server restart."
+        }
+      ]
+    },
+    {
+      "topic_title": "Point of Sale System",
+      "screenshot": "21-pos.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The Point of Sale interface is a register-style layout inside the Sijil admin. The left side is a product grid organized by category. The right side is the order panel with line items, quantities, subtotal, tax, and total. Three payment buttons for Card, Cash, and Split."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "This turns Sijil from a website CMS into a full retail platform. A pop-up shop, a conference booth, a studio visit. Pull up the POS on a tablet, ring up a T-shirt and a consulting session in the same transaction. The Stripe terminal integration means card payments go through the same account as online orders."
+        }
+      ]
+    },
+    {
+      "topic_title": "Lightbox and Detail Page Experience",
+      "screenshot": "22-lightbox.png",
+      "dialogue": [
+        {
+          "speaker": "HOST",
+          "text": "The lightbox overlay zooms any screenshot or image to full viewport size against a dark backdrop. Click any thumbnail in the features grid or plugin marketplace and the lightbox opens with the full-resolution image. Close with escape or click outside. This is the browsing experience that ties the marketing site together."
+        },
+        {
+          "speaker": "GUEST",
+          "text": "Every card across the entire site links to a dedicated detail page. Forty-three detail pages serve as both marketing collateral and reference documentation. The marketing site is the user guide. No separate docs site, no wiki, no PDF manual. Click learn-more on any feature and you get capabilities, technical specs, and integration instructions on a single page."
+        }
+      ]
+    }
+  ]
+}
