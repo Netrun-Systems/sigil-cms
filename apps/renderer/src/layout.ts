@@ -171,7 +171,7 @@ ${customCss}
         </ul>
         <div class="sigil-footer-social">
           <a href="https://www.linkedin.com/company/netrunsystems" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
-          <a href="https://github.com/netrunsystems" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
+          <a href="https://github.com/Netrun-Systems" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
         </div>
       </div>
     </div>
@@ -187,6 +187,9 @@ ${customCss}
   </div>
   <script>
   document.querySelectorAll('.sigil-feature-image img').forEach(function(img) {
+    // Only enable lightbox zoom if the card is NOT a link (no parent <a> tag)
+    var card = img.closest('.sigil-feature-card');
+    if (card && card.tagName === 'A') return; // Card is a link — don't intercept
     img.style.cursor = 'zoom-in';
     img.addEventListener('click', function(e) {
       e.preventDefault();
