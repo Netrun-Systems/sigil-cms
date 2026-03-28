@@ -21,6 +21,8 @@ const PORT = parseInt(process.env.PORT || '4000', 10);
 const SITE_SLUG = process.env.SITE_SLUG || 'default';
 const SITE_NAME = process.env.SITE_NAME || '';
 const API_BASE = process.env.API_URL || 'http://localhost:3001/api/v1/public';
+const GA4_MEASUREMENT_ID = process.env.GA4_MEASUREMENT_ID || '';
+const SUPPORT_WIDGET_URL = process.env.SUPPORT_WIDGET_URL || '';
 
 // --- Domain → Site Slug Cache ---
 // Maps custom domains to site slugs with a 5-minute TTL.
@@ -221,6 +223,8 @@ app.get('*', async (req, res) => {
         siteName: SITE_NAME,
         navigation,
         customCss: theme.customCss,
+        ga4MeasurementId: GA4_MEASUREMENT_ID,
+        supportWidgetUrl: SUPPORT_WIDGET_URL,
       }));
       return;
     }
@@ -238,6 +242,10 @@ app.get('*', async (req, res) => {
       navigation,
       currentPath: fullPath,
       customCss: theme.customCss,
+      ga4MeasurementId: GA4_MEASUREMENT_ID,
+      supportWidgetUrl: SUPPORT_WIDGET_URL,
+      template: (page as unknown as Record<string, unknown>).template as string | undefined,
+      pageSlug,
     });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');

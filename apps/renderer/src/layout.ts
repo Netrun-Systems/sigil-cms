@@ -29,6 +29,10 @@ export interface LayoutOptions {
   currentPath?: string;
   customCss?: string;
   favicon?: string;
+  ga4MeasurementId?: string;
+  supportWidgetUrl?: string;
+  template?: string;
+  pageSlug?: string;
 }
 
 export function renderLayout(options: LayoutOptions): string {
@@ -45,6 +49,10 @@ export function renderLayout(options: LayoutOptions): string {
     currentPath = '/',
     customCss = '',
     favicon,
+    ga4MeasurementId,
+    supportWidgetUrl,
+    template,
+    pageSlug,
   } = options;
 
   const navLinks = navigation.map(link => {
@@ -71,6 +79,23 @@ export function renderLayout(options: LayoutOptions): string {
   ${ogImage ? `<meta name="twitter:image" content="${esc(ogImage)}">` : ''}
   ${favicon ? `<link rel="icon" href="${esc(favicon)}">` : ''}
   <meta name="generator" content="Sigil CMS">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "${esc(displayName)}",
+    "url": "https://netrunsystems.com",
+    "logo": "https://netrunsystems.com/static/N_LOGO_W_small.webp"
+  }
+  </script>
+  ${(template === 'product' || (pageSlug && pageSlug.startsWith('products/'))) ? `<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "${esc(title)}",
+    "description": "${esc(description)}"
+  }
+  </script>` : ''}
   ${fontLinks}
   <style>
 ${cssVariables}
@@ -101,8 +126,57 @@ ${customCss}
   </main>
 
   <footer class="sigil-footer">
-    <div class="sigil-container">
-      <p>&copy; ${new Date().getFullYear()} ${esc(displayName)}. Powered by <a href="https://netrun.net" target="_blank" rel="noopener">Sigil CMS</a></p>
+    <div class="sigil-footer-grid">
+      <div class="sigil-footer-col">
+        <a href="/" class="sigil-footer-brand">
+          <img src="/static/N_LOGO_W_small.webp" alt="${esc(displayName)}" width="40" height="40">
+        </a>
+        <p class="sigil-footer-tagline">Cloud infrastructure, AI platforms, and developer tools.</p>
+        <p class="sigil-footer-location">Based in Ojai, California</p>
+        <p class="sigil-footer-copy">&copy; ${new Date().getFullYear()} Netrun Systems, Inc.</p>
+      </div>
+      <div class="sigil-footer-col">
+        <h4>Products</h4>
+        <ul>
+          <li><a href="/products/intirkon">Intirkon</a></li>
+          <li><a href="/products/intirkast">Intirkast</a></li>
+          <li><a href="/products/kamera">KAMERA</a></li>
+          <li><a href="/products/kog-crm">KOG CRM</a></li>
+          <li><a href="/products/charlotte">Charlotte</a></li>
+          <li><a href="/products/optikal">Optikal</a></li>
+        </ul>
+      </div>
+      <div class="sigil-footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="/services/cloud-audit">Cloud Audit</a></li>
+          <li><a href="/services/ai-assessment">AI Assessment</a></li>
+          <li><a href="/services/agentic-coding">Agentic Coding</a></li>
+          <li><a href="/services/virtual-tours">Virtual Tours</a></li>
+        </ul>
+      </div>
+      <div class="sigil-footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/blog">Blog</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/research">Research</a></li>
+          <li><a href="/events">Events</a></li>
+        </ul>
+        <h4 class="sigil-footer-legal-heading">Legal</h4>
+        <ul>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+        </ul>
+        <div class="sigil-footer-social">
+          <a href="https://www.linkedin.com/company/netrunsystems" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+          <a href="https://github.com/netrunsystems" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
+        </div>
+      </div>
+    </div>
+    <div class="sigil-footer-bottom">
+      <p>Powered by <a href="https://netrun.net" target="_blank" rel="noopener">Sigil CMS</a></p>
     </div>
   </footer>
 
@@ -135,6 +209,9 @@ ${customCss}
   })();
   </script>
   <script src="/api/v1/public/resonance/${encodeURIComponent(siteSlug)}/snippet.js" async defer></script>
+  ${ga4MeasurementId ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(ga4MeasurementId)}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(ga4MeasurementId)}')</script>` : ''}
+  ${supportWidgetUrl ? `<script src="${esc(supportWidgetUrl)}" async></script>` : ''}
 </body>
 </html>`;
 }
@@ -149,14 +226,20 @@ export function render404(options: {
   siteName?: string;
   navigation?: { label: string; href: string }[];
   customCss?: string;
+  ga4MeasurementId?: string;
+  supportWidgetUrl?: string;
 }): string {
-  const body = `<section class="sigil-hero" style="min-height:60vh">
-  <div class="sigil-hero-content">
-    <h1>404</h1>
-    <p class="sigil-hero-subtitle">Page not found. The page you're looking for doesn't exist or has been moved.</p>
-    <div class="sigil-hero-actions">
-      <a href="/" class="sigil-btn sigil-btn-primary">Go Home</a>
-    </div>
+  const body = `<section class="sigil-404">
+  <div class="sigil-404-inner">
+    <img src="/static/N_LOGO_W_small.webp" alt="Netrun Systems" class="sigil-404-logo" width="80" height="80">
+    <h1>404 &mdash; Page Not Found</h1>
+    <p>The page you're looking for doesn't exist or has been moved.</p>
+    <nav class="sigil-404-nav">
+      <a href="/" class="sigil-btn sigil-btn-primary">Home</a>
+      <a href="/products" class="sigil-btn sigil-btn-secondary">Products</a>
+      <a href="/services" class="sigil-btn sigil-btn-secondary">Services</a>
+      <a href="/contact" class="sigil-btn sigil-btn-secondary">Contact</a>
+    </nav>
   </div>
 </section>`;
 
@@ -171,5 +254,7 @@ export function render404(options: {
     navigation: options.navigation,
     currentPath: '/404',
     customCss: options.customCss,
+    ga4MeasurementId: options.ga4MeasurementId,
+    supportWidgetUrl: options.supportWidgetUrl,
   });
 }
