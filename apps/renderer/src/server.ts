@@ -122,13 +122,25 @@ async function getNavigation(): Promise<{ label: string; href: string }[]> {
     return navCache.items;
   }
 
+  // Top-level navigation only — product/detail pages accessed from parent pages.
+  // Short labels matching the pre-Sigil NetrunSite navigation.
+  const TOP_NAV: Record<string, string> = {
+    'services': 'Services',
+    'products': 'Products',
+    'research': 'Research',
+    'blog': 'Blog',
+    'about': 'About',
+    'contact': 'Contact',
+  };
+
   const pages = await fetchSitePages(SITE_SLUG);
+  const navKeys = Object.keys(TOP_NAV);
   const items = pages
-    .filter((p: PageData) => p.status === 'published')
-    .sort((a: PageData, b: PageData) => a.sortOrder - b.sortOrder)
+    .filter((p: PageData) => p.status === 'published' && TOP_NAV[p.slug])
+    .sort((a: PageData, b: PageData) => navKeys.indexOf(a.slug) - navKeys.indexOf(b.slug))
     .map((p: PageData) => ({
-      label: p.title,
-      href: p.slug === 'home' ? '/' : `/${p.slug}`,
+      label: TOP_NAV[p.slug] || p.title,
+      href: `/${p.slug}`,
     }));
 
   navCache = { items, fetchedAt: now };

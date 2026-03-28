@@ -79,13 +79,21 @@ ${customCss}
   </style>
 </head>
 <body>
-  <nav class="sigil-nav">
+  <nav class="sigil-nav" id="sigil-nav">
     <div class="sigil-nav-inner">
-      <a href="/" class="sigil-nav-brand"><img src="/static/sigil-logo-256.png" alt="${esc(displayName)}" class="sigil-nav-logo">${esc(displayName)}</a>
-      ${navigation.length > 0 ? `<ul class="sigil-nav-links">
+      <a href="/" class="sigil-nav-brand">
+        <img src="/static/N_LOGO_W_small.webp" alt="${esc(displayName)}" class="sigil-nav-logo" width="48" height="48">
+      </a>
+      ${navigation.length > 0 ? `<ul class="sigil-nav-links sigil-nav-desktop">
           ${navLinks}
         </ul>` : ''}
+      <button class="sigil-nav-hamburger" onclick="document.getElementById('sigil-nav').classList.toggle('nav-open')" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+    ${navigation.length > 0 ? `<ul class="sigil-nav-links sigil-nav-mobile">
+        ${navLinks}
+      </ul>` : ''}
   </nav>
 
   <main>
@@ -114,6 +122,17 @@ ${customCss}
       lb.style.display = 'flex';
     });
   });
+  </script>
+  <script>
+  // Nav scroll effect — green → black on scroll (matches pre-Sigil NetrunSite)
+  (function() {
+    var nav = document.getElementById('sigil-nav');
+    if (!nav) return;
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 50) { nav.classList.add('scrolled'); }
+      else { nav.classList.remove('scrolled'); }
+    });
+  })();
   </script>
   <script src="/api/v1/public/resonance/${encodeURIComponent(siteSlug)}/snippet.js" async defer></script>
 </body>
