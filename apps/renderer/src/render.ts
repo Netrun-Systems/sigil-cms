@@ -8,6 +8,7 @@
 
 import { marked } from 'marked';
 import type { BlockData } from './api-client.js';
+import { renderIcon } from './icons.js';
 
 // Configure marked for safe output
 marked.setOptions({
@@ -111,7 +112,8 @@ function renderFeatureGrid(block: BlockData): string {
     if (f.image) {
       visualHtml = `<div class="sigil-feature-image"><img src="${esc(f.image as string)}" alt="${esc(f.title as string)}" loading="lazy"></div>`;
     } else if (f.icon) {
-      visualHtml = `<div class="sigil-feature-icon-wrapper"><div class="sigil-feature-icon">${esc(f.icon as string)}</div></div>`;
+      const iconSvg = renderIcon(f.icon as string, 28);
+      visualHtml = `<div class="sigil-feature-icon-wrapper"><div class="sigil-feature-icon">${iconSvg || esc(f.icon as string)}</div></div>`;
     }
 
     return `<${tag}${href} class="sigil-feature-card${clickableClass}">
