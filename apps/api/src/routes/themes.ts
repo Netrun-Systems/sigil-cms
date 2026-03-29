@@ -8,6 +8,7 @@ import { Router } from 'express';
 import type { Router as RouterType } from 'express';
 import { ThemesController } from '../controllers/ThemesController.js';
 import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
+import { invalidateThemeCache } from '../lib/cache.js';
 
 const router: RouterType = Router({ mergeParams: true });
 
@@ -50,7 +51,7 @@ router.get('/active', ThemesController.getActive);
  *   customCss?: string
  * }
  */
-router.post('/', requireRole('admin', 'editor'), ThemesController.create);
+router.post('/', requireRole('admin', 'editor'), invalidateThemeCache, ThemesController.create);
 
 /**
  * GET /api/v1/sites/:siteId/themes/:id
@@ -64,13 +65,13 @@ router.get('/:id', validateUuidParam('id'), ThemesController.get);
  *
  * Body: Partial theme data
  */
-router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), ThemesController.update);
+router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), invalidateThemeCache, ThemesController.update);
 
 /**
  * POST /api/v1/sites/:siteId/themes/:id/activate
  * Activate a theme (deactivates all other themes)
  */
-router.post('/:id/activate', validateUuidParam('id'), requireRole('admin', 'editor'), ThemesController.activate);
+router.post('/:id/activate', validateUuidParam('id'), requireRole('admin', 'editor'), invalidateThemeCache, ThemesController.activate);
 
 /**
  * POST /api/v1/sites/:siteId/themes/:id/duplicate
@@ -86,6 +87,6 @@ router.post('/:id/duplicate', validateUuidParam('id'), requireRole('admin', 'edi
  * DELETE /api/v1/sites/:siteId/themes/:id
  * Delete a theme (cannot delete active theme)
  */
-router.delete('/:id', validateUuidParam('id'), requireRole('admin'), ThemesController.delete);
+router.delete('/:id', validateUuidParam('id'), requireRole('admin'), invalidateThemeCache, ThemesController.delete);
 
 export default router;
