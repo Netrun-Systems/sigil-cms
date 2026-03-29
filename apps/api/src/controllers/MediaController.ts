@@ -5,7 +5,7 @@
  */
 
 import type { Response } from 'express';
-import { eq, and, desc, asc, count, like, or } from 'drizzle-orm';
+import { eq, and, desc, asc, count, like, or, sql } from 'drizzle-orm';
 import { media, sites, insertMediaSchema, type Media } from '@netrun-cms/db';
 import { uploadFile } from '@netrun-cms/plugin-runtime';
 import { getDb } from '../db.js';
@@ -669,14 +669,11 @@ export class MediaController {
     }
 
     // Update focal point via raw SQL (columns added by migration 005)
-    const result = await db.execute({
-      text: `
-        UPDATE cms_media SET focal_x = $1, focal_y = $2, updated_at = NOW()
-        WHERE id = $3 AND site_id = $4
-        RETURNING id, filename, url, focal_x, focal_y
-      `,
-      values: [x, y, id, siteId],
-    } as any);
+    const result = await db.execute(sql`
+      UPDATE cms_media SET focal_x = ${x}, focal_y = ${y}, updated_at = NOW()
+      WHERE id = ${id} AND site_id = ${siteId}
+      RETURNING id, filename, url, focal_x, focal_y
+    `);
 
     const rows = (result as any).rows ?? result;
     if (!rows.length) {

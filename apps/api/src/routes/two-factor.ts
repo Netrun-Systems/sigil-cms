@@ -16,6 +16,7 @@
 
 import crypto from 'crypto';
 import { Router } from 'express';
+import { sql } from 'drizzle-orm';
 import { authenticate, tenantContext } from '../middleware/index.js';
 import { getDb } from '../db.js';
 import type { AuthenticatedRequest } from '../types/index.js';
@@ -108,11 +109,11 @@ let migrationRun = false;
 async function ensureColumns() {
   if (migrationRun) return;
   const db = getDb();
-  await db.execute({ text: `
+  await db.execute(sql`
     ALTER TABLE platform_users ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(64);
     ALTER TABLE platform_users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN DEFAULT false;
     ALTER TABLE platform_users ADD COLUMN IF NOT EXISTS totp_backup_codes TEXT[];
-  `, values: [] } as any);
+  `);
   migrationRun = true;
 }
 
@@ -138,10 +139,7 @@ router.post('/setup', async (req: AuthenticatedRequest, res) => {
   );
 
   // Store secret (not yet enabled)
-  await db.execute({
-    text: 'UPDATE platform_users SET totp_secret = $1, totp_backup_codes = $2 WHERE id = $3',
-    values: [secret, backupCodes, userId],
-  } as any);
+  await db.execute(sql`UPDATE platform_users SET totp_secret = ${secret}, totp_backup_codes = ${backupCodes} WHERE id = ${userId}`);
 
   res.json({
     success: true,
@@ -172,10 +170,7 @@ router.post('/verify', async (req: AuthenticatedRequest, res) => {
   }
 
   // Get stored secret
-  const result = await db.execute({
-    text: 'SELECT totp_secret FROM platform_users WHERE id = $1',
-    values: [userId],
-  } as any);
+  const result = await db.execute(sql`SELECT totp_secret FROM platform_users WHERE id = ${userId}`);
   const rows = (result as any).rows ?? result;
   const secret = rows[0]?.totp_secret;
 
@@ -190,10 +185,7 @@ router.post('/verify', async (req: AuthenticatedRequest, res) => {
   }
 
   // Enable 2FA
-  await db.execute({
-    text: 'UPDATE platform_users SET totp_enabled = true WHERE id = $1',
-    values: [userId],
-  } as any);
+  await db.execute(sql`UPDATE platform_users SET totp_enabled = true WHERE id = ${userId}`);
 
   res.json({ success: true, data: { enabled: true, message: '2FA is now active. You will need a code from your authenticator app to log in.' } });
 });
@@ -213,10 +205,7 @@ router.post('/validate', async (req: AuthenticatedRequest, res) => {
     return;
   }
 
-  const result = await db.execute({
-    text: 'SELECT totp_secret, totp_enabled, totp_backup_codes FROM platform_users WHERE id = $1',
-    values: [userId],
-  } as any);
+  const result = await db.execute(sql`SELECT totp_secret, totp_enabled, totp_backup_codes FROM platform_users WHERE id = ${userId}`);
   const rows = (result as any).rows ?? result;
   const user = rows[0];
 
@@ -239,10 +228,7 @@ router.post('/validate', async (req: AuthenticatedRequest, res) => {
     // Consume the backup code
     const remaining = [...backupCodes];
     remaining.splice(backupIdx, 1);
-    await db.execute({
-      text: 'UPDATE platform_users SET totp_backup_codes = $1 WHERE id = $2',
-      values: [remaining, userId],
-    } as any);
+    await db.execute(sql`UPDATE platform_users SET totp_backup_codes = ${remaining} WHERE id = ${userId}`);
     res.json({ success: true, data: { valid: true, usedBackupCode: true, remainingBackupCodes: remaining.length } });
     return;
   }
@@ -261,10 +247,7 @@ router.delete('/disable', async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.id;
   const { code } = req.body;
 
-  const result = await db.execute({
-    text: 'SELECT totp_secret, totp_enabled FROM platform_users WHERE id = $1',
-    values: [userId],
-  } as any);
+  const result = await db.execute(sql`SELECT totp_secret, totp_enabled FROM platform_users WHERE id = ${userId}`);
   const rows = (result as any).rows ?? result;
   const user = rows[0];
 
@@ -278,10 +261,7 @@ router.delete('/disable', async (req: AuthenticatedRequest, res) => {
     return;
   }
 
-  await db.execute({
-    text: 'UPDATE platform_users SET totp_enabled = false, totp_secret = NULL, totp_backup_codes = NULL WHERE id = $1',
-    values: [userId],
-  } as any);
+  await db.execute(sql`UPDATE platform_users SET totp_enabled = false, totp_secret = NULL, totp_backup_codes = NULL WHERE id = ${userId}`);
 
   res.json({ success: true, data: { disabled: true } });
 });
@@ -293,10 +273,7 @@ router.delete('/disable', async (req: AuthenticatedRequest, res) => {
 router.get('/status', async (req: AuthenticatedRequest, res) => {
   await ensureColumns();
   const db = getDb();
-  const result = await db.execute({
-    text: 'SELECT totp_enabled, ARRAY_LENGTH(totp_backup_codes, 1) as backup_count FROM platform_users WHERE id = $1',
-    values: [req.user!.id],
-  } as any);
+  const result = await db.execute(sql`SELECT totp_enabled, ARRAY_LENGTH(totp_backup_codes, 1) as backup_count FROM platform_users WHERE id = ${req.user!.id}`);
   const rows = (result as any).rows ?? result;
   const user = rows[0];
 

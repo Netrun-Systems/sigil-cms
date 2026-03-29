@@ -10,6 +10,7 @@
 import { Router } from 'express';
 import crypto from 'crypto';
 import { promisify } from 'util';
+import { sql } from 'drizzle-orm';
 import { getDb } from '../db.js';
 import { authenticate, tenantContext } from '../middleware/index.js';
 
@@ -111,10 +112,7 @@ router.post('/provision', async (req: AuthenticatedRequest, res) => {
 
   try {
     // Check subdomain uniqueness
-    const subdomainCheck = await db.execute({
-      text: "SELECT id FROM platform_tenants WHERE subdomain = $1 LIMIT 1",
-      values: [tenant.subdomain],
-    } as any);
+    const subdomainCheck = await db.execute(sql`SELECT id FROM platform_tenants WHERE subdomain = ${tenant.subdomain} LIMIT 1`);
     if (((subdomainCheck as any).rows ?? subdomainCheck).length > 0) {
       res.status(409).json({
         success: false,
@@ -124,10 +122,7 @@ router.post('/provision', async (req: AuthenticatedRequest, res) => {
     }
 
     // Check admin email uniqueness
-    const emailCheck = await db.execute({
-      text: "SELECT id FROM platform_users WHERE email = $1 LIMIT 1",
-      values: [admin.email],
-    } as any);
+    const emailCheck = await db.execute(sql`SELECT id FROM platform_users WHERE email = ${admin.email} LIMIT 1`);
     if (((emailCheck as any).rows ?? emailCheck).length > 0) {
       res.status(409).json({
         success: false,
@@ -137,52 +132,36 @@ router.post('/provision', async (req: AuthenticatedRequest, res) => {
     }
 
     // 1. Create tenant
-    const tenantResult = await db.execute({
-      text: `
-        INSERT INTO platform_tenants (name, subdomain, plan, is_active)
-        VALUES ($1, $2, $3, true)
-        RETURNING id, name, subdomain, plan, created_at
-      `,
-      values: [tenant.name, tenant.subdomain, tenant.plan || 'starter'],
-    } as any);
+    const tenantResult = await db.execute(sql`
+      INSERT INTO platform_tenants (name, subdomain, plan, is_active)
+      VALUES (${tenant.name}, ${tenant.subdomain}, ${tenant.plan || 'starter'}, true)
+      RETURNING id, name, subdomain, plan, created_at
+    `);
     const newTenant = ((tenantResult as any).rows ?? tenantResult)[0];
 
     // 2. Create admin user with hashed password
     const passwordHash = await hashPassword(admin.password);
 
-    const userResult = await db.execute({
-      text: `
-        INSERT INTO platform_users (tenant_id, email, name, full_name, role, status, password_hash, auth_provider)
-        VALUES ($1, $2, $3, $3, 'admin', 'active', $4, 'local')
-        RETURNING id, email, name, role
-      `,
-      values: [newTenant.id, admin.email, admin.name, passwordHash],
-    } as any);
+    const userResult = await db.execute(sql`
+      INSERT INTO platform_users (tenant_id, email, name, full_name, role, status, password_hash, auth_provider)
+      VALUES (${newTenant.id}, ${admin.email}, ${admin.name}, ${admin.name}, 'admin', 'active', ${passwordHash}, 'local')
+      RETURNING id, email, name, role
+    `);
     const newUser = ((userResult as any).rows ?? userResult)[0];
 
     // 3. Create default site
-    const siteResult = await db.execute({
-      text: `
-        INSERT INTO cms_sites (tenant_id, name, slug, domain, default_language, status)
-        VALUES ($1, $2, $3, $4, 'en', 'draft')
-        RETURNING id, name, slug, domain
-      `,
-      values: [newTenant.id, site.name, site.slug, site.domain || null],
-    } as any);
+    const siteResult = await db.execute(sql`
+      INSERT INTO cms_sites (tenant_id, name, slug, domain, default_language, status)
+      VALUES (${newTenant.id}, ${site.name}, ${site.slug}, ${site.domain || null}, 'en', 'draft')
+      RETURNING id, name, slug, domain
+    `);
     const newSite = ((siteResult as any).rows ?? siteResult)[0];
 
     // 4. Create default theme
-    await db.execute({
-      text: `
-        INSERT INTO cms_themes (site_id, name, is_active, base_theme, tokens)
-        VALUES ($1, 'Default', true, $2, $3)
-      `,
-      values: [
-        newSite.id,
-        options.themePreset || 'netrun-dark',
-        JSON.stringify(DEFAULT_THEME_TOKENS),
-      ],
-    } as any);
+    await db.execute(sql`
+      INSERT INTO cms_themes (site_id, name, is_active, base_theme, tokens)
+      VALUES (${newSite.id}, 'Default', true, ${options.themePreset || 'netrun-dark'}, ${JSON.stringify(DEFAULT_THEME_TOKENS)})
+    `);
 
     // 5. Create starter pages (optional, default true)
     let starterPages: string[] = [];
@@ -194,13 +173,10 @@ router.post('/provision', async (req: AuthenticatedRequest, res) => {
       ];
 
       for (const p of starterDefs) {
-        await db.execute({
-          text: `
-            INSERT INTO cms_pages (site_id, title, slug, full_path, status, template, sort_order)
-            VALUES ($1, $2, $3, $4, 'draft', $5, $6)
-          `,
-          values: [newSite.id, p.title, p.slug, `/${p.slug}`, p.template, p.sortOrder],
-        } as any);
+        await db.execute(sql`
+          INSERT INTO cms_pages (site_id, title, slug, full_path, status, template, sort_order)
+          VALUES (${newSite.id}, ${p.title}, ${p.slug}, ${`/${p.slug}`}, 'draft', ${p.template}, ${p.sortOrder})
+        `);
         starterPages.push(p.slug);
       }
     }
@@ -248,18 +224,15 @@ router.get('/usage', authenticate, tenantContext, async (req: AuthenticatedReque
   const db = getDb();
   const tenantId = req.tenantId!;
 
-  const result = await db.execute({
-    text: `
-      SELECT
-        (SELECT COUNT(*) FROM cms_sites WHERE tenant_id = $1) as site_count,
-        (SELECT COUNT(*) FROM cms_pages p JOIN cms_sites s ON s.id = p.site_id WHERE s.tenant_id = $1) as page_count,
-        (SELECT COUNT(*) FROM cms_content_blocks b JOIN cms_pages p ON p.id = b.page_id JOIN cms_sites s ON s.id = p.site_id WHERE s.tenant_id = $1) as block_count,
-        (SELECT COUNT(*) FROM cms_media m JOIN cms_sites s ON s.id = m.site_id WHERE s.tenant_id = $1) as media_count,
-        (SELECT COALESCE(SUM(m.file_size), 0) FROM cms_media m JOIN cms_sites s ON s.id = m.site_id WHERE s.tenant_id = $1) as total_storage_bytes,
-        (SELECT COUNT(*) FROM platform_users WHERE tenant_id = $1 AND status = 'active') as user_count
-    `,
-    values: [tenantId],
-  } as any);
+  const result = await db.execute(sql`
+    SELECT
+      (SELECT COUNT(*) FROM cms_sites WHERE tenant_id = ${tenantId}) as site_count,
+      (SELECT COUNT(*) FROM cms_pages p JOIN cms_sites s ON s.id = p.site_id WHERE s.tenant_id = ${tenantId}) as page_count,
+      (SELECT COUNT(*) FROM cms_content_blocks b JOIN cms_pages p ON p.id = b.page_id JOIN cms_sites s ON s.id = p.site_id WHERE s.tenant_id = ${tenantId}) as block_count,
+      (SELECT COUNT(*) FROM cms_media m JOIN cms_sites s ON s.id = m.site_id WHERE s.tenant_id = ${tenantId}) as media_count,
+      (SELECT COALESCE(SUM(m.file_size), 0) FROM cms_media m JOIN cms_sites s ON s.id = m.site_id WHERE s.tenant_id = ${tenantId}) as total_storage_bytes,
+      (SELECT COUNT(*) FROM platform_users WHERE tenant_id = ${tenantId} AND status = 'active') as user_count
+  `);
 
   const stats = ((result as any).rows ?? result)[0];
 

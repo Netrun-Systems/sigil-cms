@@ -14,7 +14,7 @@
  */
 
 import { Router } from 'express';
-import { eq, and, asc, inArray } from 'drizzle-orm';
+import { eq, and, asc, inArray, sql } from 'drizzle-orm';
 import { contentBlocks, pages, sites } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 import { authenticate, tenantContext, requireRole } from '../middleware/index.js';
@@ -62,19 +62,17 @@ router.post('/copy', requireRole('admin', 'editor', 'author'), async (req: Authe
   }
 
   // Store in clipboard table (upsert per user+tenant)
-  await db.execute({
-    text: `
-      CREATE TABLE IF NOT EXISTS cms_clipboard (
-        user_id UUID NOT NULL,
-        tenant_id UUID NOT NULL,
-        blocks JSONB NOT NULL DEFAULT '[]',
-        source_site_id UUID,
-        source_page_id UUID,
-        copied_at TIMESTAMPTZ DEFAULT NOW(),
-        PRIMARY KEY (user_id, tenant_id)
-      )
-    `, values: [],
-  } as any);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS cms_clipboard (
+      user_id UUID NOT NULL,
+      tenant_id UUID NOT NULL,
+      blocks JSONB NOT NULL DEFAULT '[]',
+      source_site_id UUID,
+      source_page_id UUID,
+      copied_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (user_id, tenant_id)
+    )
+  `);
 
   const blockData = blocks.map(b => ({
     blockType: b.blockType,
@@ -83,15 +81,12 @@ router.post('/copy', requireRole('admin', 'editor', 'author'), async (req: Authe
     sortOrder: b.sortOrder,
   }));
 
-  await db.execute({
-    text: `
-      INSERT INTO cms_clipboard (user_id, tenant_id, blocks, source_site_id, source_page_id)
-      VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT (user_id, tenant_id) DO UPDATE SET
-        blocks = $3, source_site_id = $4, source_page_id = $5, copied_at = NOW()
-    `,
-    values: [userId, tenantId, JSON.stringify(blockData), siteId, sourcePageId],
-  } as any);
+  await db.execute(sql`
+    INSERT INTO cms_clipboard (user_id, tenant_id, blocks, source_site_id, source_page_id)
+    VALUES (${userId}, ${tenantId}, ${JSON.stringify(blockData)}, ${siteId}, ${sourcePageId})
+    ON CONFLICT (user_id, tenant_id) DO UPDATE SET
+      blocks = EXCLUDED.blocks, source_site_id = EXCLUDED.source_site_id, source_page_id = EXCLUDED.source_page_id, copied_at = NOW()
+  `);
 
   res.json({ success: true, data: { copied: blockData.length, blocks: blockData } });
 });
@@ -122,10 +117,7 @@ router.post('/paste', requireRole('admin', 'editor', 'author'), async (req: Auth
   if (!page) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Target page not found' } }); return; }
 
   // Get clipboard
-  const clipResult = await db.execute({
-    text: 'SELECT blocks FROM cms_clipboard WHERE user_id = $1 AND tenant_id = $2',
-    values: [userId, tenantId],
-  } as any);
+  const clipResult = await db.execute(sql`SELECT blocks FROM cms_clipboard WHERE user_id = ${userId} AND tenant_id = ${tenantId}`);
   const clipRows = (clipResult as any).rows ?? clipResult;
   if (!clipRows.length || !clipRows[0].blocks) {
     res.status(404).json({ success: false, error: { code: 'EMPTY_CLIPBOARD', message: 'Clipboard is empty. Copy blocks first.' } });
@@ -135,10 +127,7 @@ router.post('/paste', requireRole('admin', 'editor', 'author'), async (req: Auth
   const blockData = typeof clipRows[0].blocks === 'string' ? JSON.parse(clipRows[0].blocks) : clipRows[0].blocks;
 
   // Get current max sortOrder in target page
-  const maxResult = await db.execute({
-    text: 'SELECT COALESCE(MAX(sort_order), -1) as max_order FROM cms_content_blocks WHERE page_id = $1',
-    values: [targetPageId],
-  } as any);
+  const maxResult = await db.execute(sql`SELECT COALESCE(MAX(sort_order), -1) as max_order FROM cms_content_blocks WHERE page_id = ${targetPageId}`);
   let nextOrder = parseInt(((maxResult as any).rows ?? maxResult)[0]?.max_order ?? '-1', 10) + 1;
   if (typeof position === 'number') nextOrder = position;
 
@@ -167,10 +156,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
   const tenantId = req.tenantId!;
   const userId = req.user!.id;
 
-  const result = await db.execute({
-    text: 'SELECT * FROM cms_clipboard WHERE user_id = $1 AND tenant_id = $2',
-    values: [userId, tenantId],
-  } as any);
+  const result = await db.execute(sql`SELECT * FROM cms_clipboard WHERE user_id = ${userId} AND tenant_id = ${tenantId}`);
   const rows = (result as any).rows ?? result;
 
   if (!rows.length) {
@@ -187,10 +173,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
  */
 router.delete('/', async (req: AuthenticatedRequest, res) => {
   const db = getDb();
-  await db.execute({
-    text: 'DELETE FROM cms_clipboard WHERE user_id = $1 AND tenant_id = $2',
-    values: [req.user!.id, req.tenantId!],
-  } as any);
+  await db.execute(sql`DELETE FROM cms_clipboard WHERE user_id = ${req.user!.id} AND tenant_id = ${req.tenantId!}`);
   res.json({ success: true, data: { cleared: true } });
 });
 

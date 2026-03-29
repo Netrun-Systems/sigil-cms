@@ -14,7 +14,7 @@
  */
 
 import { Router } from 'express';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, sql } from 'drizzle-orm';
 import { sites, pages, contentBlocks, themes, media } from '@netrun-cms/db';
 import { getDb } from '../db.js';
 import { authenticate, tenantContext, requireRole } from '../middleware/index.js';
@@ -151,19 +151,16 @@ router.get('/csv', requireRole('admin', 'editor'), async (req: AuthenticatedRequ
   }
 
   // Get pages with block counts
-  const result = await db.execute({
-    text: `
-      SELECT p.title, p.slug, p.full_path, p.status, p.language, p.template,
-             p.meta_title, p.meta_description, p.created_at, p.updated_at,
-             COUNT(b.id) as block_count
-      FROM cms_pages p
-      LEFT JOIN cms_content_blocks b ON b.page_id = p.id
-      WHERE p.site_id = $1
-      GROUP BY p.id
-      ORDER BY p.sort_order ASC
-    `,
-    values: [siteId],
-  } as any);
+  const result = await db.execute(sql`
+    SELECT p.title, p.slug, p.full_path, p.status, p.language, p.template,
+           p.meta_title, p.meta_description, p.created_at, p.updated_at,
+           COUNT(b.id) as block_count
+    FROM cms_pages p
+    LEFT JOIN cms_content_blocks b ON b.page_id = p.id
+    WHERE p.site_id = ${siteId}
+    GROUP BY p.id
+    ORDER BY p.sort_order ASC
+  `);
 
   const rows = (result as any).rows ?? result;
 
