@@ -20,7 +20,7 @@ One deployment. Unlimited clients. Free forever.
 
 Every headless CMS forces agencies to choose between cloud lock-in (Sanity), plugin hell (Strapi), or running separate deployments per client. Sigil is the first headless CMS with **native multi-tenancy** -- one deployment serves unlimited client tenants with Row-Level Security at the database layer. No per-seat pricing traps, no separate instances per client, no vendor lock-in.
 
-Ship client sites with a **Design Playground** (1,400+ CSS variables, 70+ Google Fonts), block-level **Resonance analytics**, **AI design generation** (describe a page, get editable blocks), and **21 built-in plugins** covering e-commerce, booking, docs, artist content, and more -- all from a single MIT-licensed codebase you own.
+Ship client sites with a **Design Playground** (1,400+ CSS variables, 70+ Google Fonts), block-level **Resonance analytics**, **AI design generation** (describe a page, get editable blocks), and **22 built-in plugins** covering e-commerce, booking, docs, artist content, and more -- all from a single MIT-licensed codebase you own.
 
 ## Quick Start
 
@@ -49,7 +49,7 @@ npx sigil-cms create my-band --template artist
 | **Visual design editor** | Design Playground | No | No | No |
 | **Block-level analytics** | Resonance | No | No | No |
 | **AI design generation** | Stitch + Charlotte | No | AI Assist (text only) | No |
-| **Built-in plugins** | 21 | Marketplace | No | Marketplace |
+| **Built-in plugins** | 22 | Marketplace | No | Marketplace |
 | **Content scheduling** | Built-in | Enterprise only | Yes | Yes |
 | **Copy/paste blocks** | Built-in | No | No | No |
 | **Site cloning** | One-click | No | No | No |
@@ -109,7 +109,8 @@ Give designers control without filing tickets. The Design Playground exposes 1,4
 - Real-time dark/light mode preview
 - Custom CSS injection for edge cases
 - Theme duplication and multiple themes per site
-- Font browser with Google Fonts search and custom font upload (.woff2, .ttf, .otf)
+- **Font browser** with 70+ curated Google Fonts across 6 categories (sans-serif, serif, display, handwriting, monospace), instant preview on hover, category filtering, search
+- **Custom font upload** -- drag-and-drop .woff2, .woff, .ttf, .otf files with auto-detected weight and style, immediate preview via `@font-face` injection
 
 ### Resonance Analytics
 
@@ -138,7 +139,7 @@ POST /api/v1/sites/:siteId/design/import
 → Structured Sigil blocks added to page
 ```
 
-### 21 Built-In Plugins
+### 22 Built-In Plugins
 
 Every plugin is environment-gated -- missing env vars cause a graceful skip, never a crash. The core CMS always works.
 
@@ -150,6 +151,7 @@ Every plugin is environment-gated -- missing env vars cause a graceful skip, nev
 | **Commerce** | Printful | Print-on-demand merchandise via Printful |
 | **Commerce** | PayPal | PayPal/Venmo checkout integration |
 | **Commerce** | Booking | Appointment scheduling, Google Calendar sync |
+| **Commerce** | POS | Point-of-sale register with Stripe Terminal, cart, cash/card/split payments |
 | **Communication** | Mailing List | GDPR-compliant subscribe/unsubscribe, broadcast |
 | **Communication** | Contact | Form submissions with inquiry types and status workflow |
 | **Communication** | Support | Embeddable support panel widget |
@@ -163,6 +165,8 @@ Every plugin is environment-gated -- missing env vars cause a graceful skip, nev
 | **Integration** | KAMERA | B2B sales intelligence — OSINT reports, company research, risk scoring |
 | **Integration** | KOG | CRM bridge — sync contacts, organizations, and pipeline data |
 | **Integration** | Intirkast | Social media syndication — auto-publish content to 10+ platforms |
+| **Community** | Community | Discussion forums with threads, reactions, reputation, moderation |
+| **Marketplace** | Marketplace | Plugin marketplace for browsing and installing extensions |
 
 ### Developer Experience
 
@@ -215,6 +219,8 @@ sigil info                       # environment diagnostics
 
 **REST API** versioned at `/api/v1/` with public and authenticated endpoints. Bearer JWT auth. Full CRUD on sites, pages, blocks, media, themes, users, and all plugin resources.
 
+**Safety checks** -- `scripts/lint-drizzle.sh` detects incompatible Drizzle ORM patterns at 4 pipeline stages (local lint, Claude Code hooks, GitHub Actions CI, Cloud Build).
+
 ### 23 Built-In Block Types
 
 | Category | Block Types |
@@ -247,6 +253,23 @@ Plugins add more: `product_grid`, `buy_button`, `booking_calendar`, `service_lis
 - **Audit log** -- every write operation recorded with user, action, resource, tenant, IP, and duration. Queryable by date range, user, resource type, and site. Compliant with SOC2 and GDPR audit requirements.
 - **JWT authentication** with 4 roles (admin, editor, author, viewer) and per-site permission overrides
 
+### Performance & Caching
+
+Sigil implements a 10-layer Sitecore-inspired caching architecture:
+
+- **API response cache** -- LRU in-memory cache for pages, themes, navigation, and site lookups (5-minute TTL with jitter)
+- **ETag / 304 Not Modified** -- conditional requests on all public API routes
+- **Cache-Control headers** -- `public, max-age=60, stale-while-revalidate=300` for browser and CDN caching
+- **Surrogate-Control + Surrogate-Key** -- CDN-ready headers for targeted edge purging (Cloudflare, Akamai, Fastly)
+- **Renderer HTML cache** -- full-page output cached for 60 seconds with ETag support
+- **gzip/brotli compression** -- 81% transfer reduction on HTML responses
+- **Static asset immutability** -- 365-day cache with `immutable` flag
+- **Auto-invalidation** -- cache purges automatically on block, page, or theme mutations
+- **Admin purge endpoint** -- `POST /api/v1/public/cache/purge` for manual invalidation
+- **DB connection pool** -- 24 connections with 30-second idle timeout
+
+Result: 97% latency reduction on cached pages (1,500ms cold to 60ms warm).
+
 ## Self-Hosting
 
 Sigil runs on Node.js + PostgreSQL. No proprietary dependencies. Self-host for free -- forever, with no feature limits.
@@ -277,7 +300,7 @@ For teams that want managed hosting, automatic updates, and priority support.
 | **Content items** | 5,000 | 10,000 | 100,000 | Unlimited |
 | **Media storage** | 5 GB | 10 GB | 100 GB | 1 TB |
 | **API calls** | 100K/mo | 500K/mo | 5M/mo | Unlimited |
-| **Plugins** | Core (8) | All (19) | All (19) | All + custom |
+| **Plugins** | Core (8) | All (22) | All (22) | All + custom |
 | **Design Playground** | Full | Full | Full | Full + white-label |
 | **Multi-tenancy** | -- | -- | Yes | Yes |
 | **Resonance analytics** | -- | -- | Yes | Yes |
@@ -306,7 +329,7 @@ sigil-cms/
 ├── apps/
 │   ├── api          — Express.js backend (REST + GraphQL)
 │   └── admin        — Vite + React 18 SPA
-└── plugins/         — 21 feature plugins (env-gated, graceful skip)
+└── plugins/         — 22 feature plugins (env-gated, graceful skip)
 ```
 
 **Stack**: TypeScript 5.7, Node.js 20+, Express.js, React 18, PostgreSQL, Drizzle ORM, Vite, Turborepo, pnpm workspaces.
@@ -316,6 +339,7 @@ sigil-cms/
 - [TypeScript SDK](packages/client/README.md) -- `@sigil-cms/client` API reference
 - [Next.js Integration](packages/next/README.md) -- `@sigil-cms/next` App Router guide
 - [CLI Reference](packages/cli/README.md) -- `sigil-cms` command reference
+- [Pronunciation Guide](docs/pronunciation-guide.md) -- IPA and phonetic spelling for product names and tech terms
 - [Whitepaper](WHITEPAPER.md) -- Full technical architecture and competitive analysis
 - [Pricing](PRICING.md) -- Detailed pricing, self-hosting templates, competitor comparison
 - [Contributing](CONTRIBUTING.md) -- How to contribute
@@ -329,7 +353,7 @@ sigil-cms/
 
 ## Built With
 
-Sigil was built by a solo founder with 25 years of cloud infrastructure experience and 20 AI development agents under [SDLC v2.3](https://netrunsystems.com) governance. The entire platform -- API, admin panel, 21 plugins, SDK, CLI, Next.js integration, Design Playground, Resonance analytics, AI design generation -- was architected and shipped by one person coordinating a fleet of specialized AI agents.
+Sigil was built by a solo founder with 25 years of cloud infrastructure experience and 20 AI development agents under [SDLC v2.3](https://netrunsystems.com) governance. The entire platform -- API, admin panel, 22 plugins, SDK, CLI, Next.js integration, Design Playground, Resonance analytics, AI design generation -- was architected and shipped by one person coordinating a fleet of specialized AI agents.
 
 We use our own products to bring Sigil to market: **KOG CRM** for lead tracking, **Intirkast** for social media scheduling, **KAMERA** for prospect research, **Charlotte** for AI assistance. Built, not subscribed.
 

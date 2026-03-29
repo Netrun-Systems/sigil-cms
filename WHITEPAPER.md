@@ -29,13 +29,13 @@
 
 Sigil is a multi-tenant headless CMS built for the way agencies and developers actually work: managing multiple client sites from a single deployment, giving designers visual control without requiring developer intervention, and connecting content to AI systems through a fully documented API.
 
-Built as a pnpm monorepo with Turborepo orchestration, Sigil runs on Express.js + PostgreSQL + React 18. It ships 21 vertical-specific plugins (e-commerce, booking, artist content, analytics, documentation, AI advisor), a Design Playground with 1,400+ CSS variables and 70+ Google Fonts, a TypeScript SDK, a CLI with 5 starter templates, a GraphQL API, Next.js App Router integration, and AI-powered design generation via Google Stitch. Every feature has a REST and GraphQL endpoint, making every CMS capability accessible to both human editors and AI agents.
+Built as a pnpm monorepo with Turborepo orchestration, Sigil runs on Express.js + PostgreSQL + React 18. It ships 22 vertical-specific plugins (e-commerce, booking, artist content, analytics, documentation, AI advisor), a Design Playground with 1,400+ CSS variables and 70+ Google Fonts, a TypeScript SDK, a CLI with 5 starter templates, a GraphQL API, Next.js App Router integration, and AI-powered design generation via Google Stitch. Every feature has a REST and GraphQL endpoint, making every CMS capability accessible to both human editors and AI agents.
 
 **Five reasons senior developers choose Sigil:**
 
 - **Native multi-tenancy**: One deployment serves unlimited client tenants with Row-Level Security. No separate deployments, no manual middleware, no per-tenant billing surprises.
 - **Design Playground**: 1,400+ CSS theme variables, 70+ Google Fonts, and 7 presets give non-technical designers full visual control — without touching code or asking a developer.
-- **21 vertical plugins shipped**: Music artist, e-commerce (Stripe + Printful + PayPal), appointment booking (Google Calendar), documentation/knowledge base, mailing list, Resonance analytics, community forum, plugin marketplace, and more — baked into the framework, not bolted on from a marketplace.
+- **22 vertical plugins shipped**: Music artist, e-commerce (Stripe + Printful + PayPal + POS), appointment booking (Google Calendar), documentation/knowledge base, mailing list, Resonance analytics, community forum, plugin marketplace, and more — baked into the framework, not bolted on from a marketplace.
 - **AI design generation**: Google Stitch integration generates full-page HTML from a text prompt, then a Stitch-to-blocks converter imports that design as structured Sigil content blocks. Charlotte AI (Gemini 2.0 Flash) provides context-aware design advice with access to the current page's blocks and theme tokens.
 - **Community-driven support**: Built-in gated forum with reputation system, magic-link authentication, and solved-answer workflows — replacing Discourse or Circle as a separate SaaS.
 - **Platform ecosystem**: Sigil integrates with the full Netrun Systems product suite — KOG CRM for lead capture, Charlotte AI for conversational support, KAMERA for OSINT research and intelligence reports, and Intirkast for broadcast content.
@@ -412,7 +412,7 @@ Four pricing tiers (Solo $12/mo, Team $29/mo, Business $79/mo, Enterprise $249/m
 
 ## 5. Plugin Ecosystem
 
-Sigil ships 21 first-party plugins. Each plugin registers its database tables, API routes, block types, admin navigation sections, and admin UI components at startup via the `CmsPlugin` interface. Plugins are composable — a music artist site might activate `artist`, `store`, `mailing-list`, `booking`, and `resonance`. A documentation portal might activate `docs`, `seo`, and `webhooks`.
+Sigil ships 22 first-party plugins. Each plugin registers its database tables, API routes, block types, admin navigation sections, and admin UI components at startup via the `CmsPlugin` interface. Plugins are composable — a music artist site might activate `artist`, `store`, `mailing-list`, `booking`, and `resonance`. A documentation portal might activate `docs`, `seo`, and `webhooks`.
 
 ### Core Infrastructure Plugins
 
@@ -472,6 +472,10 @@ Integration with Printful for print-on-demand merchandise. Enables artists, crea
 **`paypal` — PayPal Payments**
 
 PayPal checkout integration as an alternative to Stripe. Enables sites to accept PayPal, Venmo, and credit cards via the PayPal gateway.
+
+**`pos` — Point-of-Sale Register (Poppies POS)**
+
+A browser-based point-of-sale system built for retail storefronts. Integrates with Stripe Terminal for card reader hardware. Features a searchable product catalog, shopping cart with quantity adjustment, cash/card/split payment modes, receipt generation, and shift-based session tracking. Designed for the Poppies Art & Gifts retail use case and available to any Sigil site with the store plugin enabled.
 
 **`booking` — Appointment Scheduling**
 
@@ -939,6 +943,27 @@ Drizzle Studio (`pnpm db:studio`) provides a web-based database browser for insp
 
 Backups are handled at the PostgreSQL layer via `pg_dump`. For cloud deployments, managed PostgreSQL services (Cloud SQL, Supabase, Neon, Railway) provide automated backups.
 
+### 7.4 Caching & Performance
+
+Sigil implements a 10-layer Sitecore-inspired caching architecture designed to minimize latency for public-facing sites while ensuring content authors always see fresh data.
+
+| Layer | Mechanism | TTL | Scope |
+|-------|-----------|-----|-------|
+| 1 | **API response cache** — LRU in-memory cache for pages, themes, navigation, and site lookups | 5 min (with jitter) | API server |
+| 2 | **ETag / 304 Not Modified** — conditional requests on all public API routes | Indefinite (content-hash) | Client ↔ API |
+| 3 | **Cache-Control headers** — `public, max-age=60, stale-while-revalidate=300` | 60s fresh / 5 min stale | Browser + CDN |
+| 4 | **Surrogate-Control + Surrogate-Key** — CDN-ready headers for targeted edge purging | CDN-managed | Cloudflare, Akamai, Fastly |
+| 5 | **Renderer HTML cache** — full-page output cached with ETag support | 60s | Renderer |
+| 6 | **gzip/brotli compression** — 81% transfer reduction on HTML responses | N/A | All responses |
+| 7 | **Static asset immutability** — 365-day cache with `immutable` flag | 1 year | Static files |
+| 8 | **Auto-invalidation** — cache purges on block, page, or theme mutations | Instant | API server |
+| 9 | **Admin purge endpoint** — `POST /api/v1/public/cache/purge` for manual invalidation | Instant | Admin |
+| 10 | **DB connection pool** — 24 connections with 30-second idle timeout | N/A | Database |
+
+**Performance result**: 97% latency reduction on cached pages (1,500ms cold start to 60ms warm response).
+
+Auto-invalidation ensures that when an editor publishes a page or modifies a theme, the cached version is immediately purged. The `Surrogate-Key` header enables CDN providers to invalidate specific pages without a full cache flush — for example, purging all pages belonging to a single site after a theme change.
+
 ---
 
 ## 7.5 Site Migration
@@ -1062,7 +1087,7 @@ Strapi is the closest architectural peer: open-source, self-hosted, TypeScript, 
 | Multi-tenancy | Native | No (requires separate deployments per client) |
 | Design editor | Design Playground | No |
 | Block analytics | Resonance (unique) | No |
-| Vertical plugins | 21 first-party (booking, artist, e-commerce, docs, forum, marketplace) | Marketplace (150+ community, variable quality) |
+| Vertical plugins | 22 first-party (booking, artist, e-commerce, POS, docs, forum, marketplace) | Marketplace (150+ community, variable quality) |
 | Content scheduling | Yes (daemon in API) | Yes (built-in) |
 | AI advisor | Yes (Gemini RAG, TTS, streaming chat) | Strapi AI (schema generation from prompts only) |
 | Migration tooling | WordPress, Shopify, Square Online (first-party) | DITS (transfer format, not a crawler) |
@@ -1089,7 +1114,7 @@ The core strategic difference: **Payload is a platform for building your own CMS
 - Native multi-tenancy (`cms_tenants`, RLS, per-site permissions) — agencies can manage unlimited client sites from one deployment
 - Design Playground (1,400+ CSS variables, 70+ fonts, presets) — designers can work independently
 - Resonance analytics (block-level engagement, A/B experiments, AI suggestions) — not available in Payload
-- 21 vertical plugins (booking, artist, e-commerce with Stripe + Printful + PayPal, docs, AI advisor, community forum, marketplace) vs. Payload's handful of official plugins
+- 22 vertical plugins (booking, artist, e-commerce with Stripe + Printful + PayPal + POS, docs, AI advisor, community forum, marketplace) vs. Payload's handful of official plugins
 - WordPress/Shopify/Square Online migration tooling first-party
 - Cloud pricing (10 seats, 5 sites at $29/mo) vs. Payload Cloud ($35/mo, 1 site, 3 users)
 
@@ -1111,7 +1136,7 @@ The core strategic difference: **Payload is a platform for building your own CMS
 | CLI | Yes | Yes | Yes | Yes |
 | Next.js integration | Yes | Yes | Yes | Native (embedded) |
 | Migration tooling | WP, Shopify, Square | None built-in | DITS (transfer) | No |
-| 21 vertical plugins | Yes | No | Marketplace | No |
+| 22 vertical plugins | Yes | No | Marketplace | No |
 | Booking / appointments | Yes | No | No | No |
 | Music artist content | Yes | No | No | No |
 | Mailing list (GDPR) | Yes | No | No | No |
@@ -1148,7 +1173,7 @@ A production self-hosted deployment on Google Cloud Run (scale-to-zero) costs ap
 | **Media storage** | 5 GB | 10 GB | 100 GB | 1 TB |
 | **API calls/mo** | 100K | 500K | 5M | Unlimited |
 | **Custom domain** | Yes | Yes | Yes | Yes |
-| **Plugins** | Core (8) | All (21) | All (21) | All + custom |
+| **Plugins** | Core (8) | All (22) | All (22) | All + custom |
 | **GraphQL** | Yes | Yes | Yes | Yes |
 | **Content scheduling** | Yes | Yes | Yes | Yes |
 | **Resonance analytics** | No | No | Yes | Yes |
@@ -1188,7 +1213,7 @@ Every feature documented in this whitepaper exists in the codebase and is verifi
 
 - Full multi-tenant architecture with RLS
 - 23 core block types + plugin-registered block types
-- 19 first-party plugins (all described in Section 5)
+- 22 first-party plugins (all described in Section 5)
 - Design Playground (1,400+ CSS variables, 70+ Google Fonts, 7 presets)
 - TypeScript SDK (`@sigil-cms/client`) with 44+ typed methods
 - CLI (`sigil-cms`) with 7 commands and 9 deploy templates
@@ -1215,7 +1240,7 @@ The following features were built and shipped since v1.0:
 - Site migration — WordPress (WXR + REST API), Shopify (Admin API), Square Online (scraping + Catalog API)
 - Content migration from WordPress, Shopify, Square Online (first-party migration plugin)
 - Netrun platform plugins — KAMERA, KOG, Intirkast, Charlotte, Support, Marketplace integrations
-- Plugin count expanded from 19 to 21 first-party plugins
+- Plugin count expanded from 19 to 22 first-party plugins (added POS)
 
 ### 11.3 Near-Term (Next 90 Days)
 
@@ -1278,6 +1303,6 @@ Sigil is offered as both a self-hosted open-source product and a managed cloud s
 
 ---
 
-_Last reviewed: 2026-03-22_
+_Last reviewed: 2026-03-29_
 
 _Sigil CMS — WHITEPAPER v2.0 — Copyright 2026 Netrun Systems. All rights reserved._

@@ -46,7 +46,7 @@ For teams that want managed hosting, automatic updates, and priority support.
 | **Media storage** | 5 GB | 10 GB | 100 GB | 1 TB |
 | **API calls** | 100K/mo | 500K/mo | 5M/mo | Unlimited |
 | **Custom domain** | Yes | Yes | Yes | Yes |
-| **Plugins** | Core (8) | All (19) | All (19) | All + custom |
+| **Plugins** | Core (8) | All (22) | All (22) | All + custom |
 | **GraphQL API** | Yes | Yes | Yes | Yes |
 | **Content scheduling** | Yes | Yes | Yes | Yes |
 | **Resonance analytics** | - | - | Yes | Yes |
@@ -85,7 +85,7 @@ That's why we can offer 10 seats at $29/mo while Sanity charges $15/user/mo ($15
 | Multi-tenancy | Team+ | No | No | No |
 | Content scheduling | **Yes** | Enterprise only | Yes | Yes |
 | Block analytics | **Yes** (Resonance) | No | No | No |
-| 19 vertical plugins | **Yes** | Marketplace | No | Marketplace |
+| 22 vertical plugins | **Yes** | Marketplace | No | Marketplace |
 | Self-host option | **Free, unlimited** | Free, unlimited | No | Free, unlimited |
 | AI advisor | **Yes** (Charlotte) | No | Sanity AI (add-on) | No |
 
