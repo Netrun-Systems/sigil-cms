@@ -8,6 +8,7 @@ import { Router } from 'express';
 import type { Router as RouterType } from 'express';
 import { PagesController } from '../controllers/PagesController.js';
 import { authenticate, requireRole, tenantContext, validateUuidParam, enforcePageLimit } from '../middleware/index.js';
+import { invalidatePageCache } from '../lib/cache.js';
 
 const router: RouterType = Router({ mergeParams: true });
 
@@ -45,7 +46,7 @@ router.get('/', PagesController.list);
  *   sortOrder?: number
  * }
  */
-router.post('/', requireRole('admin', 'editor', 'author'), enforcePageLimit(), PagesController.create);
+router.post('/', requireRole('admin', 'editor', 'author'), enforcePageLimit(), invalidatePageCache, PagesController.create);
 
 /**
  * GET /api/v1/sites/:siteId/pages/:id
@@ -62,13 +63,13 @@ router.get('/:id', validateUuidParam('id'), PagesController.get);
  *
  * Body: Partial page data
  */
-router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), PagesController.update);
+router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), invalidatePageCache, PagesController.update);
 
 /**
  * DELETE /api/v1/sites/:siteId/pages/:id
  * Delete a page and all its content blocks
  */
-router.delete('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), PagesController.delete);
+router.delete('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), invalidatePageCache, PagesController.delete);
 
 /**
  * GET /api/v1/sites/:siteId/pages/:id/translations
@@ -83,7 +84,7 @@ router.get('/:id/translations', validateUuidParam('id'), PagesController.listTra
  * Body: { language: string }
  * Clones the page and all content blocks with the new language code
  */
-router.post('/:id/translate', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), PagesController.createTranslation);
+router.post('/:id/translate', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), invalidatePageCache, PagesController.createTranslation);
 
 /**
  * PATCH /api/v1/sites/:siteId/pages/:id/schedule
@@ -98,7 +99,7 @@ router.post('/:id/translate', validateUuidParam('id'), requireRole('admin', 'edi
  * - publishAt in the past or now publishes immediately
  * - null clears the schedule
  */
-router.patch('/:id/schedule', validateUuidParam('id'), requireRole('admin', 'editor'), PagesController.schedule);
+router.patch('/:id/schedule', validateUuidParam('id'), requireRole('admin', 'editor'), invalidatePageCache, PagesController.schedule);
 
 /**
  * GET /api/v1/sites/:siteId/pages/:pageId/revisions
@@ -116,6 +117,6 @@ router.get('/:pageId/revisions/:revisionId', validateUuidParam('pageId'), PagesC
  * POST /api/v1/sites/:siteId/pages/:pageId/revisions/:revisionId/revert
  * Revert page to a specific revision
  */
-router.post('/:pageId/revisions/:revisionId/revert', validateUuidParam('pageId'), requireRole('admin', 'editor'), PagesController.revertToRevision);
+router.post('/:pageId/revisions/:revisionId/revert', validateUuidParam('pageId'), requireRole('admin', 'editor'), invalidatePageCache, PagesController.revertToRevision);
 
 export default router;

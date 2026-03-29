@@ -13,6 +13,12 @@ import { Router, type Request, type Response } from 'express';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { sites, pages, contentBlocks, themes } from '@netrun-cms/db';
 import { getDb } from '../db.js';
+import {
+  pageCache, themeCache, navCache, siteCache,
+  PAGE_TTL, THEME_TTL, NAV_TTL, SITE_TTL,
+  cachePurgeHandler, cacheStatsHandler,
+} from '../lib/cache.js';
+import { authenticate, requireRole } from '../middleware/index.js';
 
 import type { Router as RouterType } from "express";
 const router: RouterType = Router();
@@ -30,9 +36,33 @@ router.get('/sites/:siteSlug/pages/:pageSlug(*)', async (req: Request, res: Resp
   const siteSlug = req.params.siteSlug as string;
   const pageSlug = req.params.pageSlug as string;
   const lang = req.query.lang as string | undefined;
+  const cacheKey = `page:${siteSlug}:${pageSlug}:${lang || 'default'}`;
 
-  const [site] = await db.select({ id: sites.id, defaultLanguage: sites.defaultLanguage }).from(sites)
-    .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
+  // Check cache
+  const cached = pageCache.get(cacheKey);
+  if (cached) {
+    if (req.headers['if-none-match'] === `"${cached.etag}"`) {
+      res.status(304).end();
+      return;
+    }
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    res.set('ETag', `"${cached.etag}"`);
+    res.set('Vary', 'Accept-Encoding');
+    res.json({ success: true, data: cached.data });
+    return;
+  }
+
+  // Look up site (with its own cache tier)
+  const siteCacheKey = `site:${siteSlug}`;
+  let site = siteCache.get<{ id: string; defaultLanguage: string }>(siteCacheKey)?.data ?? null;
+  if (!site) {
+    const [siteRow] = await db.select({ id: sites.id, defaultLanguage: sites.defaultLanguage }).from(sites)
+      .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
+    if (siteRow) {
+      siteCache.set(siteCacheKey, siteRow, SITE_TTL);
+      site = siteRow;
+    }
+  }
   if (!site) { res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Site not found' } }); return; }
 
   let page;
@@ -99,7 +129,15 @@ router.get('/sites/:siteSlug/pages/:pageSlug(*)', async (req: Request, res: Resp
     .where(and(eq(contentBlocks.pageId, page.id), eq(contentBlocks.isVisible, true)))
     .orderBy(asc(contentBlocks.sortOrder));
 
-  res.json({ success: true, data: { ...page, blocks } });
+  const pageData = { ...page, blocks };
+  const entry = pageCache.set(cacheKey, pageData, PAGE_TTL);
+
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.set('ETag', `"${entry.etag}"`);
+  res.set('Vary', 'Accept-Encoding');
+  res.set('Surrogate-Control', 'max-age=300');
+  res.set('Surrogate-Key', `site-${siteSlug} page-${pageSlug}`);
+  res.json({ success: true, data: pageData });
 });
 
 /**
@@ -109,6 +147,21 @@ router.get('/sites/:siteSlug/pages/:pageSlug(*)', async (req: Request, res: Resp
 router.get('/sites/:siteSlug/theme', async (req: Request, res: Response) => {
   const db = getDb();
   const siteSlug = req.params.siteSlug as string;
+  const cacheKey = `theme:${siteSlug}`;
+
+  // Check cache
+  const cached = themeCache.get(cacheKey);
+  if (cached) {
+    if (req.headers['if-none-match'] === `"${cached.etag}"`) {
+      res.status(304).end();
+      return;
+    }
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    res.set('ETag', `"${cached.etag}"`);
+    res.set('Vary', 'Accept-Encoding');
+    res.json({ success: true, data: cached.data });
+    return;
+  }
 
   const [site] = await db.select({ id: sites.id }).from(sites)
     .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
@@ -117,7 +170,15 @@ router.get('/sites/:siteSlug/theme', async (req: Request, res: Response) => {
   const [theme] = await db.select().from(themes)
     .where(and(eq(themes.siteId, site.id), eq(themes.isActive, true))).limit(1);
 
-  res.json({ success: true, data: theme || null });
+  const themeData = theme || null;
+  const entry = themeCache.set(cacheKey, themeData, THEME_TTL);
+
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.set('ETag', `"${entry.etag}"`);
+  res.set('Vary', 'Accept-Encoding');
+  res.set('Surrogate-Control', 'max-age=300');
+  res.set('Surrogate-Key', `site-${siteSlug} theme`);
+  res.json({ success: true, data: themeData });
 });
 
 /**
@@ -127,6 +188,21 @@ router.get('/sites/:siteSlug/theme', async (req: Request, res: Response) => {
 router.get('/sites/:siteSlug/pages', async (req: Request, res: Response) => {
   const db = getDb();
   const siteSlug = req.params.siteSlug as string;
+  const cacheKey = `nav:${siteSlug}`;
+
+  // Check cache
+  const cached = navCache.get(cacheKey);
+  if (cached) {
+    if (req.headers['if-none-match'] === `"${cached.etag}"`) {
+      res.status(304).end();
+      return;
+    }
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    res.set('ETag', `"${cached.etag}"`);
+    res.set('Vary', 'Accept-Encoding');
+    res.json({ success: true, data: cached.data });
+    return;
+  }
 
   const [site] = await db.select({ id: sites.id }).from(sites)
     .where(and(eq(sites.slug, siteSlug), eq(sites.status, 'published'))).limit(1);
@@ -147,6 +223,13 @@ router.get('/sites/:siteSlug/pages', async (req: Request, res: Response) => {
     .where(and(eq(pages.siteId, site.id), eq(pages.status, 'published')))
     .orderBy(asc(pages.sortOrder));
 
+  const entry = navCache.set(cacheKey, publishedPages, NAV_TTL);
+
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.set('ETag', `"${entry.etag}"`);
+  res.set('Vary', 'Accept-Encoding');
+  res.set('Surrogate-Control', 'max-age=300');
+  res.set('Surrogate-Key', `site-${siteSlug} pages`);
   res.json({ success: true, data: publishedPages });
 });
 
@@ -197,7 +280,18 @@ router.get('/sites/by-domain/:domain', async (req: Request, res: Response) => {
     return;
   }
 
+  siteCache.set(`site-domain:${domain}`, site, SITE_TTL);
+
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.set('Vary', 'Accept-Encoding');
   res.json({ success: true, data: site });
 });
+
+// ---------------------------------------------------------------------------
+// Cache management endpoints (admin only)
+// ---------------------------------------------------------------------------
+
+router.post('/cache/purge', authenticate, requireRole('admin'), cachePurgeHandler);
+router.get('/cache/stats', authenticate, cacheStatsHandler);
 
 export default router;

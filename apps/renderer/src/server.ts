@@ -8,7 +8,9 @@
  */
 
 import express from 'express';
+import compression from 'compression';
 import path from 'path';
+import { createHash } from 'node:crypto';
 import { fetchPage, fetchTheme, fetchSitePages } from './api-client.js';
 import type { ThemeData, PageData } from './api-client.js';
 import { themeToCss, themeToFontLinks } from './theme.js';
@@ -17,10 +19,14 @@ import { renderLayout, render404 } from './layout.js';
 import { handleSignup } from './signup.js';
 
 const app = express();
+app.use(compression());
+
 const PORT = parseInt(process.env.PORT || '4000', 10);
 const SITE_SLUG = process.env.SITE_SLUG || 'default';
 const SITE_NAME = process.env.SITE_NAME || '';
 const API_BASE = process.env.API_URL || 'http://localhost:3001/api/v1/public';
+const GA4_MEASUREMENT_ID = process.env.GA4_MEASUREMENT_ID || '';
+const SUPPORT_WIDGET_URL = process.env.SUPPORT_WIDGET_URL || '';
 
 // --- Domain → Site Slug Cache ---
 // Maps custom domains to site slugs with a 5-minute TTL.
@@ -122,18 +128,42 @@ async function getNavigation(): Promise<{ label: string; href: string }[]> {
     return navCache.items;
   }
 
+  // Top-level navigation only — product/detail pages accessed from parent pages.
+  // Short labels matching the pre-Sigil NetrunSite navigation.
+  const TOP_NAV: Record<string, string> = {
+    'services': 'Services',
+    'products': 'Products',
+    'research': 'Research',
+    'blog': 'Blog',
+    'about': 'About',
+    'contact': 'Contact',
+  };
+
   const pages = await fetchSitePages(SITE_SLUG);
+  const navKeys = Object.keys(TOP_NAV);
   const items = pages
-    .filter((p: PageData) => p.status === 'published')
-    .sort((a: PageData, b: PageData) => a.sortOrder - b.sortOrder)
+    .filter((p: PageData) => p.status === 'published' && TOP_NAV[p.slug])
+    .sort((a: PageData, b: PageData) => navKeys.indexOf(a.slug) - navKeys.indexOf(b.slug))
     .map((p: PageData) => ({
-      label: p.title,
-      href: p.slug === 'home' ? '/' : `/${p.slug}`,
+      label: TOP_NAV[p.slug] || p.title,
+      href: `/${p.slug}`,
     }));
 
   navCache = { items, fetchedAt: now };
   return items;
 }
+
+// --- Full-Page HTML Cache ---
+// Caches rendered HTML keyed by host + path with a short TTL.
+
+interface HtmlCacheEntry {
+  html: string;
+  expiresAt: number;
+  etag: string;
+}
+
+const HTML_CACHE_TTL = parseInt(process.env.HTML_CACHE_TTL || '60000', 10); // 1 minute
+const htmlCache = new Map<string, HtmlCacheEntry>();
 
 // --- Signup / Payment Redirect ---
 // Routes /signup?plan=<plan> to the appropriate Stripe Payment Link.
@@ -144,8 +174,10 @@ app.get('/signup', handleSignup);
 // --- Static Assets ---
 
 app.use('/static', express.static(path.join(process.cwd(), 'static'), {
-  maxAge: '1d',
+  maxAge: '365d',
   immutable: true,
+  etag: true,
+  lastModified: true,
 }));
 
 // --- Health Check ---
@@ -179,9 +211,26 @@ app.get('*', async (req, res) => {
   if (pageSlug === '') pageSlug = 'home';
 
   try {
-    const siteSlug = await resolveSiteSlug(req.headers.host || '');
+    const host = req.headers.host || '';
+    const siteSlug = await resolveSiteSlug(host);
+
+    // Check HTML cache
+    const htmlCacheKey = `${host}:${pageSlug}`;
+    const cachedHtml = htmlCache.get(htmlCacheKey);
+    if (cachedHtml && Date.now() < cachedHtml.expiresAt) {
+      if (req.headers['if-none-match'] === cachedHtml.etag) {
+        res.status(304).end();
+        return;
+      }
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      res.set('ETag', cachedHtml.etag);
+      res.send(cachedHtml.html);
+      return;
+    }
+
     const [theme, navigation] = await Promise.all([getTheme(), getNavigation()]);
-    
+
     // Fetch page by slug — try full path first, then just the leaf slug
     let page = await fetchPage(siteSlug, pageSlug);
     if (!page && pageSlug.includes('/')) {
@@ -209,6 +258,8 @@ app.get('*', async (req, res) => {
         siteName: SITE_NAME,
         navigation,
         customCss: theme.customCss,
+        ga4MeasurementId: GA4_MEASUREMENT_ID,
+        supportWidgetUrl: SUPPORT_WIDGET_URL,
       }));
       return;
     }
@@ -226,9 +277,19 @@ app.get('*', async (req, res) => {
       navigation,
       currentPath: fullPath,
       customCss: theme.customCss,
+      ga4MeasurementId: GA4_MEASUREMENT_ID,
+      supportWidgetUrl: SUPPORT_WIDGET_URL,
+      template: (page as unknown as Record<string, unknown>).template as string | undefined,
+      pageSlug,
     });
 
+    // Cache the rendered HTML
+    const etag = `"${createHash('sha1').update(html).digest('hex').slice(0, 16)}"`;
+    htmlCache.set(htmlCacheKey, { html, expiresAt: Date.now() + HTML_CACHE_TTL, etag });
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    res.set('ETag', etag);
     res.send(html);
   } catch (err) {
     console.error(`Error rendering page ${fullPath}:`, err);

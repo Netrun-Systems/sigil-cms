@@ -34,8 +34,8 @@ export function getDb(): DbClient {
         db = createDbClient({
           connectionString: cleanUrl,
           ssl: false,
-          max: parseInt(process.env.DB_POOL_SIZE || '10'),
-          idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '20'),
+          max: parseInt(process.env.DB_POOL_SIZE || '24'),
+          idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '30'),
           // Pass the socket path via the connection string option
           host: match[4],
         });
@@ -43,8 +43,8 @@ export function getDb(): DbClient {
         db = createDbClient({
           connectionString,
           ssl: false,
-          max: parseInt(process.env.DB_POOL_SIZE || '10'),
-          idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '20'),
+          max: parseInt(process.env.DB_POOL_SIZE || '24'),
+          idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '30'),
         });
       }
     } else {

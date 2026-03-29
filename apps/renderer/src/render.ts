@@ -8,6 +8,7 @@
 
 import { marked } from 'marked';
 import type { BlockData } from './api-client.js';
+import { renderIcon } from './icons.js';
 
 // Configure marked for safe output
 marked.setOptions({
@@ -111,15 +112,17 @@ function renderFeatureGrid(block: BlockData): string {
     if (f.image) {
       visualHtml = `<div class="sigil-feature-image"><img src="${esc(f.image as string)}" alt="${esc(f.title as string)}" loading="lazy"></div>`;
     } else if (f.icon) {
-      visualHtml = `<div class="sigil-feature-icon-wrapper"><div class="sigil-feature-icon">${esc(f.icon as string)}</div></div>`;
+      const iconSvg = renderIcon(f.icon as string, 28);
+      visualHtml = `<div class="sigil-feature-icon-wrapper"><div class="sigil-feature-icon">${iconSvg || esc(f.icon as string)}</div></div>`;
     }
+
+    const descHtml = f.description ? `<p>${esc(f.description as string)}</p>` : '';
 
     return `<${tag}${href} class="sigil-feature-card${clickableClass}">
       ${visualHtml}
       <div class="sigil-feature-content">
         <h3>${esc(f.title as string)}</h3>
-        <p>${esc(f.description as string)}</p>
-        ${hasLink ? `<div class="sigil-feature-learn-more">Learn more <span class="sigil-arrow">→</span></div>` : ''}
+        ${descHtml}
       </div>
     </${tag}>`;
   }).join('\n    ');
@@ -458,6 +461,83 @@ function renderCodeBlock(block: BlockData): string {
 </section>`;
 }
 
+function renderVideo(block: BlockData): string {
+  const c = block.content as Record<string, unknown>;
+  const url = (c.url as string) || '';
+  const title = (c.title as string) || '';
+
+  let embedUrl = url;
+  // YouTube
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/);
+  if (ytMatch) {
+    embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+  }
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) {
+    embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  }
+
+  return `<section class="${blockClasses(block, 'sigil-video')}">
+  <div class="sigil-video-inner">
+    ${title ? `<h3 class="sigil-video-title">${esc(title)}</h3>` : ''}
+    <div class="sigil-video-wrapper">
+      <iframe src="${esc(embedUrl)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" title="${esc(title || 'Video')}"></iframe>
+    </div>
+  </div>
+</section>`;
+}
+
+function renderComparisonTable(block: BlockData): string {
+  const c = block.content as Record<string, unknown>;
+  const rows = (c.rows as Array<Record<string, unknown>>) || [];
+  const headline = (c.headline as string) || '';
+
+  const rowsHtml = rows.map(row =>
+    `<tr>
+      <td class="sigil-compare-old"><span class="sigil-compare-x">\u2717</span> ${esc(row.old as string)}</td>
+      <td class="sigil-compare-new"><span class="sigil-compare-check">\u2713</span> ${esc(row.new as string)}</td>
+    </tr>`
+  ).join('\n      ');
+
+  return `<section class="${blockClasses(block, 'sigil-comparison')}">
+  <div class="sigil-comparison-inner">
+    ${headline ? `<h2>${esc(headline)}</h2>` : ''}
+    <table class="sigil-comparison-table">
+      <thead>
+        <tr><th>Old Way</th><th>New Way</th></tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+  </div>
+</section>`;
+}
+
+function renderLogoGrid(block: BlockData): string {
+  const c = block.content as Record<string, unknown>;
+  const logos = (c.logos as Array<Record<string, unknown>>) || [];
+  const headline = (c.headline as string) || '';
+
+  const items = logos.map(logo => {
+    const img = `<img src="${esc(logo.imageUrl as string)}" alt="${esc(logo.name as string)}" loading="lazy">`;
+    if (logo.link) {
+      return `<a href="${esc(logo.link as string)}" class="sigil-logo-item" target="_blank" rel="noopener">${img}</a>`;
+    }
+    return `<div class="sigil-logo-item">${img}</div>`;
+  }).join('\n    ');
+
+  return `<section class="${blockClasses(block, 'sigil-logo-grid')}">
+  <div class="sigil-logo-grid-inner">
+    ${headline ? `<h2>${esc(headline)}</h2>` : ''}
+    <div class="sigil-logo-grid-items">
+      ${items}
+    </div>
+  </div>
+</section>`;
+}
+
 function renderCustom(block: BlockData): string {
   const c = block.content as Record<string, unknown>;
   const html = (c.html as string) || '';
@@ -491,6 +571,9 @@ const renderers: Record<string, (block: BlockData, siteSlug: string) => string> 
   link_tree: renderLinkTree,
   code_block: renderCodeBlock,
   custom: renderCustom,
+  video: renderVideo,
+  comparison_table: renderComparisonTable,
+  logo_grid: renderLogoGrid,
 };
 
 /**

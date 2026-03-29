@@ -8,6 +8,7 @@ import { Router } from 'express';
 import type { Router as RouterType } from 'express';
 import { BlocksController } from '../controllers/BlocksController.js';
 import { authenticate, requireRole, tenantContext, validateUuidParam } from '../middleware/index.js';
+import { invalidatePageCache } from '../lib/cache.js';
 
 const router: RouterType = Router({ mergeParams: true });
 
@@ -39,7 +40,7 @@ router.get('/', BlocksController.list);
  *   isVisible?: boolean
  * }
  */
-router.post('/', requireRole('admin', 'editor', 'author'), BlocksController.create);
+router.post('/', requireRole('admin', 'editor', 'author'), invalidatePageCache, BlocksController.create);
 
 /**
  * PUT /api/v1/sites/:siteId/pages/:pageId/blocks/reorder
@@ -49,7 +50,7 @@ router.post('/', requireRole('admin', 'editor', 'author'), BlocksController.crea
  *   blockIds: string[] (ordered list of block IDs)
  * }
  */
-router.put('/reorder', requireRole('admin', 'editor', 'author'), BlocksController.reorder);
+router.put('/reorder', requireRole('admin', 'editor', 'author'), invalidatePageCache, BlocksController.reorder);
 
 /**
  * GET /api/v1/sites/:siteId/pages/:pageId/blocks/:id
@@ -63,12 +64,12 @@ router.get('/:id', validateUuidParam('id'), BlocksController.get);
  *
  * Body: Partial block data (blockType, content, settings, sortOrder, isVisible)
  */
-router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), BlocksController.update);
+router.put('/:id', validateUuidParam('id'), requireRole('admin', 'editor', 'author'), invalidatePageCache, BlocksController.update);
 
 /**
  * DELETE /api/v1/sites/:siteId/pages/:pageId/blocks/:id
  * Delete a block
  */
-router.delete('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), BlocksController.delete);
+router.delete('/:id', validateUuidParam('id'), requireRole('admin', 'editor'), invalidatePageCache, BlocksController.delete);
 
 export default router;

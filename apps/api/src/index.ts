@@ -8,6 +8,7 @@
 import 'dotenv/config';
 import 'express-async-errors';
 import express, { type Express } from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import { sql } from 'drizzle-orm';
 import { createLogger, requestLogger } from '@netrun/logger';
@@ -38,6 +39,9 @@ const HOST = process.env.HOST || '0.0.0.0';
 // ============================================================================
 // MIDDLEWARE
 // ============================================================================
+
+// Compression (gzip/brotli) — before other middleware for maximum benefit
+app.use(compression());
 
 // Correlation ID (must be first so all subsequent middleware/handlers get it)
 app.use(correlationIdMiddleware);
