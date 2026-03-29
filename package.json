@@ -23,5 +23,11 @@
   },
   "dependencies": {
     "stripe": "^20.1.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "drizzle-orm": "0.39.3",
+      "drizzle-zod": "0.7.1"
+    }
   }
 }

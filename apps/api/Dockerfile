@@ -70,9 +70,13 @@ COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./
 
 # Install only production runtime deps needed by the bundled output
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate && \
-    echo '{"dependencies":{}}' > /tmp/pkg.json && \
-    npm install --omit=dev express cors dotenv drizzle-orm postgres zod helmet jsonwebtoken 2>/dev/null || true
+# Install runtime deps that tsup marks as external.
+# IMPORTANT: drizzle-orm version MUST match the workspace version (^0.39.0 → 0.39.3)
+# to avoid "getSQL is not a function" errors from prototype mismatches.
+RUN npm install --omit=dev \
+    express cors dotenv postgres zod helmet jsonwebtoken \
+    drizzle-orm@0.39.3 drizzle-zod@0.7.1 \
+    2>/dev/null || true
 
 ENV NODE_ENV=production
 ENV PORT=3000

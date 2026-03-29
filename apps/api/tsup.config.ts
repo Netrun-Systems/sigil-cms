@@ -35,15 +35,11 @@ export default defineConfig({
     '@netrun-cms/plugin-marketplace',
     // Poppies plugins
     '@poppies/pos',
-    // Platform runtime (if referenced)
+    // Platform packages (must be bundled alongside CMS packages)
     '@netrun/platform-runtime',
+    '@netrun/platform-db',
   ],
-  external: [
-    '@azure/communication-email', '@azure/storage-blob', '@google-cloud/storage', '@aws-sdk/client-s3', 'compression',
-    // Drizzle MUST be external to prevent duplicate-instance "getSQL is not a function" errors.
-    // The runtime copy installed in the Docker image must match the version used at build time.
-    'drizzle-orm', 'drizzle-zod',
-  ],
+  external: ['@azure/communication-email', '@azure/storage-blob', '@google-cloud/storage', '@aws-sdk/client-s3', 'compression'],
   treeshake: true,
   splitting: false,
 });

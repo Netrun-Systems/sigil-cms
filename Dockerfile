@@ -14,7 +14,7 @@ RUN npm install --no-save --legacy-peer-deps \
     compression \
     cors \
     dotenv \
-    "drizzle-orm@0.39.3" \
+    # drizzle-orm + drizzle-zod + postgres are BUNDLED by tsup (not external)
     encoding \
     "express@4.22.1" \
     express-async-errors \
