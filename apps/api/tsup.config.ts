@@ -38,7 +38,12 @@ export default defineConfig({
     // Platform runtime (if referenced)
     '@netrun/platform-runtime',
   ],
-  external: ['@azure/communication-email', '@azure/storage-blob', '@google-cloud/storage', '@aws-sdk/client-s3'],
+  external: [
+    '@azure/communication-email', '@azure/storage-blob', '@google-cloud/storage', '@aws-sdk/client-s3', 'compression',
+    // Drizzle MUST be external to prevent duplicate-instance "getSQL is not a function" errors.
+    // The runtime copy installed in the Docker image must match the version used at build time.
+    'drizzle-orm', 'drizzle-zod',
+  ],
   treeshake: true,
   splitting: false,
 });

@@ -11,6 +11,7 @@ WORKDIR /app
 # These are packages the bundle requires() at runtime but does NOT inline.
 # (Node built-ins like crypto, fs, path are excluded — they're built into Node.)
 RUN npm install --no-save --legacy-peer-deps \
+    compression \
     cors \
     dotenv \
     "drizzle-orm@0.39.3" \
