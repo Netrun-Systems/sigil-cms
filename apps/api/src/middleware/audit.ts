@@ -15,6 +15,7 @@
 
 import type { Response, NextFunction } from 'express';
 import type { AuthenticatedRequest } from '../types/index.js';
+import { sql } from 'drizzle-orm';
 import { getDb } from '../db.js';
 
 // Map HTTP methods to action verbs
@@ -98,30 +99,18 @@ export function auditLog(
     if (!tenantId) return result;
 
     const db = getDb();
-    db.execute({
-      text: `
+    const reqPath = (req.originalUrl || req.url).slice(0, 500);
+    const ipAddr = req.ip || (req.headers['x-forwarded-for'] as string) || null;
+    const ua = ((req.headers['user-agent'] as string) || '').slice(0, 500);
+    db.execute(sql`
         INSERT INTO cms_audit_log
           (tenant_id, user_id, user_email, user_role, action, resource_type, resource_id,
            site_id, request_method, request_path, status_code, duration_ms, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-      `,
-      values: [
-        tenantId,
-        userId || null,
-        userEmail || null,
-        userRole || null,
-        action,
-        resourceType,
-        resourceId || null,
-        siteId || null,
-        req.method,
-        (req.originalUrl || req.url).slice(0, 500),
-        statusCode,
-        durationMs,
-        req.ip || req.headers['x-forwarded-for'] || null,
-        (req.headers['user-agent'] || '').slice(0, 500),
-      ],
-    } as any).catch((err: any) => {
+        VALUES (${tenantId}, ${userId || null}, ${userEmail || null}, ${userRole || null},
+                ${action}, ${resourceType}, ${resourceId || null}, ${siteId || null},
+                ${req.method}, ${reqPath}, ${statusCode}, ${durationMs},
+                ${ipAddr}, ${ua})
+      `).catch((err: any) => {
       // Audit logging should never break the request — log and continue
       console.warn('Audit log insert failed:', err.message);
     });

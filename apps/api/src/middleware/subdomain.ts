@@ -16,6 +16,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
+import { sql } from 'drizzle-orm';
 import { getDb } from '../db.js';
 
 // Base domain — subdomains are resolved relative to this.
@@ -105,17 +106,14 @@ export function resolveSubdomain(
 
   if (lookupType === 'subdomain') {
     // Subdomain → tenant
-    db.execute({
-      text: `
+    db.execute(sql`
         SELECT t.id as tenant_id, s.id as site_id, s.slug as site_slug
         FROM platform_tenants t
         LEFT JOIN cms_sites s ON s.tenant_id = t.id AND s.status = 'published'
-        WHERE t.subdomain = $1 AND t.is_active = true
+        WHERE t.subdomain = ${lookupValue} AND t.is_active = true
         ORDER BY s.created_at ASC
         LIMIT 1
-      `,
-      values: [lookupValue],
-    } as any)
+      `)
       .then((result: any) => {
         const rows = result.rows ?? result;
         if (rows.length > 0) {
@@ -130,15 +128,12 @@ export function resolveSubdomain(
       .catch(() => next());
   } else {
     // Custom domain → site → tenant
-    db.execute({
-      text: `
+    db.execute(sql`
         SELECT s.id as site_id, s.slug as site_slug, s.tenant_id
         FROM cms_sites s
-        WHERE s.domain = $1 AND s.status = 'published'
+        WHERE s.domain = ${lookupValue} AND s.status = 'published'
         LIMIT 1
-      `,
-      values: [lookupValue],
-    } as any)
+      `)
       .then((result: any) => {
         const rows = result.rows ?? result;
         if (rows.length > 0) {
