@@ -116,12 +116,13 @@ function renderFeatureGrid(block: BlockData): string {
       visualHtml = `<div class="sigil-feature-icon-wrapper"><div class="sigil-feature-icon">${iconSvg || esc(f.icon as string)}</div></div>`;
     }
 
+    const descHtml = f.description ? `<p>${esc(f.description as string)}</p>` : '';
+
     return `<${tag}${href} class="sigil-feature-card${clickableClass}">
       ${visualHtml}
       <div class="sigil-feature-content">
         <h3>${esc(f.title as string)}</h3>
-        <p>${esc(f.description as string)}</p>
-        ${hasLink ? `<div class="sigil-feature-learn-more">Learn more <span class="sigil-arrow">→</span></div>` : ''}
+        ${descHtml}
       </div>
     </${tag}>`;
   }).join('\n    ');
