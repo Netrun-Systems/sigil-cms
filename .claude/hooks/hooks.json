@@ -1,0 +1,9 @@
+{
+  "hooks": [
+    {
+      "event": "Stop",
+      "command": "bash scripts/lint-drizzle.sh",
+      "description": "Check for banned Drizzle patterns (db.execute with raw { text, values }) before completing work"
+    }
+  ]
+}

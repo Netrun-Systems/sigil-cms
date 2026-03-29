@@ -1,4 +1,8 @@
 steps:
+  # Safety check: detect banned Drizzle patterns before building
+  - name: 'bash'
+    args: ['scripts/lint-drizzle.sh']
+
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
